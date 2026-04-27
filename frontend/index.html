@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AquaSentinel AI | Marine Intelligence</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/glass-ui.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <i class="fas fa-microchip text-accent"></i>
+      <span>AquaSentinel <span class="text-accent">AI</span></span>
+    </div>
+    <div class="navbar-nav">
+      <a href="index.html">Home</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="login.html" class="btn btn-outline">Login</a>
+      <a href="register.html" class="btn btn-primary">Get Started</a>
+    </div>
+  </nav>
+
+  <section class="hero-section container">
+    <div class="hero-content">
+      <h1 class="hero-title">Protecting Our Oceans with <span class="text-accent">AI Intelligence</span></h1>
+      <p class="hero-subtitle">Real-time marine debris detection and ecosystem monitoring powered by NASA satellite data and advanced risk engines.</p>
+      <div class="hero-btns">
+        <a href="register.html" class="btn btn-primary btn-lg">Explore Dashboard</a>
+        <a href="admin/admin-login.html" class="btn btn-outline btn-lg">Control Tower</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="glass-panel main-preview">
+        <div class="preview-header">
+          <span class="badge badge-critical">Critical Alert: Bay Area</span>
+          <span class="text-muted">Live Feed</span>
+        </div>
+        <div class="preview-chart">
+          <!-- Placeholder for animated visual -->
+          <div class="ocean-wave-animation"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features container">
+    <div class="section-header">
+      <h2>Advanced Marine Intelligence</h2>
+      <p>Cutting-edge tools for researchers, authorities, and environmentalists.</p>
+    </div>
+    <div class="features-grid">
+      <div class="glass-card">
+        <i class="fas fa-satellite"></i>
+        <h3>NASA Integration</h3>
+        <p>Direct integration with NASA GIBS and CMR datasets for chlorophyll and ocean color data.</p>
+      </div>
+      <div class="glass-card">
+        <i class="fas fa-search-location"></i>
+        <h3>AI Debris Detection</h3>
+        <p>Analyze uploaded images or satellite feeds to identify plastic, nets, and waste with high precision.</p>
+      </div>
+      <div class="glass-card">
+        <i class="fas fa-shield-virus"></i>
+        <h3>Risk Engine</h3>
+        <p>Advanced assessment of wave data, debris density, and ecosystem degradation scores.</p>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .hero-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      padding-top: 6rem;
+      padding-bottom: 6rem;
+      align-items: center;
+    }
+    .hero-title {
+      font-size: 3.5rem;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      max-width: 500px;
+    }
+    .text-accent { color: var(--accent-cyan); }
+    .btn-lg { padding: 1rem 2rem; font-size: 1.1rem; }
+    .hero-btns { display: flex; gap: 1rem; }
+    
+    .main-preview {
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .preview-header { display: flex; justify-content: space-between; align-items: center; }
+    
+    .section-header { text-align: center; margin-bottom: 4rem; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+    .features-grid i { font-size: 2.5rem; color: var(--accent-cyan); margin-bottom: 1.5rem; }
+  </style>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+</body>
+</html>
