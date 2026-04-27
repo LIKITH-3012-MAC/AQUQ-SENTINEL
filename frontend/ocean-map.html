@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marine Intelligence Map | AquaSentinel AI</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/glass-ui.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <i class="fas fa-microchip text-accent"></i>
+      <span>AquaSentinel <span class="text-accent">AI</span></span>
+    </div>
+    <div class="navbar-nav">
+      <a href="user-dashboard.html">Dashboard</a>
+      <a href="ocean-map.html">Marine Map</a>
+      <a href="upload-detection.html">AI Detection</a>
+      <button onclick="AUTH.logout()" class="btn btn-outline btn-sm">Logout</button>
+    </div>
+  </nav>
+
+  <div class="map-layout">
+    <aside class="map-sidebar glass-panel">
+      <h3>Map Intelligence</h3>
+      <div class="layer-control mt-2">
+        <label class="section-label">NASA GIBS Layers</label>
+        <div class="layer-item">
+          <input type="checkbox" id="layerChlorophyll" checked>
+          <span>Chlorophyll-a Index</span>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" id="layerTrueColor">
+          <span>True Color (MODIS)</span>
+        </div>
+        <div class="layer-item">
+          <input type="checkbox" id="layerSST">
+          <span>Sea Surface Temp</span>
+        </div>
+      </div>
+
+      <div class="zone-control mt-2">
+        <label class="section-label">Sensitive Zones</label>
+        <div id="zonesList" class="zones-list mt-1">
+          <div class="zone-item">
+            <i class="fas fa-circle text-risk-high"></i>
+            <span>Great Barrier Reef</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend mt-4">
+        <label class="section-label">Risk Legend</label>
+        <div class="legend-item"><span class="legend-dot LOW"></span> Low Risk</div>
+        <div class="legend-item"><span class="legend-dot MEDIUM"></span> Moderate</div>
+        <div class="legend-item"><span class="legend-dot HIGH"></span> High Risk</div>
+        <div class="legend-item"><span class="legend-dot CRITICAL"></span> Critical Alert</div>
+      </div>
+    </aside>
+
+    <div id="map" class="full-map"></div>
+  </div>
+
+  <style>
+    .map-layout { display: flex; height: calc(100vh - 70px); }
+    .map-sidebar { width: 300px; border-radius: 0; border: none; border-right: 1px solid var(--glass-border); padding: 1.5rem; overflow-y: auto; z-index: 1000; }
+    .full-map { flex: 1; z-index: 1; }
+    
+    .section-label { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+    .layer-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; cursor: pointer; }
+    .layer-item input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-cyan); }
+    
+    .zone-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-main); }
+    .text-risk-high { color: var(--risk-high); }
+    
+    .legend-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .legend-dot.LOW { background: var(--risk-low); }
+    .legend-dot.MEDIUM { background: var(--risk-medium); }
+    .legend-dot.HIGH { background: var(--risk-high); }
+    .legend-dot.CRITICAL { background: var(--risk-critical); box-shadow: 0 0 5px var(--risk-critical); }
+  </style>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="assets/js/maps.js"></script>
+</body>
+</html>

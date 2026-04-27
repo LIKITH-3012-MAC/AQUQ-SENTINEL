@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | AquaSentinel AI</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/glass-ui.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-page">
+  <div class="container auth-container">
+    <div class="glass-panel auth-panel">
+      <div class="auth-header">
+        <div class="navbar-brand">
+          <i class="fas fa-shield-alt text-accent"></i>
+          <span>Admin <span class="text-accent">Control</span></span>
+        </div>
+        <h2>Restricted Access</h2>
+        <p class="text-muted">Command center authentication required.</p>
+      </div>
+      
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label>Admin ID</label>
+          <input type="email" id="email" class="glass-input" placeholder="admin@aquasentinel.ai" required>
+        </div>
+        <div class="form-group">
+          <label>Security Key</label>
+          <input type="password" id="password" class="glass-input" placeholder="••••••••" required>
+        </div>
+        <div id="errorMessage" class="error-text"></div>
+        <button type="submit" class="btn btn-primary btn-block">Authorize Access</button>
+      </form>
+      
+      <div class="auth-footer">
+        <a href="../login.html">Return to User Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .auth-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #020c1b; }
+    .auth-container { max-width: 450px; width: 100%; }
+    .auth-panel { padding: 3rem; text-align: center; border-color: rgba(100, 255, 218, 0.2); }
+    .auth-header { margin-bottom: 2rem; }
+    .auth-form { text-align: left; }
+    .form-group { margin-bottom: 1.5rem; }
+    .btn-block { width: 100%; margin-top: 1rem; }
+    .error-text { color: var(--risk-critical); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+    .auth-footer { margin-top: 1.5rem; }
+  </style>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('errorMessage');
+      
+      errorDiv.style.display = 'none';
+      
+      const result = await AUTH.login(email, password);
+      if (result.success && result.user.role === 'admin') {
+        window.location.href = 'control-tower.html';
+      } else if (result.success) {
+        errorDiv.textContent = 'Insufficient privileges. This portal is for admins only.';
+        errorDiv.style.display = 'block';
+      } else {
+        errorDiv.textContent = 'Invalid Admin ID or Security Key.';
+        errorDiv.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

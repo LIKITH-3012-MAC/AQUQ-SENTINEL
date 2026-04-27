@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Control Tower | AquaSentinel AI</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/glass-ui.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="admin-page">
+  <div class="admin-layout">
+    <aside class="admin-sidebar glass-panel">
+      <div class="sidebar-brand">
+        <i class="fas fa-microchip text-accent"></i>
+        <span>Control <span class="text-accent">Tower</span></span>
+      </div>
+      
+      <nav class="sidebar-nav mt-4">
+        <a href="control-tower.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="marine-map.html"><i class="fas fa-globe-americas"></i> Live Marine Map</a>
+        <a href="users.html"><i class="fas fa-users"></i> User Management</a>
+        <a href="alerts-management.html"><i class="fas fa-exclamation-triangle"></i> Alerts Queue</a>
+        <a href="api-monitor.html"><i class="fas fa-server"></i> NASA API Monitor</a>
+        <a href="prediction-logs.html"><i class="fas fa-history"></i> AI Logs</a>
+        <a href="settings.html"><i class="fas fa-cog"></i> System Settings</a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <button onclick="AUTH.logout()" class="btn btn-outline btn-block">Logout</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="header-search">
+          <input type="text" class="glass-input" placeholder="Search system logs, users, or alerts...">
+        </div>
+        <div class="header-status">
+          <span class="status-indicator online"></span>
+          <span class="text-muted">System Online</span>
+        </div>
+      </header>
+
+      <section class="admin-content">
+        <div class="admin-stats-grid">
+          <div class="glass-card admin-stat">
+            <label>Total Users</label>
+            <h2 id="totalUsers">--</h2>
+            <div class="stat-trend positive">+12% vs last month</div>
+          </div>
+          <div class="glass-card admin-stat">
+            <label>Active Predictions</label>
+            <h2 id="totalAssessments">--</h2>
+            <div class="stat-trend positive">+8% vs last month</div>
+          </div>
+          <div class="glass-card admin-stat">
+            <label>Critical Alerts</label>
+            <h2 id="criticalAlerts" class="text-critical">--</h2>
+            <div class="stat-trend negative">Urgent Action Required</div>
+          </div>
+          <div class="glass-card admin-stat">
+            <label>API Health</label>
+            <h2 id="apiHealth">Optimal</h2>
+            <div class="stat-trend">NASA: 99.9% Uptime</div>
+          </div>
+        </div>
+
+        <div class="admin-dashboard-grid mt-4">
+          <div class="glass-panel col-span-2">
+            <h3>Recent Predictions & Alerts</h3>
+            <div class="table-container mt-2">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th>User</th>
+                    <th>Risk Level</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="predictionsTableBody">
+                  <!-- Filled by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="glass-panel">
+            <h3>NASA API Traffic</h3>
+            <canvas id="apiTrafficChart" height="300" class="mt-2"></canvas>
+            <div class="api-status-list mt-2">
+              <div class="api-status-item">
+                <span>NASA GIBS</span>
+                <span class="badge badge-low">Operational</span>
+              </div>
+              <div class="api-status-item mt-1">
+                <span>Copernicus Marine</span>
+                <span class="badge badge-low">Operational</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <style>
+    .admin-page { background: #020c1b; }
+    .admin-layout { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 280px; border-radius: 0; border: none; border-right: 1px solid var(--glass-border); padding: 2rem; display: flex; flex-direction: column; }
+    .admin-main { flex: 1; padding: 2rem; overflow-y: auto; }
+    
+    .sidebar-brand { font-size: 1.5rem; font-weight: 700; }
+    .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+    .sidebar-nav a { padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 1rem; color: var(--text-muted); transition: all 0.3s; }
+    .sidebar-nav a.active, .sidebar-nav a:hover { background: rgba(100, 255, 218, 0.1); color: var(--accent-cyan); }
+    
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .header-search { width: 400px; }
+    .status-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.5rem; }
+    .status-indicator.online { background: #10b981; box-shadow: 0 0 10px #10b981; }
+    
+    .admin-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+    .admin-stat h2 { margin-top: 0.5rem; font-size: 2.5rem; }
+    .stat-trend { font-size: 0.8rem; margin-top: 0.5rem; }
+    .stat-trend.positive { color: #10b981; }
+    .stat-trend.negative { color: #ef4444; }
+    .text-critical { color: #ef4444; }
+
+    .admin-dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+    .col-span-2 { grid-column: span 2; }
+    
+    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .admin-table th, .admin-table td { padding: 1rem; border-bottom: 1px solid var(--glass-border); font-size: 0.9rem; }
+    .admin-table th { color: var(--text-muted); font-weight: 500; }
+    
+    .api-status-item { display: flex; justify-content: space-between; align-items: center; }
+  </style>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../assets/js/admin-control.js"></script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Intelligence | AquaSentinel AI</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/glass-ui.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <i class="fas fa-microchip text-accent"></i>
+      <span>AquaSentinel <span class="text-accent">AI</span></span>
+    </div>
+    <div class="navbar-nav">
+      <a href="user-dashboard.html">Dashboard</a>
+      <a href="ocean-map.html">Marine Map</a>
+      <a href="upload-detection.html">AI Detection</a>
+      <button onclick="AUTH.logout()" class="btn btn-outline btn-sm">Logout</button>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+    <div class="glass-panel mb-4">
+      <h2>Marine Intelligence Search</h2>
+      <p class="text-muted">Enter coordinates to analyze ocean health and debris risk.</p>
+      
+      <form id="searchForm" class="search-form mt-2">
+        <div class="search-inputs">
+          <div class="form-group">
+            <label>Latitude</label>
+            <input type="number" step="any" id="lat" class="glass-input" placeholder="e.g. 12.97" required>
+          </div>
+          <div class="form-group">
+            <label>Longitude</label>
+            <input type="number" step="any" id="lon" class="glass-input" placeholder="e.g. 77.59" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Analyze Location</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="loading" class="text-center py-4" style="display: none;">
+      <i class="fas fa-circle-notch fa-spin fa-3x text-accent"></i>
+      <p class="mt-1">Fetching NASA Intelligence...</p>
+    </div>
+
+    <div id="results" class="results-grid" style="display: none;">
+      <section class="risk-card glass-panel">
+        <div class="risk-header">
+          <h3>Ecosystem Risk Assessment</h3>
+          <div id="riskBadge" class="badge">--</div>
+        </div>
+        <div class="risk-meter mt-2">
+          <div id="riskProgress" class="risk-progress" style="width: 0%"></div>
+        </div>
+        <p id="recommendation" class="mt-2"></p>
+        
+        <ul id="reasons" class="reasons-list mt-2"></ul>
+      </section>
+
+      <section class="data-cards">
+        <div class="glass-card">
+          <h4>Ocean Color Index</h4>
+          <div class="data-value">
+            <span id="chlValue">--</span> <small>mg/m³</small>
+          </div>
+          <p class="text-muted">NASA OB.DAAC Chlorophyll-a</p>
+        </div>
+        <div class="glass-card mt-2">
+          <h4>Wave Dynamics</h4>
+          <div class="data-value">
+            <span id="waveHeight">--</span> <small>m</small>
+          </div>
+          <p id="waveInfo" class="text-muted">Copernicus Marine Wave Height</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <style>
+    .py-4 { padding-top: 4rem; padding-bottom: 4rem; }
+    .mb-4 { margin-bottom: 4rem; }
+    .search-inputs { display: flex; gap: 1.5rem; align-items: flex-end; }
+    .search-form .form-group { flex: 1; }
+    
+    .results-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem; }
+    .risk-header { display: flex; justify-content: space-between; align-items: center; }
+    .risk-meter { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+    .risk-progress { height: 100%; transition: width 1s ease; background: var(--risk-low); }
+    
+    .data-value { font-size: 2.5rem; font-weight: 700; color: var(--accent-cyan); margin: 0.5rem 0; }
+    .reasons-list { list-style: none; }
+    .reasons-list li { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .reasons-list li::before { content: "•"; color: var(--accent-cyan); font-weight: bold; }
+    
+    @media (max-width: 768px) {
+      .search-inputs { flex-direction: column; align-items: stretch; }
+      .results-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/location-risk.js"></script>
+</body>
+</html>
