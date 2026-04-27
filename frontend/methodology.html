@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Methodology | AquaSentinel AI</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/glass-ui.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <i class="fas fa-microchip text-accent"></i>
+      <span>AquaSentinel <span class="text-accent">AI</span></span>
+    </div>
+    <div class="navbar-nav">
+      <a href="index.html">Home</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="login.html" class="btn btn-outline">Login</a>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+    <header class="section-header">
+      <h1>Technical Methodology</h1>
+      <p class="text-muted">How AquaSentinel AI processes satellite data and AI imagery to protect our oceans.</p>
+    </header>
+
+    <div class="methodology-grid mt-4">
+      <section class="glass-panel">
+        <h3>1. Data Acquisition</h3>
+        <p class="mt-1">We integrate directly with NASA's Earthdata ecosystem using the <strong>Common Metadata Repository (CMR)</strong> to discover relevant oceanographic datasets. <strong>GIBS (Global Imagery Browse Services)</strong> is used to provide high-resolution satellite imagery overlays for visual monitoring.</p>
+        <ul class="tech-list mt-1">
+          <li><i class="fas fa-check text-accent"></i> MODIS Aqua/Terra Chlorophyll-a</li>
+          <li><i class="fas fa-check text-accent"></i> VIIRS Sea Surface Temperature</li>
+          <li><i class="fas fa-check text-accent"></i> Copernicus Marine Wave Analysis</li>
+        </ul>
+      </section>
+
+      <section class="glass-panel">
+        <h3>2. AI Prediction Pipeline</h3>
+        <p class="mt-1">Our system uses a dual-module AI architecture for comprehensive marine analysis:</p>
+        <div class="ai-modules mt-2">
+          <div class="glass-card">
+            <i class="fas fa-search text-accent"></i>
+            <h4>Debris Detection</h4>
+            <p>A YOLOv8-based object detection model trained on marine debris datasets to identify plastic, nets, and waste.</p>
+          </div>
+          <div class="glass-card mt-1">
+            <i class="fas fa-th-large text-accent"></i>
+            <h4>Ecosystem Segmentation</h4>
+            <p>U-Net architecture for semantic segmentation of water, coral, algae, and turbid zones.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-panel col-span-2">
+        <h3>3. Marine Risk Engine</h3>
+        <p class="mt-1">The Risk Engine synthesizes data from all sources to calculate a localized Risk Level (LOW, MEDIUM, HIGH, CRITICAL). The formula considers:</p>
+        <div class="formula-grid mt-2">
+          <div class="formula-item">
+            <strong>Debris Density</strong>
+            <span>Impact: 40%</span>
+          </div>
+          <div class="formula-item">
+            <strong>Chlorophyll/Algae</strong>
+            <span>Impact: 25%</span>
+          </div>
+          <div class="formula-item">
+            <strong>Wave Dynamics</strong>
+            <span>Impact: 20%</span>
+          </div>
+          <div class="formula-item">
+            <strong>Zone Proximity</strong>
+            <span>Impact: 15%</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <style>
+    .py-4 { padding-top: 4rem; padding-bottom: 4rem; }
+    .section-header { text-align: center; }
+    .methodology-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .col-span-2 { grid-column: span 2; }
+    
+    .tech-list { list-style: none; }
+    .tech-list li { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; font-size: 0.9rem; }
+    
+    .ai-modules h4 { margin-top: 0.5rem; }
+    
+    .formula-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; text-align: center; }
+    .formula-item { padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px; }
+    .formula-item strong { display: block; color: var(--accent-cyan); margin-bottom: 0.5rem; }
+    .formula-item span { font-size: 0.8rem; color: var(--text-muted); }
+  </style>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+</body>
+</html>
