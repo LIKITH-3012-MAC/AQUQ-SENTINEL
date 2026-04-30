@@ -1,83 +1,44 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
-from typing import Optional
-from .. import schemas, models, auth, database, config
-import uuid
+from .. import schemas, auth, database
+from ..services.auth_service import AuthService
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-@router.post("/register", response_model=schemas.Token)
-def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Intelligence identity already exists (Email in use)")
-    
-    hashed_password = auth.get_password_hash(user.password)
-    db_user = models.User(
-        full_name=user.full_name,
-        email=user.email,
-        password_hash=hashed_password,
-        role=user.role if user.role in ["user", "researcher", "ngo", "authority"] else "user",
-        is_active=True,
-        is_verified=False
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    
-    # Auto-login after registration
-    access_token = auth.create_access_token(
-        data={"sub": str(db_user.id), "email": db_user.email, "role": db_user.role}
-    )
-    
-    return {
-        "success": True,
-        "user": db_user,
-        "access_token": access_token,
-        "role": db_user.role
-    }
+@router.post("/register", response_model=schemas.AuthStatusResponse)
+async def register(user_data: schemas.UserRegister, db: Session = Depends(database.get_db)):
+    return await AuthService.register_user(db, user_data)
 
 @router.post("/login", response_model=schemas.Token)
-def login(login_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
-    user = db.query(models.User).filter(models.User.email == login_data.email).first()
-    if not user or not auth.verify_password(login_data.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect credentials. Access Denied.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    if not user.is_active:
-        raise HTTPException(status_code=403, detail="Account suspended. Contact Command Central.")
+async def login(request: Request, login_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
+    # Get client info
+    ip = request.client.host
+    user_agent = request.headers.get("user-agent")
+    return await AuthService.authenticate_user(db, login_data, ip, user_agent)
 
-    user.last_login_at = datetime.utcnow()
-    db.commit()
-    
-    access_token = auth.create_access_token(
-        data={"sub": str(user.id), "email": user.email, "role": user.role}
-    )
-    
-    return {
-        "success": True,
-        "user": user,
-        "access_token": access_token,
-        "role": user.role
-    }
+@router.post("/forgot-password/question", response_model=schemas.ForgotQuestionResponse)
+async def forgot_password_question(email_data: schemas.ForgotQuestionRequest, db: Session = Depends(database.get_db)):
+    return await AuthService.get_security_question(db, email_data)
+
+@router.post("/forgot-password/verify", response_model=schemas.VerifyAnswerResponse)
+async def forgot_password_verify(request: Request, verify_data: schemas.VerifyAnswerRequest, db: Session = Depends(database.get_db)):
+    ip = request.client.host
+    return await AuthService.verify_security_answer(db, verify_data, ip)
+
+@router.post("/forgot-password/reset", response_model=schemas.AuthStatusResponse)
+async def forgot_password_reset(reset_data: schemas.ResetPasswordRequest, db: Session = Depends(database.get_db)):
+    return await AuthService.reset_password(db, reset_data)
 
 @router.get("/me", response_model=schemas.UserResponse)
-def get_me(current_user: models.User = Depends(auth.get_current_user)):
+async def get_me(current_user: schemas.UserResponse = Depends(auth.get_current_user)):
     return current_user
 
-@router.post("/logout")
-def logout(current_user: models.User = Depends(auth.get_current_user)):
-    # In a pure JWT system, logout is mostly handled client-side.
-    # Optionally, we could blacklist tokens here if we had a Redis store.
-    return {"success": True, "message": "Command session terminated successfully"}
+@router.post("/logout", response_model=schemas.AuthStatusResponse)
+async def logout(db: Session = Depends(database.get_db), current_user: schemas.UserResponse = Depends(auth.get_current_user)):
+    return await AuthService.logout(db, current_user.id)
 
 @router.patch("/preferences")
-def update_preferences(
+async def update_preferences(
     prefs: schemas.PreferenceUpdate,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)

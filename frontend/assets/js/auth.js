@@ -8,7 +8,7 @@ const AUTH = {
             const data = await API.auth.login({ email, password });
             if (data.success) {
                 this.setSession(data);
-                this.redirectByRole(data.role);
+                this.redirectByRole(data.user.role);
                 return data;
             }
         } catch (err) {
@@ -19,11 +19,7 @@ const AUTH = {
     async register(userData) {
         try {
             const data = await API.auth.register(userData);
-            if (data.success) {
-                this.setSession(data);
-                this.redirectByRole(data.role);
-                return data;
-            }
+            return data; // Return success message to UI
         } catch (err) {
             throw err;
         }
@@ -32,7 +28,7 @@ const AUTH = {
     setSession(data) {
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('role', data.role);
+        localStorage.setItem('role', data.user.role);
     },
 
     logout() {

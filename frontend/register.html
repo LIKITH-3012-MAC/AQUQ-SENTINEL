@@ -37,12 +37,24 @@
                 <input type="email" id="email" placeholder="officer@aquasentinel.ai" required class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white; border-radius: 12px; width: 100%;">
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Create Key</label>
-                <input type="password" id="password" placeholder="••••••••" required class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white; border-radius: 12px; width: 100%;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Security Question</label>
+                <select id="security_question" required class="glass-card" style="padding: 0.8rem; background: rgba(0,0,0,0.5); color: white; border-radius: 12px; width: 100%; border: 1px solid var(--border-color);">
+                    <option value="" disabled selected>Select a recovery question</option>
+                    <option value="What was the name of your first ocean mission?">What was the name of your first ocean mission?</option>
+                    <option value="What is your favorite marine species?">What is your favorite marine species?</option>
+                    <option value="In which coastal city were you born?">In which coastal city were you born?</option>
+                    <option value="What was the model of your first diving watch?">What was the model of your first diving watch?</option>
+                </select>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Security Answer</label>
+                <input type="text" id="security_answer" placeholder="Secure recovery phrase" required class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white; border-radius: 12px; width: 100%;">
             </div>
             
             <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Deploy Identity</button>
         </form>
+
+        <div id="status-message" style="margin-top: 1.5rem; display: none; padding: 1rem; border-radius: 12px;"></div>
 
         <div style="margin-top: 2rem; font-size: 0.9rem;">
             <span style="color: var(--text-secondary);">Already enlisted?</span>
@@ -60,7 +72,9 @@
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
+            const statusBox = document.getElementById('status-message');
             const originalText = btn.textContent;
+            
             btn.textContent = 'Establishing Identity...';
             btn.disabled = true;
 
@@ -68,13 +82,28 @@
                 full_name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value,
-                role: 'user'
+                security_question: document.getElementById('security_question').value,
+                security_answer: document.getElementById('security_answer').value
             };
 
             try {
-                await AUTH.register(userData);
+                const res = await AUTH.register(userData);
+                statusBox.textContent = res.message;
+                statusBox.style.display = 'block';
+                statusBox.style.background = 'rgba(0, 255, 136, 0.1)';
+                statusBox.style.color = '#00ff88';
+                statusBox.style.border = '1px solid rgba(0, 255, 136, 0.2)';
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
             } catch (err) {
-                alert('Intelligence Registration Failed: ' + err.message);
+                statusBox.textContent = 'Intelligence Registration Failed: ' + err.message;
+                statusBox.style.display = 'block';
+                statusBox.style.background = 'rgba(255, 0, 85, 0.1)';
+                statusBox.style.color = '#ff0055';
+                statusBox.style.border = '1px solid rgba(255, 0, 85, 0.2)';
+                
                 btn.textContent = originalText;
                 btn.disabled = false;
             }

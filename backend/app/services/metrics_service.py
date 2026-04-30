@@ -7,9 +7,9 @@ def get_dashboard_metrics(db: Session):
     Get metrics for Admin Control Tower.
     """
     total_users = db.query(models.User).count()
-    total_assessments = db.query(models.RiskAssessment).count()
+    total_assessments = db.query(models.RiskScore).count()
     total_images = db.query(models.UploadedImage).count()
-    critical_alerts = db.query(models.Alert).filter(models.Alert.risk_level == "CRITICAL", models.Alert.status == "active").count()
+    critical_alerts = db.query(models.Alert).filter(models.Alert.severity == "CRITICAL", models.Alert.status == "active").count()
     
     # Mocking some external API metrics for the dashboard
     nasa_requests_today = random.randint(10, 150)

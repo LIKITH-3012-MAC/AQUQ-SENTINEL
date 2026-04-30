@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional, Any
 from .. import schemas, models, auth, database
 from ..services.groq_service import groq_service
 from ..services.rag_service import rag_service
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/chatbot", tags=["chatbot"])
 async def chat_with_copilot(
     req: schemas.ChatbotRequest,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(auth.get_current_user)
+    current_user: Optional[models.User] = Depends(auth.get_current_user_optional)
 ):
     # 1. Retrieve RAG Context
     context_chunks = rag_service.retrieve(req.message)

@@ -1,4 +1,4 @@
-import bcrypt
+from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
@@ -9,16 +9,15 @@ from .config import settings
 from . import database, models, schemas
 import uuid
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str):
-    try:
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-    except Exception:
-        return False
+    return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -53,6 +52,19 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     if not user.is_active:
         raise HTTPException(status_code=400, detail="User account is deactivated")
     return user
+
+async def get_current_user_optional(token: str = Depends(oauth2_scheme_optional), db: Session = Depends(database.get_db)):
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        user = db.query(models.User).filter(models.User.id == uuid.UUID(user_id)).first()
+        return user if user and user.is_active else None
+    except Exception:
+        return None
 
 async def get_current_active_admin(current_user: models.User = Depends(get_current_user)):
     if current_user.role != "admin":

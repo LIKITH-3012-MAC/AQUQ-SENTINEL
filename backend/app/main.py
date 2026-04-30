@@ -31,7 +31,8 @@ def startup_event():
     db = database.SessionLocal()
     try:
         # Verify DB Connection
-        db.execute("SELECT 1")
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
         print("[SUCCESS] Quantum Core: Database Connection Established.")
         
         # Verify/Create Tables
@@ -45,6 +46,8 @@ def startup_event():
                 full_name="Intelligence Commander",
                 email="admin@aquasentinel.ai",
                 password_hash=auth.get_password_hash("Admin@2026!"),
+                security_question="What is the mission code?",
+                security_answer_hash=auth.get_password_hash("ocean-sentinel"),
                 role="admin",
                 is_active=True,
                 is_verified=True

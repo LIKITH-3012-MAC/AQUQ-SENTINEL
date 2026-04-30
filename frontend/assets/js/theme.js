@@ -53,12 +53,6 @@ const UI = {
         });
     },
 
-    initAIAssistant() {
-        const trigger = document.getElementById('ai-copilot-trigger');
-        if (trigger) {
-            trigger.addEventListener('click', () => this.toggleAICopilot());
-        }
-    },
 
     toggleAICopilot() {
         const widget = document.getElementById('copilot-widget');

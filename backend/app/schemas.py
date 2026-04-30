@@ -7,11 +7,13 @@ class UserBase(BaseModel):
     full_name: str
     email: EmailStr
     role: Optional[str] = "user"
-    theme: Optional[str] = "dark"
-    language: Optional[str] = "en"
 
-class UserCreate(UserBase):
+class UserRegister(BaseModel):
+    full_name: str
+    email: EmailStr
     password: str
+    security_question: str
+    security_answer: str
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -22,21 +24,42 @@ class UserResponse(BaseModel):
     full_name: str
     email: EmailStr
     role: str
-    theme: Optional[str]
-    language: Optional[str]
     is_active: bool
     is_verified: bool
-    last_login_at: Optional[datetime]
     created_at: datetime
     class Config:
         from_attributes = True
 
 class Token(BaseModel):
     success: bool = True
-    user: UserResponse
     access_token: str
     token_type: str = "bearer"
-    role: str
+    user: UserResponse
+
+class ForgotQuestionRequest(BaseModel):
+    email: EmailStr
+
+class ForgotQuestionResponse(BaseModel):
+    success: bool
+    security_question: str
+
+class VerifyAnswerRequest(BaseModel):
+    email: EmailStr
+    security_answer: str
+
+class VerifyAnswerResponse(BaseModel):
+    success: bool
+    message: str
+    reset_token: str
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    reset_token: str
+    new_password: str
+
+class AuthStatusResponse(BaseModel):
+    success: bool
+    message: str
 
 class TokenData(BaseModel):
     email: Optional[str] = None
