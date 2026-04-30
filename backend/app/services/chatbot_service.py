@@ -10,24 +10,36 @@ class OceanCopilot:
         self.api_url = "https://api.groq.com/openai/v1/chat/completions"
         self.model = "llama3-70b-8192"
 
-    def get_system_prompt(self, language="en"):
+    def get_system_prompt(self, user_role="user", language="en"):
+        # Role-based tone adjustment
+        base_instructions = {
+            "user": "Explain simply for citizens, focus on community impact and clear actions.",
+            "researcher": "Use technical marine terminology, cite satellite datasets (MODIS/VIIRS), and provide detailed data points.",
+            "admin": "Focus on operational logistics, cleanup protocols, and jurisdictional urgency."
+        }
+        
+        tone = base_instructions.get(user_role, base_instructions["user"])
+        
         prompts = {
-            "en": "You are the AquaSentinel AI Ocean Intelligence Copilot. You are an expert in marine biology, satellite oceanography, and environmental protection. Provide professional, data-driven, and actionable advice. If asked to create a report or analyze a region, guide the user on how to use the AquaSentinel tools.",
-            "te": "మీరు ఆక్వాసెంటినెల్ AI ఓషన్ ఇంటెలిజెన్స్ కోపైలట్. మీరు మెరైన్ బయాలజీ, శాటిలైట్ ఓషనోగ్రఫీ మరియు పర్యావరణ పరిరక్షణలో నిపుణులు. వృత్తిపరమైన మరియు డేటా ఆధారిత సలహాలను అందించండి.",
-            "hi": "आप एक्वासेंटिनल एआई ओशन इंटेलिजेंस कोपायलट हैं। आप समुद्री जीव विज्ञान, उपग्रह समुद्र विज्ञान और पर्यावरण संरक्षण के विशेषज्ञ हैं।"
+            "en": f"You are the AquaSentinel AI Ocean Intelligence Copilot. Expert in marine biology and satellite oceanography. Tone: {tone}. Provide actionable advice.",
+            "te": f"మీరు ఆక్వాసెంటినెల్ AI ఓషన్ ఇంటెలిజెన్స్ కోపైలట్. టోన్: {tone}.",
+            "hi": f"आप एक्वासेंटिनल एआई ओशन इंटेलिजेंस कोपायलट हैं। टोन: {tone}.",
+            "ta": "நீங்கள் அக்வாசென்டினல் ஏஐ கடல் நுண்ணறிவு கோபிலட்.",
+            "kn": "ನೀವು ಅಕ್ವಾಸಂಟಿನೆಲ್ ಎಐ ಸಾಗರ ಇಂಟೆಲಿಜೆನ್ಸ್ ಸಹ-ಪೈಲಟ್.",
+            "ml": "നിങ്ങൾ അക്വാസെന്റിനൽ AI ഓഷ്യൻ ഇന്റലിജൻസ് കോപൈലറ്റ് ആണ്."
         }
         return prompts.get(language, prompts["en"])
 
     async def chat(self, db: Session, user_id: int, message: str, language="en"):
-        """
-        Interacts with Groq LLM and stores logs.
-        """
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        user_role = user.role if user else "user"
+        
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
         
-        system_prompt = self.get_system_prompt(language)
+        system_prompt = self.get_system_prompt(user_role, language)
         
         # In a real RAG system, we would fetch relevant docs here
         # context = vector_db.search(message)

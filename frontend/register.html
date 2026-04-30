@@ -3,67 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | AquaSentinel AI Command Center</title>
+    <title>Officer Registration | AquaSentinel AI</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
-<body style="display: flex; align-items: center; justify-content: center;">
-    <div class="glass-panel" style="width: 100%; max-width: 450px; padding: 3rem;">
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <i class="fas fa-user-plus text-accent" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-            <h2>Initialize <span class="text-accent">Protocol</span></h2>
-            <p style="color: var(--text-secondary);">Register your intelligence sector</p>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+    <div class="bg-grid"></div>
+
+    <div class="nav-container">
+        <nav class="navbar" style="justify-content: center;">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-microchip text-gradient" style="font-size: 1.5rem;"></i>
+                <span style="font-weight: 800; font-size: 1.1rem; letter-spacing: 1px;">AQUA<span class="text-gradient">SENTINEL</span></span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="glass-card hologram" style="width: 100%; max-width: 500px; padding: 4rem 3rem; text-align: center; border-color: var(--accent-color);">
+        <div style="margin-bottom: 2.5rem;">
+            <i class="fas fa-user-plus text-gradient" style="font-size: 3rem; margin-bottom: 1.5rem;"></i>
+            <h2 style="font-size: 2rem;">Officer <span class="text-gradient">Registration</span></h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Enlist in the Global Marine Protection Mission</p>
         </div>
 
-        <form id="register-form" style="display: flex; flex-direction: column; gap: 1.2rem;">
+        <form id="register-form" style="display: flex; flex-direction: column; gap: 1.2rem; text-align: left;">
             <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Officer Name</label>
-                <input type="text" id="name" required class="glass-panel" style="background: rgba(255,255,255,0.05); color: white; padding: 0.8rem;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Full Name</label>
+                <input type="text" id="name" placeholder="Officer Name" required class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white; border-radius: 12px; width: 100%;">
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Official Email</label>
-                <input type="email" id="email" required class="glass-panel" style="background: rgba(255,255,255,0.05); color: white; padding: 0.8rem;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Official Email</label>
+                <input type="email" id="email" placeholder="officer@aquasentinel.ai" required class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white; border-radius: 12px; width: 100%;">
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Encryption Key</label>
-                <input type="password" id="password" required class="glass-panel" style="background: rgba(255,255,255,0.05); color: white; padding: 0.8rem;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);">Create Key</label>
+                <input type="password" id="password" placeholder="••••••••" required class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white; border-radius: 12px; width: 100%;">
             </div>
             
             <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Deploy Identity</button>
         </form>
 
-        <div style="text-align: center; margin-top: 2rem; font-size: 0.9rem;">
+        <div style="margin-top: 2rem; font-size: 0.9rem;">
             <span style="color: var(--text-secondary);">Already enlisted?</span>
-            <a href="login.html" class="text-accent">Return to Command</a>
+            <a href="login.html" class="text-gradient" style="font-weight: 700; text-decoration: none; margin-left: 0.5rem;">Return to Base</a>
         </div>
     </div>
 
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/theme.js"></script>
     <script>
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
             btn.textContent = 'Deploying...';
             btn.disabled = true;
 
             try {
-                const res = await API.auth.register({
-                    name: document.getElementById('name').value,
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('password').value
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
                 });
 
-                if (res.id) {
-                    alert('Identity Deployed Successfully. Redirecting to Login.');
+                const data = await res.json();
+                if (data.id) {
+                    alert('Identity Deployed. Initialize Session to Continue.');
                     window.location.href = 'login.html';
                 } else {
-                    alert('Deployment Failed: ' + (res.detail || 'Unknown Error'));
+                    alert('Registration Failed: ' + (data.detail || 'Protocol Error'));
                 }
             } catch (err) {
-                alert('Connection Error');
+                alert('Connection to Command Base Lost');
             } finally {
-                btn.textContent = 'Deploy Identity';
+                btn.textContent = originalText;
                 btn.disabled = false;
             }
         });

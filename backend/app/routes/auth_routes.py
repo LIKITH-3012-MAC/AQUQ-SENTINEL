@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+from typing import Optional
+from pydantic import BaseModel
 from .. import schemas, models, auth, database, config
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -26,9 +28,6 @@ def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
 
 @router.post("/login", response_model=schemas.Token)
 def login(login_data: schemas.UserLogin, db: Session = Depends(database.get_db)):
-    """
-    JSON-based login for modern frontend integration.
-    """
     user = db.query(models.User).filter(models.User.email == login_data.email).first()
     if not user or not auth.verify_password(login_data.password, user.password_hash):
         raise HTTPException(
@@ -37,7 +36,6 @@ def login(login_data: schemas.UserLogin, db: Session = Depends(database.get_db))
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Update last login
     user.last_login = datetime.now()
     db.commit()
     
@@ -49,9 +47,6 @@ def login(login_data: schemas.UserLogin, db: Session = Depends(database.get_db))
 
 @router.post("/login/form", response_model=schemas.Token)
 def login_form(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
-    """
-    OAuth2 compatible form-based login.
-    """
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
     if not user or not auth.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
@@ -69,3 +64,20 @@ def login_form(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 @router.get("/me", response_model=schemas.UserResponse)
 def get_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
+
+class PreferenceUpdate(BaseModel):
+    theme: Optional[str] = None
+    language: Optional[str] = None
+
+@router.patch("/preferences")
+def update_preferences(
+    prefs: PreferenceUpdate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    if prefs.theme:
+        current_user.theme = prefs.theme
+    if prefs.language:
+        current_user.language = prefs.language
+    db.commit()
+    return {"status": "success"}

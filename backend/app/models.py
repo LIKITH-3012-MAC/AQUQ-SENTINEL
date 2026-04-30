@@ -10,6 +10,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     role = Column(String, default="user") # 'user' or 'admin'
+    theme = Column(String, default="dark")
+    language = Column(String, default="en")
     status = Column(String, default="active") # 'active' or 'suspended'
     preferred_language = Column(String, default="en") # 'en', 'te', 'hi', etc.
     last_login = Column(DateTime(timezone=True), nullable=True)

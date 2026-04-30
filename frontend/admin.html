@@ -3,119 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Debris Detector | AquaSentinel AI</title>
+    <title>Tactical Reporting | AquaSentinel AI</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .step-container { display: none; }
+        .step-container.active { display: flex; flex-direction: column; gap: 1.5rem; }
+        .step-indicator {
+            display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: var(--transition); }
+        .dot.active { background: var(--accent-color); box-shadow: var(--glow); }
+        
+        .issue-type-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;
+        }
+        .type-card {
+            padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 16px; cursor: pointer; text-align: center; transition: var(--transition);
+        }
+        .type-card:hover, .type-card.selected { border-color: var(--accent-color); background: rgba(0, 243, 255, 0.05); transform: translateY(-3px); }
+    </style>
 </head>
 <body>
-    <div style="display: flex; min-height: 100vh;">
-        <!-- Sidebar -->
-        <aside class="glass-panel" style="width: 280px; margin: 1rem; display: flex; flex-direction: column; gap: 2rem;">
-            <div style="font-size: 1.2rem; font-weight: 800; text-align: center;">
-                <i class="fas fa-microchip text-accent"></i> COMMAND
-            </div>
-            <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <a href="dashboard.html" class="btn" style="justify-content: flex-start;"><i class="fas fa-chart-line"></i> Dashboard</a>
-                <a href="map.html" class="btn" style="justify-content: flex-start;"><i class="fas fa-map-location-dot"></i> Global Map</a>
-                <a href="admin.html" class="btn btn-primary" style="justify-content: flex-start;"><i class="fas fa-camera"></i> AI Detector</a>
-            </nav>
-            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.5rem;">
-                <a href="dashboard.html" class="btn" style="width: 100%; border: 1px solid var(--accent-cyan); color: var(--accent-cyan);">Back to Base</a>
-                <button onclick="logout()" class="btn" style="width: 100%; border: 1px solid var(--risk-critical); color: var(--risk-critical);"><i class="fas fa-sign-out-alt"></i> Abort</button>
-            </div>
-        </aside>
+    <div class="bg-grid"></div>
 
-        <!-- Main Content -->
-        <main style="flex: 1; padding: 2rem; overflow-y: auto;">
-            <header style="margin-bottom: 3rem;">
-                <h2>AI <span class="text-accent">Debris</span> Detection</h2>
-                <p style="color: var(--text-secondary);">Upload marine imagery for neural network analysis and risk assessment.</p>
-            </header>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                <!-- Upload Section -->
-                <div class="glass-panel" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; border-style: dashed; border-width: 2px;">
-                    <i class="fas fa-cloud-upload-alt text-accent" style="font-size: 4rem; margin-bottom: 2rem;"></i>
-                    <h3>Deploy Imagery</h3>
-                    <p style="color: var(--text-secondary); text-align: center; margin-bottom: 2rem;">Supports JPG, PNG, TIFF from Satellite or Drone feeds.</p>
-                    <input type="file" id="image-upload" style="display: none;" onchange="handleUpload(event)">
-                    <button onclick="document.getElementById('image-upload').click()" class="btn btn-primary">Select Feed File</button>
+    <div class="nav-container">
+        <nav class="navbar">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-microchip text-gradient" style="font-size: 1.5rem;"></i>
+                <span style="font-weight: 800; font-size: 1.1rem; letter-spacing: 1px;">AQUA<span class="text-gradient">SENTINEL</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="map.html">Map</a></li>
+                <li><a href="dashboard.html">Reports</a></li>
+                <li><a href="admin.html" class="active">AI Detect</a></li>
+            </ul>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="theme-toggle" onclick="UI.toggleTheme()">
+                    <i class="fas fa-sun"></i>
                 </div>
-
-                <!-- Results Section -->
-                <div class="glass-panel" id="results-panel" style="display: none;">
-                    <h3>Analysis <span class="text-accent">Results</span></h3>
-                    <div id="detection-summary" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                        <!-- Results injected here -->
-                    </div>
-                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="calculateRisk()">Generate Risk Intelligence</button>
-                    </div>
-                </div>
+                <a href="dashboard.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Base Base</a>
             </div>
-        </main>
+        </nav>
     </div>
 
+    <main class="container" style="padding-top: 8rem; padding-bottom: 6rem; display: flex; justify-content: center;">
+        <div class="glass-card hologram" style="width: 100%; max-width: 650px; border-color: var(--accent-color);">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">New Marine <span class="text-gradient">Observation</span></h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Follow protocol to report oceanic anomalies.</p>
+            </div>
+
+            <div class="step-indicator">
+                <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+
+            <!-- Step 1: Issue Type -->
+            <div class="step-container active" id="step-1">
+                <h3 style="font-size: 1.1rem;">Step 1: Select <span class="text-gradient">Anomaly Type</span></h3>
+                <div class="issue-type-grid">
+                    <div class="type-card" onclick="selectType(this, 'Plastic Waste')">
+                        <i class="fas fa-bottle-water text-gradient" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 0.8rem; font-weight: 600;">Plastic</div>
+                    </div>
+                    <div class="type-card" onclick="selectType(this, 'Oil Spill')">
+                        <i class="fas fa-droplet text-gradient" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 0.8rem; font-weight: 600;">Oil Spill</div>
+                    </div>
+                    <div class="type-card" onclick="selectType(this, 'Dead Marine Life')">
+                        <i class="fas fa-fish text-gradient" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 0.8rem; font-weight: 600;">Fauna Loss</div>
+                    </div>
+                    <div class="type-card" onclick="selectType(this, 'Algae Bloom')">
+                        <i class="fas fa-leaf text-gradient" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 0.8rem; font-weight: 600;">Algae</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="nextStep(2)" style="align-self: flex-end;">Next Phase</button>
+            </div>
+
+            <!-- Step 2: Location -->
+            <div class="step-container" id="step-2">
+                <h3 style="font-size: 1.1rem;">Step 2: Coordinate <span class="text-gradient">Triangulation</span></h3>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="getGPS()">
+                        <i class="fas fa-location-crosshairs"></i> Use Current GPS
+                    </button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <input type="number" id="lat" placeholder="Latitude" class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white;">
+                        <input type="number" id="lon" placeholder="Longitude" class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white;">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-outline" onclick="nextStep(1)">Back</button>
+                    <button class="btn btn-primary" onclick="nextStep(3)">Next Phase</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Photo -->
+            <div class="step-container" id="step-3">
+                <h3 style="font-size: 1.1rem;">Step 3: Imagery <span class="text-gradient">Acquisition</span></h3>
+                <div style="border: 2px dashed var(--border-color); padding: 3rem; border-radius: 24px; text-align: center; cursor: pointer;" onclick="document.getElementById('img-upload').click()">
+                    <i class="fas fa-cloud-arrow-up text-gradient" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p style="color: var(--text-secondary);">Upload Satellite or Ground imagery</p>
+                    <input type="file" id="img-upload" style="display: none;">
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-outline" onclick="nextStep(2)">Back</button>
+                    <button class="btn btn-primary" onclick="nextStep(4)">Next Phase</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Description -->
+            <div class="step-container" id="step-4">
+                <h3 style="font-size: 1.1rem;">Step 4: Observation <span class="text-gradient">Briefing</span></h3>
+                <textarea id="description" placeholder="Provide detailed operational intelligence..." class="glass-card" style="padding: 1rem; background: rgba(255,255,255,0.03); color: white; width: 100%; min-height: 150px;"></textarea>
+                <div style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-outline" onclick="nextStep(3)">Back</button>
+                    <button class="btn btn-primary" onclick="runAIPreCheck()">Run AI Pre-Check</button>
+                </div>
+            </div>
+
+            <!-- Step 5: AI Pre-Check -->
+            <div class="step-container" id="step-5">
+                <h3 style="font-size: 1.1rem;">Step 5: Neural <span class="text-gradient">Analysis</span></h3>
+                <div id="ai-feedback" class="glass-card" style="background: rgba(0, 243, 255, 0.05); border-color: var(--accent-color);">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <i class="fas fa-spinner fa-spin text-gradient" style="font-size: 1.5rem;"></i>
+                        <span>AI is analyzing report parameters...</span>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-outline" onclick="nextStep(4)">Back</button>
+                    <button class="btn btn-primary" id="confirm-btn" style="display: none;" onclick="nextStep(6)">Final Review</button>
+                </div>
+            </div>
+
+            <!-- Step 6: Confirm -->
+            <div class="step-container" id="step-6">
+                <h3 style="font-size: 1.1rem;">Step 6: Protocol <span class="text-gradient">Execution</span></h3>
+                <div class="glass-card" style="font-size: 0.9rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div><strong class="text-gradient">Type:</strong> <span id="summary-type">---</span></div>
+                    <div><strong class="text-gradient">Location:</strong> <span id="summary-loc">---</span></div>
+                    <div><strong class="text-gradient">Urgency:</strong> <span id="summary-urgency" style="color: var(--danger);">CRITICAL</span></div>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-outline" onclick="nextStep(5)">Back</button>
+                    <button class="btn btn-primary" onclick="submitReport()">Transmit Report</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
     <script src="assets/js/api.js"></script>
-    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/theme.js"></script>
     <script>
-        function logout() {
-            AUTH.logout();
+        let reportData = { type: '', lat: 0, lon: 0, description: '' };
+
+        function selectType(el, type) {
+            document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            reportData.type = type;
         }
-        let currentReportId = null;
 
-        async function handleUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function nextStep(step) {
+            document.querySelectorAll('.step-container').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                if (i < step) d.classList.add('active');
+                else d.classList.remove('active');
+            });
 
-            // In a real app, we'd upload to the server first
-            // For this demo, we simulate a report creation then detection
-            const resultsPanel = document.getElementById('results-panel');
-            resultsPanel.style.display = 'block';
-            resultsPanel.innerHTML = '<h3>Processing <span class="text-accent">Neural Feed...</span></h3><div style="height: 200px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-spinner fa-spin text-accent" style="font-size: 3rem;"></i></div>';
+            if (step === 6) {
+                document.getElementById('summary-type').textContent = reportData.type;
+                document.getElementById('summary-loc').textContent = `${document.getElementById('lat').value}, ${document.getElementById('lon').value}`;
+            }
+        }
 
-            setTimeout(async () => {
-                // Mock detection data for immediate feedback
-                const mockResults = {
-                    detections: [
-                        { object_type: "Ghost Net", confidence: 0.94, density_score: 72, recommended_equipment: "Mechanical Claw" },
-                        { object_type: "Plastic Cluster", confidence: 0.88, density_score: 45, recommended_equipment: "Surface Skimmer" }
-                    ],
-                    average_density: 58.5,
-                    summary: "High concentration of synthetic polymer waste detected."
-                };
+        function getGPS() {
+            navigator.geolocation.getCurrentPosition(pos => {
+                document.getElementById('lat').value = pos.coords.latitude;
+                document.getElementById('lon').value = pos.coords.longitude;
+            });
+        }
 
-                displayResults(mockResults);
+        function runAIPreCheck() {
+            nextStep(5);
+            setTimeout(() => {
+                document.getElementById('ai-feedback').innerHTML = `
+                    <div style="color: var(--success); font-weight: 700; margin-bottom: 0.5rem;">ANALYSIS COMPLETE</div>
+                    <p style="font-size: 0.85rem;">Detected Category: <span class="text-gradient">${reportData.type}</span></p>
+                    <p style="font-size: 0.85rem;">Urgency Score: <span style="color: var(--danger);">8.5/10</span></p>
+                    <p style="font-size: 0.85rem; margin-top: 1rem; color: var(--text-secondary);">Recommendation: Dispatch immediate surface skimmer drones.</p>
+                `;
+                document.getElementById('confirm-btn').style.display = 'inline-flex';
             }, 2000);
         }
 
-        function displayResults(data) {
-            const panel = document.getElementById('results-panel');
-            panel.innerHTML = `
-                <h3>Analysis <span class="text-accent">Results</span></h3>
-                <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(0,255,157,0.05); border-radius: 8px;">
-                    <div style="font-size: 0.9rem; color: var(--risk-low);">Density Algorithm: Stable</div>
-                    <div style="font-size: 1.5rem; font-weight: 800;">${data.average_density}% <span style="font-size: 0.8rem; font-weight: 400; color: var(--text-secondary);">Avg Density</span></div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    ${data.detections.map(d => `
-                        <div class="glass-panel" style="padding: 1rem; border-color: rgba(255,255,255,0.05);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                <span style="font-weight: 600;">${d.object_type}</span>
-                                <span class="status-pill status-high">${(d.confidence * 100).toFixed(0)}% Conf</span>
-                            </div>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Rec. Gear: ${d.recommended_equipment}</div>
-                        </div>
-                    `).join('')}
-                </div>
-                <p style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">${data.summary}</p>
-                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="window.location.href='map.html'">Sync to Global Map</button>
-                </div>
-            `;
+        async function submitReport() {
+            try {
+                const res = await API.reports.create({
+                    title: reportData.type,
+                    description: document.getElementById('description').value,
+                    latitude: parseFloat(document.getElementById('lat').value),
+                    longitude: parseFloat(document.getElementById('lon').value),
+                    severity: 'HIGH'
+                });
+                if (res.id) {
+                    alert('Intelligence Transmitted Successfully. ID: ' + res.id);
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (err) { alert('Transmission Failure'); }
         }
     </script>
 </body>
 </html>
-

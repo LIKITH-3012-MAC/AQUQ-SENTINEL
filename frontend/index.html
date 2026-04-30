@@ -3,95 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaSentinel AI | Global Ocean Intelligence OS</title>
+    <title>AquaSentinel AI | Global Ocean Intelligence Operating System</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="glass-panel" style="margin: 1rem; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 1rem; z-index: 1000;">
-        <div style="font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fas fa-microchip text-accent"></i>
-            <span>AQUA<span class="text-accent">SENTINEL</span> OS</span>
-        </div>
-        <div style="display: flex; gap: 2rem; align-items: center;">
-            <a href="#intelligence" style="text-transform: uppercase; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px;">Intelligence</a>
-            <a href="#digital-twin" style="text-transform: uppercase; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px;">Digital Twin</a>
-            <a href="login.html" class="btn btn-primary">Command Center</a>
-        </div>
-    </nav>
+    <div class="bg-grid"></div>
 
-    <header style="padding: 10rem 2rem; text-align: center; max-width: 1000px; margin: 0 auto; position: relative; z-index: 1;">
-        <div class="hologram-panel" style="display: inline-block; padding: 0.5rem 1.5rem; border-radius: 20px; font-size: 0.8rem; margin-bottom: 2rem; color: var(--accent-neon);">
-            SYSTEM STATUS: OPERATIONAL v2.5.0
-        </div>
-        <h1 style="font-size: 5rem; line-height: 1; margin-bottom: 2rem; font-weight: 800;">
-            Global Ocean <br> <span class="text-accent">Intelligence OS</span>
-        </h1>
-        <p style="font-size: 1.4rem; color: var(--text-secondary); margin-bottom: 4rem; max-width: 700px; margin-left: auto; margin-right: auto;">
-            The world's most advanced autonomous platform for marine protection. Combining satellite fusion, predictive simulations, and multi-modal AI Copilots.
-        </p>
-        <div style="display: flex; gap: 1.5rem; justify-content: center;">
-            <a href="register.html" class="btn btn-primary" style="padding: 1.2rem 3.5rem; font-size: 1.1rem;">Initialize Protocol</a>
-            <a href="map.html" class="btn" style="border: 1px solid var(--glass-border); padding: 1.2rem 3rem;">Live Global Map</a>
+    <div class="nav-container">
+        <nav class="navbar">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-microchip text-gradient" style="font-size: 1.5rem;"></i>
+                <span style="font-weight: 800; font-size: 1.1rem; letter-spacing: 1px;">AQUA<span class="text-gradient">SENTINEL</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="map.html">Map</a></li>
+                <li><a href="dashboard.html">Reports</a></li>
+                <li><a href="admin.html">AI Detect</a></li>
+            </ul>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="theme-toggle" onclick="UI.toggleTheme()">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <a href="login.html" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.8rem;">Command Base</a>
+            </div>
+        </nav>
+    </div>
+
+    <header style="padding: 12rem 2rem 6rem; text-align: center; position: relative;">
+        <div class="container">
+            <div class="glass-card hologram" style="display: inline-block; padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.75rem; margin-bottom: 2rem; border-color: var(--accent-color);">
+                <span class="text-gradient" style="font-weight: 700;">LIVE FEED: GLOBAL MARINE STATUS OK</span>
+            </div>
+            <h1 style="font-size: clamp(3rem, 8vw, 5.5rem); margin-bottom: 1.5rem;">
+                Real-Time Ocean <br> <span class="text-gradient">Intelligence OS</span>
+            </h1>
+            <p style="font-size: 1.25rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto 3.5rem;">
+                The world's first autonomous operating system designed to monitor, protect, and restore our oceans using satellite fusion and deep AI detection.
+            </p>
+            <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+                <a href="map.html" class="btn btn-primary">Explore Global Map</a>
+                <a href="admin.html" class="btn btn-outline">Report Marine Issue</a>
+            </div>
         </div>
     </header>
 
-    <section id="intelligence" class="container" style="padding: 6rem 0;">
-        <div style="text-align: center; margin-bottom: 4rem;">
-            <h2 style="font-size: 2.5rem;">Autonomous <span class="text-accent">Intelligence</span></h2>
-            <p style="color: var(--text-secondary);">Multi-source data fusion for total marine awareness.</p>
-        </div>
-        <div class="dashboard-grid">
-            <div class="glass-panel stat-card hologram-panel">
-                <i class="fas fa-satellite text-accent" style="font-size: 3rem; margin-bottom: 1.5rem;"></i>
-                <h3>Satellite Fusion</h3>
-                <p style="color: var(--text-secondary);">Real-time ingestion from NASA MODIS, VIIRS, and Copernicus Sentinel clusters.</p>
+    <section id="how-it-works" style="padding: 6rem 0;">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 5rem;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Autonomous <span class="text-gradient">Awareness</span></h2>
+                <p style="color: var(--text-secondary);">How AquaSentinel AI safeguards the marine ecosystem.</p>
             </div>
-            <div class="glass-panel stat-card hologram-panel">
-                <i class="fas fa-brain text-accent" style="font-size: 3rem; margin-bottom: 1.5rem;"></i>
-                <h3>AI Copilot</h3>
-                <p style="color: var(--text-secondary);">Next-gen Groq Llama-3 assistant with multi-lingual support (Telugu, Hindi, English).</p>
-            </div>
-            <div class="glass-panel stat-card hologram-panel">
-                <i class="fas fa-project-diagram text-accent" style="font-size: 3rem; margin-bottom: 1.5rem;"></i>
-                <h3>Digital Twin</h3>
-                <p style="color: var(--text-secondary);">Predictive ocean modeling for pollution spread and prescriptive response actions.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="digital-twin" class="container" style="padding: 6rem 0; background: rgba(0, 243, 255, 0.02);">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1200px; margin: 0 auto;">
-            <div>
-                <h2 style="font-size: 2.5rem;">Predictive <span class="text-accent">Modeling</span></h2>
-                <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">
-                    Run complex environmental simulations in our Digital Twin environment. Predict the spread of oil spills, track plastic debris flow patterns, and receive AI-prescribed action plans in seconds.
-                </p>
-                <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem;">
-                    <li><i class="fas fa-check-circle text-accent"></i> Real-time Current Dynamics</li>
-                    <li><i class="fas fa-check-circle text-accent"></i> High-Resolution Pollution Mapping</li>
-                    <li><i class="fas fa-check-circle text-accent"></i> Prescriptive Mitigation Strategies</li>
-                </ul>
-            </div>
-            <div class="hologram-panel" style="height: 400px; border-radius: 20px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-project-diagram" style="font-size: 8rem; opacity: 0.2;"></i>
-                <div style="position: absolute; bottom: 1rem; left: 1rem; font-family: monospace; font-size: 0.7rem; color: var(--accent-neon);">
-                    SIMULATION_ENGINE_CORE::VIRTUAL_OCEAN_ACTIVE
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="glass-card">
+                    <i class="fas fa-satellite text-gradient" style="font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                    <h3>Satellite Fusion</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 1rem;">
+                        Real-time data ingestion from NASA MODIS, VIIRS, and Copernicus clusters to detect thermal shifts and chlorophyll blooms.
+                    </p>
+                </div>
+                <div class="glass-card">
+                    <i class="fas fa-brain text-gradient" style="font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                    <h3>AI Debris Detection</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 1rem;">
+                        Our neural network identifies plastic clusters, oil spills, and illegal waste dumping from high-resolution imagery.
+                    </p>
+                </div>
+                <div class="glass-card">
+                    <i class="fas fa-shield-halved text-gradient" style="font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                    <h3>Local Risk Scoring</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 1rem;">
+                        Instant ecological risk assessments for any coordinate on earth, providing actionable intelligence to local authorities.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <div class="glowing-grid"></div>
-
-    <footer style="padding: 6rem 2rem; border-top: 1px solid var(--glass-border); text-align: center; background: rgba(2, 12, 27, 0.5);">
-        <div style="font-size: 1.2rem; font-weight: 800; margin-bottom: 2rem;">
-            AQUA<span class="text-accent">SENTINEL</span> OS
+    <section style="padding: 6rem 0; background: rgba(0, 243, 255, 0.02); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+                <div>
+                    <h2 style="font-size: 3rem; margin-bottom: 1.5rem;">Global <br> <span class="text-gradient">Impact Hub</span></h2>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">
+                        Every report you submit and every area you analyze contributes to a massive decentralized database for ocean restoration. Track your personal impact and mission success.
+                    </p>
+                    <a href="register.html" class="btn btn-primary">Join the Mission</a>
+                </div>
+                <div class="glass-card hologram" style="height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-color: var(--accent-color);">
+                    <div style="font-size: 4rem; font-weight: 800;" class="text-gradient">98.4%</div>
+                    <div style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; color: var(--text-secondary);">Detection Accuracy</div>
+                    <div style="margin-top: 2rem; width: 80%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                        <div style="width: 98%; height: 100%; background: var(--accent-gradient);"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p style="color: var(--text-secondary); font-size: 0.9rem; letter-spacing: 1px;">&copy; 2026 GLOBAL OCEAN INTELLIGENCE OPERATING SYSTEM | MISSION CRITICAL</p>
+    </section>
+
+    <footer style="padding: 6rem 2rem; text-align: center;">
+        <div class="container">
+            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem;">
+                AQUA<span class="text-gradient">SENTINEL</span>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;">
+                &copy; 2026 Global Ocean Intelligence OS | Mission Critical
+            </p>
+        </div>
     </footer>
 
+    <!-- AI Copilot Trigger -->
+    <div class="ai-trigger" id="ai-copilot-trigger">
+        <i class="fas fa-robot" style="font-size: 1.5rem; color: #000;"></i>
+    </div>
+
+    <!-- AI Copilot Widget -->
+    <div class="copilot-widget glass-card" id="copilot-widget" style="position: fixed; bottom: 6rem; right: 2rem; width: 400px; height: 500px; z-index: 2000; display: none; flex-direction: column; padding: 0;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
+                <i class="fas fa-robot text-gradient"></i> OS COPILOT
+            </div>
+            <i class="fas fa-times" style="cursor: pointer;" onclick="UI.toggleAICopilot()"></i>
+        </div>
+        <div id="chat-box" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 15px; font-size: 0.9rem; align-self: flex-start; max-width: 85%;">
+                Welcome Commander. How can I assist you with ocean intelligence today?
+            </div>
+        </div>
+        <div style="padding: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem;">
+            <input type="text" id="chat-input" placeholder="Type a message..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 50px; padding: 0.6rem 1.2rem; color: white;">
+            <button class="btn btn-primary" style="padding: 0.6rem 1.2rem; border-radius: 50%;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <style>
+        .copilot-widget.active { display: flex !important; }
+    </style>
+
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/theme.js"></script>
 </body>
 </html>
