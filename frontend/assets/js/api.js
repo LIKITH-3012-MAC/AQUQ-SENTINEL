@@ -44,7 +44,14 @@ const API = {
             if (!response.ok) {
                 if (response.status === 401) {
                     console.warn("Session Expired. Terminating interface.");
-                    AUTH.logout();
+                    if (typeof AUTH !== 'undefined') {
+                        AUTH.logout();
+                    } else {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('role');
+                        window.location.href = 'login.html';
+                    }
                 }
                 throw new Error(data.detail || data.message || 'Command failed');
             }
