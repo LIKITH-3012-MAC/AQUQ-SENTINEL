@@ -1,5 +1,6 @@
 import random
 from typing import Dict, Any
+from app.config import settings
 
 def search_ocean_datasets(keyword: str, start_date: str, end_date: str, lat: float, lon: float) -> Dict[str, Any]:
     """
@@ -35,7 +36,15 @@ def build_gibs_tile_url(layer: str, date: str) -> str:
 def get_chlorophyll_indicator(lat: float, lon: float, date: str) -> Dict[str, Any]:
     """
     Extract chlorophyll indicator from OB.DAAC service structure.
+    Uses NASA_OB_DAAC_JWT for authentication if available.
     """
+    headers = {}
+    if settings.NASA_OB_DAAC_JWT:
+        headers["Authorization"] = f"Bearer {settings.NASA_OB_DAAC_JWT}"
+    
+    # In a real scenario, we would make a request here
+    # response = requests.get(f"{settings.NASA_OCEAN_COLOR_BASE_URL}...", headers=headers)
+    
     val = round(random.uniform(0.1, 5.0), 2)
     return {
         "status": "mock_fallback",

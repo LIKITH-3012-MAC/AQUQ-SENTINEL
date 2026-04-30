@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | AquaSentinel AI Command Center</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div style="display: flex; min-height: 100vh;">
+        <!-- Sidebar -->
+        <aside class="glass-panel" style="width: 280px; margin: 1rem; display: flex; flex-direction: column; gap: 2rem;">
+            <div style="font-size: 1.2rem; font-weight: 800; text-align: center;">
+                <i class="fas fa-microchip text-accent"></i> COMMAND
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <a href="dashboard.html" class="btn btn-primary" style="justify-content: flex-start;"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="map.html" class="btn" style="justify-content: flex-start;"><i class="fas fa-map-location-dot"></i> Global Map</a>
+                <a href="admin.html" class="btn" style="justify-content: flex-start;"><i class="fas fa-camera"></i> AI Detector</a>
+                <a href="#" class="btn" style="justify-content: flex-start;"><i class="fas fa-bell"></i> Alerts</a>
+            </nav>
+            <div style="margin-top: auto;">
+                <button onclick="logout()" class="btn" style="width: 100%; border: 1px solid var(--risk-critical); color: var(--risk-critical);"><i class="fas fa-sign-out-alt"></i> Abort Mission</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main style="flex: 1; padding: 2rem; overflow-y: auto;">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                <div>
+                    <h2 style="margin-bottom: 0.5rem;">Intelligence <span class="text-accent">Summary</span></h2>
+                    <p style="color: var(--text-secondary);">Welcome back, <span id="user-name">Commander</span>. Data feeds are stable.</p>
+                </div>
+                <div class="glass-panel" style="padding: 0.5rem 1.5rem; display: flex; gap: 1rem; align-items: center;">
+                    <span class="status-pill status-low">Network: Secure</span>
+                    <span id="current-time" style="font-family: monospace;">19:42:01 UTC</span>
+                </div>
+            </header>
+
+            <!-- Metrics -->
+            <div class="dashboard-grid">
+                <div class="glass-panel stat-card">
+                    <span class="stat-value" id="total-reports">0</span>
+                    <span class="stat-label">Total Reports</span>
+                </div>
+                <div class="glass-panel stat-card">
+                    <span class="stat-value" id="active-alerts" style="color: var(--risk-high);">0</span>
+                    <span class="stat-label">Active Alerts</span>
+                </div>
+                <div class="glass-panel stat-card">
+                    <span class="stat-value" id="critical-risks" style="color: var(--risk-critical);">0</span>
+                    <span class="stat-label">Critical Risks</span>
+                </div>
+                <div class="glass-panel stat-card">
+                    <span class="stat-value" id="data-points">0</span>
+                    <span class="stat-label">Data Points Analyzed</span>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                <!-- Recent Reports -->
+                <div class="glass-panel">
+                    <h3>Recent <span class="text-accent">Observations</span></h3>
+                    <div id="reports-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Loading Skeleton -->
+                        <div style="height: 60px; background: rgba(255,255,255,0.05); border-radius: 8px; animation: pulse 2s infinite;"></div>
+                    </div>
+                </div>
+
+                <!-- Live Alerts -->
+                <div class="glass-panel">
+                    <h3>Live <span class="text-accent">Alerts</span></h3>
+                    <div id="alerts-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No critical alerts in your sector.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- AI Copilot Widget -->
+    <div class="copilot-widget glass-panel hologram-panel" id="copilot">
+        <div class="copilot-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 800;">
+                <i class="fas fa-robot text-accent"></i> OCEAN OS COPILOT
+            </div>
+            <button onclick="toggleCopilot()" style="background: none; border: none; color: white; cursor: pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-container" id="chat-box">
+            <div class="chat-bubble bubble-bot">
+                Hello Commander. I am your Ocean Intelligence OS. How can I assist you with marine protection today?
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Ask anything about the ocean..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()" class="btn btn-primary" style="padding: 0.5rem 1rem;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <button onclick="toggleCopilot()" class="btn btn-primary" style="position: fixed; bottom: 2rem; right: 2rem; border-radius: 50%; width: 60px; height: 60px; padding: 0; justify-content: center; z-index: 1000; box-shadow: 0 0 20px var(--accent-neon);">
+        <i class="fas fa-comment-dots" style="font-size: 1.5rem;"></i>
+    </button>
+
+    <div class="glowing-grid"></div>
+
+    <style>
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.3; }
+        }
+    </style>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        function toggleCopilot() {
+            document.getElementById('copilot').classList.toggle('active');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const box = document.getElementById('chat-box');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // User Bubble
+            box.innerHTML += `<div class="chat-bubble bubble-user">${text}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            // Bot Bubble (Loading)
+            const botId = 'bot-' + Date.now();
+            box.innerHTML += `<div class="chat-bubble bubble-bot" id="${botId}"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>`;
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                // Detect language (simple check)
+                let lang = 'en';
+                if (/[\\u0C00-\\u0C7F]/.test(text)) lang = 'te'; // Telugu
+                else if (/[\\u0900-\\u097F]/.test(text)) lang = 'hi'; // Hindi
+
+                const res = await API.chatbot.query(text, lang);
+                document.getElementById(botId).innerHTML = res.response;
+            } catch (err) {
+                document.getElementById(botId).innerHTML = "Operational error in Intelligence OS.";
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function loadDashboard() {
+            try {
+                const summary = await API.dashboard.summary();
+                document.getElementById('total-reports').textContent = summary.total_reports;
+                document.getElementById('active-alerts').textContent = summary.active_alerts;
+                document.getElementById('critical-risks').textContent = summary.critical_risks;
+                document.getElementById('data-points').textContent = summary.data_points_analyzed;
+
+                const reportsList = document.getElementById('reports-list');
+                reportsList.innerHTML = summary.recent_reports.map(r => `
+                    <div class="glass-panel" style="padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-color: rgba(255,255,255,0.05);">
+                        <div>
+                            <div style="font-weight: 600;">${r.title}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(r.created_at).toLocaleString()}</div>
+                        </div>
+                        <span class="status-pill status-${r.severity.toLowerCase()}">${r.severity}</span>
+                    </div>
+                `).join('');
+                
+                if (summary.recent_reports.length === 0) {
+                    reportsList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No reports logged yet.</p>';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function logout() {
+            AUTH.logout();
+        }
+
+        setInterval(() => {
+            document.getElementById('current-time').textContent = new Date().toISOString().split('T')[1].split('.')[0] + ' UTC';
+        }, 1000);
+
+        loadDashboard();
+    </script>
+</body>
+</html>
+

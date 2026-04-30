@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Debris Detector | AquaSentinel AI</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div style="display: flex; min-height: 100vh;">
+        <!-- Sidebar -->
+        <aside class="glass-panel" style="width: 280px; margin: 1rem; display: flex; flex-direction: column; gap: 2rem;">
+            <div style="font-size: 1.2rem; font-weight: 800; text-align: center;">
+                <i class="fas fa-microchip text-accent"></i> COMMAND
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <a href="dashboard.html" class="btn" style="justify-content: flex-start;"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="map.html" class="btn" style="justify-content: flex-start;"><i class="fas fa-map-location-dot"></i> Global Map</a>
+                <a href="admin.html" class="btn btn-primary" style="justify-content: flex-start;"><i class="fas fa-camera"></i> AI Detector</a>
+            </nav>
+            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.5rem;">
+                <a href="dashboard.html" class="btn" style="width: 100%; border: 1px solid var(--accent-cyan); color: var(--accent-cyan);">Back to Base</a>
+                <button onclick="logout()" class="btn" style="width: 100%; border: 1px solid var(--risk-critical); color: var(--risk-critical);"><i class="fas fa-sign-out-alt"></i> Abort</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main style="flex: 1; padding: 2rem; overflow-y: auto;">
+            <header style="margin-bottom: 3rem;">
+                <h2>AI <span class="text-accent">Debris</span> Detection</h2>
+                <p style="color: var(--text-secondary);">Upload marine imagery for neural network analysis and risk assessment.</p>
+            </header>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <!-- Upload Section -->
+                <div class="glass-panel" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; border-style: dashed; border-width: 2px;">
+                    <i class="fas fa-cloud-upload-alt text-accent" style="font-size: 4rem; margin-bottom: 2rem;"></i>
+                    <h3>Deploy Imagery</h3>
+                    <p style="color: var(--text-secondary); text-align: center; margin-bottom: 2rem;">Supports JPG, PNG, TIFF from Satellite or Drone feeds.</p>
+                    <input type="file" id="image-upload" style="display: none;" onchange="handleUpload(event)">
+                    <button onclick="document.getElementById('image-upload').click()" class="btn btn-primary">Select Feed File</button>
+                </div>
+
+                <!-- Results Section -->
+                <div class="glass-panel" id="results-panel" style="display: none;">
+                    <h3>Analysis <span class="text-accent">Results</span></h3>
+                    <div id="detection-summary" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Results injected here -->
+                    </div>
+                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="calculateRisk()">Generate Risk Intelligence</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        function logout() {
+            AUTH.logout();
+        }
+        let currentReportId = null;
+
+        async function handleUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // In a real app, we'd upload to the server first
+            // For this demo, we simulate a report creation then detection
+            const resultsPanel = document.getElementById('results-panel');
+            resultsPanel.style.display = 'block';
+            resultsPanel.innerHTML = '<h3>Processing <span class="text-accent">Neural Feed...</span></h3><div style="height: 200px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-spinner fa-spin text-accent" style="font-size: 3rem;"></i></div>';
+
+            setTimeout(async () => {
+                // Mock detection data for immediate feedback
+                const mockResults = {
+                    detections: [
+                        { object_type: "Ghost Net", confidence: 0.94, density_score: 72, recommended_equipment: "Mechanical Claw" },
+                        { object_type: "Plastic Cluster", confidence: 0.88, density_score: 45, recommended_equipment: "Surface Skimmer" }
+                    ],
+                    average_density: 58.5,
+                    summary: "High concentration of synthetic polymer waste detected."
+                };
+
+                displayResults(mockResults);
+            }, 2000);
+        }
+
+        function displayResults(data) {
+            const panel = document.getElementById('results-panel');
+            panel.innerHTML = `
+                <h3>Analysis <span class="text-accent">Results</span></h3>
+                <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(0,255,157,0.05); border-radius: 8px;">
+                    <div style="font-size: 0.9rem; color: var(--risk-low);">Density Algorithm: Stable</div>
+                    <div style="font-size: 1.5rem; font-weight: 800;">${data.average_density}% <span style="font-size: 0.8rem; font-weight: 400; color: var(--text-secondary);">Avg Density</span></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    ${data.detections.map(d => `
+                        <div class="glass-panel" style="padding: 1rem; border-color: rgba(255,255,255,0.05);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-weight: 600;">${d.object_type}</span>
+                                <span class="status-pill status-high">${(d.confidence * 100).toFixed(0)}% Conf</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Rec. Gear: ${d.recommended_equipment}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <p style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">${data.summary}</p>
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="window.location.href='map.html'">Sync to Global Map</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+

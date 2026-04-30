@@ -1,90 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register | AquaSentinel AI</title>
-  <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/glass-ui.css">
-  <link rel="stylesheet" href="assets/css/responsive.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | AquaSentinel AI Command Center</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
-<body class="auth-page">
-  <div class="container auth-container">
-    <div class="glass-panel auth-panel">
-      <div class="auth-header">
-        <div class="navbar-brand">
-          <i class="fas fa-microchip text-accent"></i>
-          <span>AquaSentinel <span class="text-accent">AI</span></span>
+<body style="display: flex; align-items: center; justify-content: center;">
+    <div class="glass-panel" style="width: 100%; max-width: 450px; padding: 3rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fas fa-user-plus text-accent" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <h2>Initialize <span class="text-accent">Protocol</span></h2>
+            <p style="color: var(--text-secondary);">Register your intelligence sector</p>
         </div>
-        <h2>Join the Mission</h2>
-        <p class="text-muted">Create an account to start monitoring marine ecosystems.</p>
-      </div>
-      
-      <form id="registerForm" class="auth-form">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" id="name" class="glass-input" placeholder="John Doe" required>
+
+        <form id="register-form" style="display: flex; flex-direction: column; gap: 1.2rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Officer Name</label>
+                <input type="text" id="name" required class="glass-panel" style="background: rgba(255,255,255,0.05); color: white; padding: 0.8rem;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Official Email</label>
+                <input type="email" id="email" required class="glass-panel" style="background: rgba(255,255,255,0.05); color: white; padding: 0.8rem;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <label style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Encryption Key</label>
+                <input type="password" id="password" required class="glass-panel" style="background: rgba(255,255,255,0.05); color: white; padding: 0.8rem;">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Deploy Identity</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 2rem; font-size: 0.9rem;">
+            <span style="color: var(--text-secondary);">Already enlisted?</span>
+            <a href="login.html" class="text-accent">Return to Command</a>
         </div>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" id="email" class="glass-input" placeholder="name@example.com" required>
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="password" class="glass-input" placeholder="••••••••" required>
-        </div>
-        <div id="errorMessage" class="error-text"></div>
-        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
-      </form>
-      
-      <div class="auth-footer">
-        <p>Already have an account? <a href="login.html">Login here</a></p>
-      </div>
     </div>
-  </div>
 
-  <style>
-    .auth-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .auth-container { max-width: 450px; width: 100%; }
-    .auth-panel { padding: 3rem; text-align: center; }
-    .auth-header { margin-bottom: 2rem; }
-    .auth-header h2 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
-    .auth-form { text-align: left; }
-    .form-group { margin-bottom: 1.5rem; }
-    .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
-    .btn-block { width: 100%; margin-top: 1rem; }
-    .auth-footer { margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem; font-size: 0.9rem; }
-    .error-text { color: var(--risk-critical); font-size: 0.85rem; margin-bottom: 1rem; display: none; }
-  </style>
+    <script src="assets/js/api.js"></script>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.textContent = 'Deploying...';
+            btn.disabled = true;
 
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/api.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script>
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const errorDiv = document.getElementById('errorMessage');
-      
-      errorDiv.style.display = 'none';
-      
-      const response = await API.post('/api/auth/register', { name, email, password });
-      
-      if (response.ok) {
-        // Automatically login
-        const loginResult = await AUTH.login(email, password);
-        if (loginResult.success) {
-          window.location.href = 'user-dashboard.html';
-        }
-      } else {
-        const data = await response.json();
-        errorDiv.textContent = data.detail || 'Registration failed. Please try again.';
-        errorDiv.style.display = 'block';
-      }
-    });
-  </script>
+            try {
+                const res = await API.auth.register({
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value
+                });
+
+                if (res.id) {
+                    alert('Identity Deployed Successfully. Redirecting to Login.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert('Deployment Failed: ' + (res.detail || 'Unknown Error'));
+                }
+            } catch (err) {
+                alert('Connection Error');
+            } finally {
+                btn.textContent = 'Deploy Identity';
+                btn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>

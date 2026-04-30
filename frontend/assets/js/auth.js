@@ -1,33 +1,8 @@
 const AUTH = {
-  async login(email, password) {
-    const formData = new FormData();
-    formData.append('username', email);
-    formData.append('password', password);
-
-    const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem('token', data.access_token);
-      
-      // Get user role
-      const userResponse = await API.get('/api/auth/me');
-      if (userResponse.ok) {
-        const user = await userResponse.json();
-        localStorage.setItem('user', JSON.stringify(user));
-        return { success: true, user };
-      }
-    }
-    return { success: false };
-  },
-
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
   },
 
   isLoggedIn() {
@@ -40,15 +15,18 @@ const AUTH = {
   },
 
   checkAuth() {
-    if (!this.isLoggedIn() && !window.location.pathname.includes('login.html') && !window.location.pathname.includes('register.html') && window.location.pathname !== '/' && !window.location.pathname.includes('index.html')) {
-      window.location.href = '/login.html';
+    const path = window.location.pathname;
+    const isAuthPage = path.includes('login.html') || path.includes('register.html') || path === '/' || path.includes('index.html');
+    
+    if (!this.isLoggedIn() && !isAuthPage) {
+      window.location.href = 'login.html';
     }
   },
 
   checkAdmin() {
     const user = this.getUser();
     if (!user || user.role !== 'admin') {
-      window.location.href = '/user-dashboard.html';
+      window.location.href = 'dashboard.html';
     }
   }
 };
