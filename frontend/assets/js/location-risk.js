@@ -1,61 +1,92 @@
-document.getElementById('searchForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const lat = parseFloat(document.getElementById('lat').value);
-  const lon = parseFloat(document.getElementById('lon').value);
-  const date = new Date().toISOString().split('T')[0];
+/**
+ * AquaSentinel AI - Risk Engine Interaction Controller
+ */
 
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('results').style.display = 'none';
+const RiskEngine = {
+    async useMyLocation() {
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your neural interface.");
+            return;
+        }
 
-  try {
-    // 1. Fetch NASA/Wave Data
-    const nasaRes = await API.get(`/api/nasa/ocean-summary?lat=${lat}&lon=${lon}&date=${date}`);
-    const waveRes = await API.get(`/api/waves/conditions?lat=${lat}&lon=${lon}&date=${date}`);
-    
-    const nasaData = await nasaRes.json();
-    const waveData = await waveRes.json();
+        document.getElementById('risk-loader').style.display = 'block';
+        document.getElementById('risk-result').style.display = 'none';
 
-    // 2. Evaluate Risk
-    const riskRes = await API.post('/api/risk/evaluate', {
-      latitude: lat,
-      longitude: lon,
-      debris_density_score: 45, // Mock initial debris
-      chlorophyll_value: nasaData.chlorophyll_value,
-      algae_indicator: nasaData.algae_indicator,
-      wave_height_m: waveData.wave_height_m,
-      wave_direction_deg: waveData.wave_direction_deg,
-      sensitive_zone_distance_km: 15.0,
-      ecosystem_degradation_score: 30
-    });
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                document.getElementById('location-search').value = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                await this.analyze(latitude, longitude);
+            },
+            (error) => {
+                document.getElementById('risk-loader').style.display = 'none';
+                alert("Location access denied. Please enter coordinates manually.");
+            }
+        );
+    },
 
-    const riskData = await riskRes.json();
+    async analyze(manualLat = null, manualLon = null) {
+        let lat, lon;
 
-    // 3. Display Results
-    document.getElementById('chlValue').textContent = nasaData.chlorophyll_value;
-    document.getElementById('waveHeight').textContent = waveData.wave_height_m;
-    
-    const badge = document.getElementById('riskBadge');
-    badge.textContent = riskData.risk_level;
-    badge.className = `badge badge-${riskData.risk_level.toLowerCase()}`;
-    
-    const progress = document.getElementById('riskProgress');
-    progress.style.width = `${riskData.risk_score}%`;
-    if (riskData.risk_level === 'CRITICAL') progress.style.backgroundColor = 'var(--risk-critical)';
-    else if (riskData.risk_level === 'HIGH') progress.style.backgroundColor = 'var(--risk-high)';
-    else if (riskData.risk_level === 'MEDIUM') progress.style.backgroundColor = 'var(--risk-medium)';
-    else progress.style.backgroundColor = 'var(--risk-low)';
+        if (manualLat !== null) {
+            lat = manualLat;
+            lon = manualLon;
+        } else {
+            const input = document.getElementById('location-search').value;
+            if (!input) {
+                alert("Please enter target coordinates.");
+                return;
+            }
+            
+            const parts = input.split(',').map(p => p.trim());
+            if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) {
+                alert("Format error. Please use: latitude, longitude");
+                return;
+            }
+            lat = parseFloat(parts[0]);
+            lon = parseFloat(parts[1]);
+        }
 
-    document.getElementById('recommendation').textContent = riskData.recommendation;
-    
-    const reasonsList = document.getElementById('reasons');
-    reasonsList.innerHTML = JSON.parse(riskData.reasons_json).map(r => `<li>${r}</li>`).join('');
+        document.getElementById('risk-loader').style.display = 'block';
+        document.getElementById('risk-result').style.display = 'none';
 
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('results').style.display = 'grid';
+        try {
+            const response = await API.request('/risk/calculate', 'POST', {
+                latitude: lat,
+                longitude: lon
+            });
 
-  } catch (err) {
-    console.error(err);
-    alert('Failed to analyze location. Please try again.');
-    document.getElementById('loading').style.display = 'none';
-  }
-});
+            this.displayResult(response);
+        } catch (err) {
+            console.error("Risk Analysis Failure:", err);
+            alert("Neural link failed: " + err.message);
+        } finally {
+            document.getElementById('risk-loader').style.display = 'none';
+        }
+    },
+
+    displayResult(data) {
+        const resultDiv = document.getElementById('risk-result');
+        const scoreVal = document.getElementById('risk-score-value');
+        const levelTag = document.getElementById('risk-level-tag');
+        const explanation = document.getElementById('risk-explanation');
+        const action = document.getElementById('risk-action');
+
+        scoreVal.textContent = Math.round(data.score);
+        levelTag.textContent = data.level;
+        levelTag.className = 'status-tag ' + (data.level === 'CRITICAL' || data.level === 'HIGH' ? 'critical' : 'success');
+        explanation.textContent = data.explanation;
+        action.textContent = data.recommended_action;
+
+        // Factors
+        if (data.factors) {
+            document.getElementById('factor-debris').textContent = (data.factors.debris || 0).toFixed(1) + '%';
+            document.getElementById('factor-thermal').textContent = (data.factors.bio_thermal || 0).toFixed(1) + '%';
+            document.getElementById('factor-bio').textContent = (data.factors.community_reports || 0).toFixed(1) + '%';
+            document.getElementById('factor-dynamic').textContent = (data.factors.dynamic_conditions || 0).toFixed(1) + '%';
+        }
+
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+};

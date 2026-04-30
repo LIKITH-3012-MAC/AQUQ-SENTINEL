@@ -63,9 +63,7 @@ const AUTH = {
 
     redirectByRole(role) {
         if (role === 'admin') {
-            window.location.href = 'dashboard.html'; // Or admin.html if dedicated
-        } else if (role === 'researcher') {
-            window.location.href = 'dashboard.html';
+            window.location.href = 'admin.html';
         } else {
             window.location.href = 'dashboard.html';
         }

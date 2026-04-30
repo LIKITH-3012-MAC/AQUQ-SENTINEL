@@ -20,6 +20,13 @@ async def chat_with_copilot(
     intent = rag_service.get_intent(req.message)
 
     # 2. Build Prompt
+    # Logic for Regional Support
+    regional_context = ""
+    if req.location and any(loc in req.location.lower() for loc in ["andhra", "telangana"]):
+        regional_context = "The user is in Andhra Pradesh/Telangana. You MUST respond primarily in Telugu. Also provide a brief English summary at the end."
+    elif req.location and "tamil" in req.location.lower():
+        regional_context = "The user is in Tamil Nadu. You MUST respond primarily in Tamil. Also provide a brief English summary at the end."
+    
     system_prompt = f"""
     You are the AquaSentinel AI Copilot. A specialized marine intelligence assistant.
     Tone: Professional, Action-oriented, Futuristic.
@@ -27,10 +34,9 @@ async def chat_with_copilot(
     GUIDELINES:
     - Use provided project context to explain AquaSentinel features.
     - Do NOT hallucinate live satellite data. If not in context, say it's currently unavailable.
-    - Respond in {req.language} as the primary language.
-    - If language is not English, provide a short English summary at the end.
+    - {regional_context if regional_context else f"Respond in {req.language} as the primary language."}
     - Guide users to tactical actions (Map, Reports, etc.) based on context.
-    - Role: {req.role}. Adjust technicality accordingly.
+    - Current User Role: {req.role}. Adjust technicality accordingly.
     
     PROJECT CONTEXT:
     {context_text}

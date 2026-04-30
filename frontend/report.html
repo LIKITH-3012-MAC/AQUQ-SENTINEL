@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Reporting | AquaSentinel AI</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+        .step-indicator::before {
+            content: "";
+            position: absolute;
+            top: 50%; left: 0; right: 0; height: 2px;
+            background: var(--border-color);
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+        .step {
+            width: 40px; height: 40px;
+            background: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            font-weight: 800;
+            transition: var(--transition);
+        }
+        .step.active {
+            background: var(--accent-gradient);
+            border-color: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .report-step { display: none; }
+        .report-step.active { display: block; animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .issue-card {
+            cursor: pointer;
+            text-align: center;
+            padding: 2rem;
+            transition: var(--transition);
+        }
+        .issue-card.selected {
+            border-color: var(--accent-color);
+            background: rgba(0, 243, 255, 0.05);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <div class="nav-container">
+        <nav class="navbar">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-microchip text-gradient" style="font-size: 1.5rem;"></i>
+                <span style="font-weight: 800; font-size: 1.1rem; letter-spacing: 1px;">AQUA<span class="text-gradient">SENTINEL</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="map.html">Map</a></li>
+                <li><a href="location-risk.html">Risk Engine</a></li>
+                <li><a href="report.html" class="active">Report Issue</a></li>
+            </ul>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="theme-toggle" onclick="UI.toggleTheme()">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <a href="dashboard.html" class="btn btn-outline" style="padding: 0.5rem 1.5rem; font-size: 0.8rem;">Command Base</a>
+            </div>
+        </nav>
+    </div>
+
+    <main style="padding: 10rem 2rem 6rem;">
+        <div class="container" style="max-width: 800px;">
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <h1 style="font-size: 3rem; margin-bottom: 1rem;">Tactical <span class="text-gradient">Issue Report</span></h1>
+                <p style="color: var(--text-secondary);">Follow the 6-step protocol to report a marine environmental threat.</p>
+            </div>
+
+            <div class="step-indicator">
+                <div class="step active" data-step="1">1</div>
+                <div class="step" data-step="2">2</div>
+                <div class="step" data-step="3">3</div>
+                <div class="step" data-step="4">4</div>
+                <div class="step" data-step="5">5</div>
+                <div class="step" data-step="6">6</div>
+            </div>
+
+            <div id="report-form-container">
+                <!-- Step 1: Issue Type -->
+                <div class="report-step active" id="step-1">
+                    <h2 style="margin-bottom: 2rem; text-align: center;">Choose <span class="text-gradient">Issue Type</span></h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem;">
+                        <div class="glass-card issue-card" onclick="ReportFlow.selectType('plastic_waste', this)">
+                            <i class="fas fa-bottle-water text-gradient" style="font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                            <h4>Plastic Waste</h4>
+                        </div>
+                        <div class="glass-card issue-card" onclick="ReportFlow.selectType('oil_spill', this)">
+                            <i class="fas fa-droplet text-gradient" style="font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                            <h4>Oil Spill</h4>
+                        </div>
+                        <div class="glass-card issue-card" onclick="ReportFlow.selectType('algae_bloom', this)">
+                            <i class="fas fa-seedling text-gradient" style="font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                            <h4>Algae Bloom</h4>
+                        </div>
+                        <div class="glass-card issue-card" onclick="ReportFlow.selectType('dead_fish', this)">
+                            <i class="fas fa-fish-fins text-gradient" style="font-size: 2.5rem; margin-bottom: 1.5rem;"></i>
+                            <h4>Dead Fish</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Location -->
+                <div class="report-step" id="step-2">
+                    <h2 style="margin-bottom: 2rem; text-align: center;">Identify <span class="text-gradient">Location</span></h2>
+                    <div class="glass-card">
+                        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                            <button class="btn btn-outline" style="flex: 1;" onclick="ReportFlow.getLocation()"><i class="fas fa-location-crosshairs"></i> Use GPS</button>
+                            <button class="btn btn-outline" style="flex: 1;"><i class="fas fa-map-pin"></i> Pick on Map</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Latitude</label>
+                                <input type="text" id="rep-lat" placeholder="0.0000" style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.8rem; color: white;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Longitude</label>
+                                <input type="text" id="rep-lon" placeholder="0.0000" style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.8rem; color: white;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Media -->
+                <div class="report-step" id="step-3">
+                    <h2 style="margin-bottom: 2rem; text-align: center;">Upload <span class="text-gradient">Evidence</span></h2>
+                    <div class="glass-card" style="text-align: center; border-style: dashed; border-width: 2px;">
+                        <i class="fas fa-cloud-arrow-up text-gradient" style="font-size: 3rem; margin-bottom: 1.5rem;"></i>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Drag and drop or click to upload marine imagery.</p>
+                        <input type="file" id="rep-file" style="display: none;" onchange="ReportFlow.handleFileUpload(this)">
+                        <button class="btn btn-primary" onclick="document.getElementById('rep-file').click()">Select Image</button>
+                        <div id="file-preview" style="margin-top: 1.5rem; display: none;">
+                            <img id="preview-img" src="" style="max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Description -->
+                <div class="report-step" id="step-4">
+                    <h2 style="margin-bottom: 2rem; text-align: center;">Add <span class="text-gradient">Description</span></h2>
+                    <div class="glass-card">
+                        <textarea id="rep-desc" placeholder="Describe the environmental threat in detail..." style="width: 100%; height: 150px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.2rem; color: white; resize: none; font-size: 1rem;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 5: AI Pre-Analysis -->
+                <div class="report-step" id="step-5">
+                    <h2 style="margin-bottom: 2rem; text-align: center;">AI <span class="text-gradient">Pre-Analysis</span></h2>
+                    <div id="ai-loading" style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-brain fa-spin text-gradient" style="font-size: 3rem; margin-bottom: 1.5rem;"></i>
+                        <p style="color: var(--text-secondary);">Analyzing imagery and location parameters...</p>
+                    </div>
+                    <div id="ai-result" style="display: none;">
+                        <div class="glass-card" style="border-color: var(--accent-color);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                                <div>
+                                    <h3 id="ai-category">Detecting...</h3>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary);">Neural Verification Confidence: <span id="ai-conf">92%</span></p>
+                                </div>
+                                <div id="ai-urgency" class="status-tag critical">CRITICAL</div>
+                            </div>
+                            <p id="ai-impact" style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                                Based on current anomalies, this issue poses a high threat to local biodiversity and coastal health.
+                            </p>
+                            <div id="ai-suggestion" style="background: rgba(0, 243, 255, 0.05); padding: 1rem; border-radius: 10px; font-size: 0.85rem;">
+                                Recommended Action: Immediate notification of regional NGO cleanup teams.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Confirmation -->
+                <div class="report-step" id="step-6">
+                    <h2 style="margin-bottom: 2rem; text-align: center;">Confirm & <span class="text-gradient">Submit</span></h2>
+                    <div class="glass-card">
+                        <div id="summary-content">
+                            <!-- Populated via JS -->
+                        </div>
+                        <button onclick="ReportFlow.submit()" class="btn btn-primary" style="width: 100%; margin-top: 2rem; font-size: 1.1rem; padding: 1.2rem;">Initialize Transmission</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 3rem;">
+                    <button id="prev-btn" class="btn btn-outline" style="visibility: hidden;" onclick="ReportFlow.prev()">Previous Step</button>
+                    <button id="next-btn" class="btn btn-primary" onclick="ReportFlow.next()">Next Step <i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/report-flow.js"></script>
+</body>
+</html>

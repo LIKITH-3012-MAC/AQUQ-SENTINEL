@@ -160,6 +160,43 @@ class UploadedImage(Base):
     status = Column(String, default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+class SatelliteObservation(Base):
+    __tablename__ = "satellite_observations"
+    id = Column(Integer, primary_key=True, index=True)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    parameter = Column(String, nullable=False) # e.g., 'chlorophyll', 'sst'
+    value = Column(Float, nullable=False)
+    unit = Column(String, nullable=True)
+    source = Column(String, default="NASA")
+    captured_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class WeatherObservation(Base):
+    __tablename__ = "weather_observations"
+    id = Column(Integer, primary_key=True, index=True)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    temp = Column(Float, nullable=True)
+    wind_speed = Column(Float, nullable=True)
+    humidity = Column(Float, nullable=True)
+    pressure = Column(Float, nullable=True)
+    description = Column(String, nullable=True)
+    source = Column(String, default="OpenWeather")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class OceanCurrentObservation(Base):
+    __tablename__ = "ocean_current_observations"
+    id = Column(Integer, primary_key=True, index=True)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    u_velocity = Column(Float, nullable=True)
+    v_velocity = Column(Float, nullable=True)
+    speed = Column(Float, nullable=True)
+    direction = Column(Float, nullable=True)
+    source = Column(String, default="Copernicus")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 class ChatLog(Base): # Legacy, keeping for compatibility if needed, but we use ChatbotMessage now
     __tablename__ = "chat_logs"
     id = Column(Integer, primary_key=True, index=True)

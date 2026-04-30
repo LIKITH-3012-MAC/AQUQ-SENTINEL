@@ -1,112 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Location Intelligence | AquaSentinel AI</title>
-  <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/glass-ui.css">
-  <link rel="stylesheet" href="assets/css/responsive.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marine Risk Engine | AquaSentinel AI</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <nav class="navbar">
-    <div class="navbar-brand">
-      <i class="fas fa-microchip text-accent"></i>
-      <span>AquaSentinel <span class="text-accent">AI</span></span>
-    </div>
-    <div class="navbar-nav">
-      <a href="dashboard.html">Dashboard</a>
-      <a href="map.html">Marine Map</a>
-      <a href="admin.html">AI Detection</a>
-      <button onclick="AUTH.logout()" class="btn btn-outline btn-sm">Logout</button>
-    </div>
-  </nav>
+    <div class="bg-grid"></div>
 
-  <main class="container py-4">
-    <div class="glass-panel mb-4">
-      <h2>Marine Intelligence Search</h2>
-      <p class="text-muted">Enter coordinates to analyze ocean health and debris risk.</p>
-      
-      <form id="searchForm" class="search-form mt-2">
-        <div class="search-inputs">
-          <div class="form-group">
-            <label>Latitude</label>
-            <input type="number" step="any" id="lat" class="glass-input" placeholder="e.g. 12.97" required>
-          </div>
-          <div class="form-group">
-            <label>Longitude</label>
-            <input type="number" step="any" id="lon" class="glass-input" placeholder="e.g. 77.59" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Analyze Location</button>
-        </div>
-      </form>
+    <div class="nav-container">
+        <nav class="navbar">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-microchip text-gradient" style="font-size: 1.5rem;"></i>
+                <span style="font-weight: 800; font-size: 1.1rem; letter-spacing: 1px;">AQUA<span class="text-gradient">SENTINEL</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="map.html">Map</a></li>
+                <li><a href="location-risk.html" class="active">Risk Engine</a></li>
+                <li><a href="report.html">Report Issue</a></li>
+            </ul>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="theme-toggle" onclick="UI.toggleTheme()">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <a href="login.html" class="btn btn-primary" id="nav-auth-btn" style="padding: 0.5rem 1.5rem; font-size: 0.8rem;">Command Base</a>
+            </div>
+        </nav>
     </div>
 
-    <div id="loading" class="text-center py-4" style="display: none;">
-      <i class="fas fa-circle-notch fa-spin fa-3x text-accent"></i>
-      <p class="mt-1">Fetching NASA Intelligence...</p>
-    </div>
+    <main style="padding: 10rem 2rem 6rem;">
+        <div class="container">
+            <div style="max-width: 900px; margin: 0 auto;">
+                <div style="text-align: center; margin-bottom: 4rem;">
+                    <h1 style="font-size: 3.5rem; margin-bottom: 1rem;">Regional <span class="text-gradient">Risk Intelligence</span></h1>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">Analyze ecological pressure and threat levels for any coordinate.</p>
+                </div>
 
-    <div id="results" class="results-grid" style="display: none;">
-      <section class="risk-card glass-panel">
-        <div class="risk-header">
-          <h3>Ecosystem Risk Assessment</h3>
-          <div id="riskBadge" class="badge">--</div>
-        </div>
-        <div class="risk-meter mt-2">
-          <div id="riskProgress" class="risk-progress" style="width: 0%"></div>
-        </div>
-        <p id="recommendation" class="mt-2"></p>
-        
-        <ul id="reasons" class="reasons-list mt-2"></ul>
-      </section>
+                <div class="glass-card" style="margin-bottom: 3rem;">
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <input type="text" id="location-search" placeholder="Enter coordinates or location name..." style="flex: 1; min-width: 300px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.5rem; color: white; font-size: 1rem; outline: none; transition: var(--transition);">
+                        <button onclick="RiskEngine.useMyLocation()" class="btn btn-outline" style="border-radius: 12px;"><i class="fas fa-location-crosshairs"></i> My Location</button>
+                        <button onclick="RiskEngine.analyze()" class="btn btn-primary" style="border-radius: 12px;"><i class="fas fa-search"></i> Analyze Threat</button>
+                    </div>
+                </div>
 
-      <section class="data-cards">
-        <div class="glass-card">
-          <h4>Ocean Color Index</h4>
-          <div class="data-value">
-            <span id="chlValue">--</span> <small>mg/m³</small>
-          </div>
-          <p class="text-muted">NASA OB.DAAC Chlorophyll-a</p>
-        </div>
-        <div class="glass-card mt-2">
-          <h4>Wave Dynamics</h4>
-          <div class="data-value">
-            <span id="waveHeight">--</span> <small>m</small>
-          </div>
-          <p id="waveInfo" class="text-muted">Copernicus Marine Wave Height</p>
-        </div>
-      </section>
-    </div>
-  </main>
+                <div id="risk-result" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+                        <div class="glass-card" style="text-align: center; display: flex; flex-direction: column; justify-content: center; border-color: var(--accent-color);">
+                            <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); margin-bottom: 1rem;">Risk Score</div>
+                            <div id="risk-score-value" style="font-size: 5rem; font-weight: 900;" class="text-gradient">0</div>
+                            <div id="risk-level-tag" class="status-tag" style="margin-top: 1rem; display: inline-block;">ANALYZING...</div>
+                        </div>
+                        <div class="glass-card">
+                            <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-circle-info text-gradient"></i> Threat Assessment</h3>
+                            <p id="risk-explanation" style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.8;">
+                                Loading regional data from NASA clusters and Copernicus marine streams...
+                            </p>
+                            <h3 style="margin-bottom: 1rem; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Recommended Action</h3>
+                            <div id="risk-action" style="background: rgba(0, 243, 255, 0.05); border-left: 4px solid var(--accent-color); padding: 1.2rem; border-radius: 0 12px 12px 0; font-size: 0.95rem;">
+                                Analyzing local parameters...
+                            </div>
+                        </div>
+                    </div>
 
-  <style>
-    .py-4 { padding-top: 4rem; padding-bottom: 4rem; }
-    .mb-4 { margin-bottom: 4rem; }
-    .search-inputs { display: flex; gap: 1.5rem; align-items: flex-end; }
-    .search-form .form-group { flex: 1; }
-    
-    .results-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem; }
-    .risk-header { display: flex; justify-content: space-between; align-items: center; }
-    .risk-meter { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
-    .risk-progress { height: 100%; transition: width 1s ease; background: var(--risk-low); }
-    
-    .data-value { font-size: 2.5rem; font-weight: 700; color: var(--accent-cyan); margin: 0.5rem 0; }
-    .reasons-list { list-style: none; }
-    .reasons-list li { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-    .reasons-list li::before { content: "•"; color: var(--accent-cyan); font-weight: bold; }
-    
-    @media (max-width: 768px) {
-      .search-inputs { flex-direction: column; align-items: stretch; }
-      .results-grid { grid-template-columns: 1fr; }
-    }
-  </style>
+                    <div style="margin-top: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div class="glass-card" style="padding: 1.5rem;">
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Debris Density</div>
+                            <div id="factor-debris" style="font-size: 1.5rem; font-weight: 700;">--</div>
+                        </div>
+                        <div class="glass-card" style="padding: 1.5rem;">
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Thermal Stress</div>
+                            <div id="factor-thermal" style="font-size: 1.5rem; font-weight: 700;">--</div>
+                        </div>
+                        <div class="glass-card" style="padding: 1.5rem;">
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Bio Stress</div>
+                            <div id="factor-bio" style="font-size: 1.5rem; font-weight: 700;">--</div>
+                        </div>
+                        <div class="glass-card" style="padding: 1.5rem;">
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">Dynamic Load</div>
+                            <div id="factor-dynamic" style="font-size: 1.5rem; font-weight: 700;">--</div>
+                        </div>
+                    </div>
+                </div>
 
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/api.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/location-risk.js"></script>
+                <div id="risk-loader" style="display: none; text-align: center; padding: 4rem;">
+                    <i class="fas fa-spinner fa-spin text-gradient" style="font-size: 3rem; margin-bottom: 1.5rem;"></i>
+                    <p style="color: var(--text-secondary); letter-spacing: 2px;">SYNCING WITH INTELLIGENCE GRID...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/location-risk.js"></script>
+    <script>
+        // Auth Check
+        if (localStorage.getItem('token')) {
+            const btn = document.getElementById('nav-auth-btn');
+            if (btn) { btn.href = 'dashboard.html'; btn.textContent = 'Dashboard'; }
+        }
+    </script>
 </body>
 </html>

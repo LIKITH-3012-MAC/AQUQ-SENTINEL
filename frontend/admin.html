@@ -3,26 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactical Reporting | AquaSentinel AI</title>
+    <title>Admin Control Tower | AquaSentinel AI</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        .step-container { display: none; }
-        .step-container.active { display: flex; flex-direction: column; gap: 1.5rem; }
-        .step-indicator {
-            display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 2rem;
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
         }
-        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-color); transition: var(--transition); }
-        .dot.active { background: var(--accent-color); box-shadow: var(--glow); }
-        
-        .issue-type-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
-        .type-card {
-            padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 16px; cursor: pointer; text-align: center; transition: var(--transition);
+        .menu-item {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
         }
-        .type-card:hover, .type-card.selected { border-color: var(--accent-color); background: rgba(0, 243, 255, 0.05); transform: translateY(-3px); }
+        .menu-item:hover, .menu-item.active {
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--accent-color);
+        }
+        .stat-card {
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-card h2 {
+            font-size: 2.5rem;
+            margin-top: 0.5rem;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .admin-table th, .admin-table td {
+            padding: 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+        .admin-table th {
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -34,230 +71,101 @@
                 <i class="fas fa-microchip text-gradient" style="font-size: 1.5rem;"></i>
                 <span style="font-weight: 800; font-size: 1.1rem; letter-spacing: 1px;">AQUA<span class="text-gradient">SENTINEL</span></span>
             </a>
-            <ul class="nav-links">
-                <li><a href="map.html">Map</a></li>
-                <li><a href="dashboard.html">Reports</a></li>
-                <li><a href="admin.html" class="active">AI Detect</a></li>
-            </ul>
             <div style="display: flex; gap: 1rem; align-items: center;">
-                <div class="theme-toggle" onclick="UI.toggleTheme()">
-                    <i class="fas fa-sun"></i>
-                </div>
-                <a href="dashboard.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.8rem;">Base Base</a>
+                <div class="status-tag success">Admin System Secure</div>
+                <button onclick="AUTH.logout()" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);">Terminate</button>
             </div>
         </nav>
     </div>
 
-    <main class="container" style="padding-top: 8rem; padding-bottom: 6rem; display: flex; justify-content: center;">
-        <div class="glass-card hologram" style="width: 100%; max-width: 650px; border-color: var(--accent-color);">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">New Marine <span class="text-gradient">Observation</span></h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">Follow protocol to report oceanic anomalies.</p>
-            </div>
-
-            <div class="step-indicator">
-                <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-            </div>
-
-            <!-- Step 1: Issue Type -->
-            <div class="step-container active" id="step-1">
-                <h3 style="font-size: 1.1rem;">Step 1: Select <span class="text-gradient">Anomaly Type</span></h3>
-                <div class="issue-type-grid">
-                    <div class="type-card" onclick="selectType(this, 'Plastic Waste')">
-                        <i class="fas fa-bottle-water text-gradient" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                        <div style="font-size: 0.8rem; font-weight: 600;">Plastic</div>
-                    </div>
-                    <div class="type-card" onclick="selectType(this, 'Oil Spill')">
-                        <i class="fas fa-droplet text-gradient" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                        <div style="font-size: 0.8rem; font-weight: 600;">Oil Spill</div>
-                    </div>
-                    <div class="type-card" onclick="selectType(this, 'Dead Marine Life')">
-                        <i class="fas fa-fish text-gradient" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                        <div style="font-size: 0.8rem; font-weight: 600;">Fauna Loss</div>
-                    </div>
-                    <div class="type-card" onclick="selectType(this, 'Algae Bloom')">
-                        <i class="fas fa-leaf text-gradient" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                        <div style="font-size: 0.8rem; font-weight: 600;">Algae</div>
-                    </div>
+    <main class="container" style="padding-top: 8rem; padding-bottom: 6rem;">
+        <div class="admin-grid">
+            <aside>
+                <div class="glass-card sidebar-menu">
+                    <a href="#" class="menu-item active"><i class="fas fa-chart-line"></i> Operations</a>
+                    <a href="#" class="menu-item"><i class="fas fa-file-invoice"></i> Reports Queue</a>
+                    <a href="#" class="menu-item"><i class="fas fa-users"></i> Authorities</a>
+                    <a href="#" class="menu-item"><i class="fas fa-satellite"></i> NASA Monitor</a>
+                    <a href="#" class="menu-item"><i class="fas fa-shield-halved"></i> Risk Settings</a>
+                    <a href="#" class="menu-item"><i class="fas fa-clock-rotate-left"></i> Audit Logs</a>
                 </div>
-                <button class="btn btn-primary" onclick="nextStep(2)" style="align-self: flex-end;">Next Phase</button>
-            </div>
+            </aside>
 
-            <!-- Step 2: Location -->
-            <div class="step-container" id="step-2">
-                <h3 style="font-size: 1.1rem;">Step 2: Coordinate <span class="text-gradient">Triangulation</span></h3>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="getGPS()">
-                        <i class="fas fa-location-crosshairs"></i> Use Current GPS
-                    </button>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <input type="number" id="lat" placeholder="Latitude" class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white;">
-                        <input type="number" id="lon" placeholder="Longitude" class="glass-card" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white;">
+            <section style="display: flex; flex-direction: column; gap: 2rem;">
+                <!-- Header Stats -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+                    <div class="glass-card stat-card">
+                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase;">Total Reports</label>
+                        <h2 id="total-reports">--</h2>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase;">Active Alerts</label>
+                        <h2 id="active-alerts" class="text-gradient">--</h2>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase;">Critical Risks</label>
+                        <h2 id="critical-risks" style="color: var(--danger);">--</h2>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase;">System Health</label>
+                        <h2 style="color: var(--success);">99%</h2>
                     </div>
                 </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-outline" onclick="nextStep(1)">Back</button>
-                    <button class="btn btn-primary" onclick="nextStep(3)">Next Phase</button>
-                </div>
-            </div>
 
-            <!-- Step 3: Photo -->
-            <div class="step-container" id="step-3">
-                <h3 style="font-size: 1.1rem;">Step 3: Imagery <span class="text-gradient">Acquisition</span></h3>
-                <div style="border: 2px dashed var(--border-color); padding: 3rem; border-radius: 24px; text-align: center; cursor: pointer;" onclick="document.getElementById('img-upload').click()">
-                    <i class="fas fa-cloud-arrow-up text-gradient" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <p style="color: var(--text-secondary);">Upload Satellite or Ground imagery</p>
-                    <input type="file" id="img-upload" style="display: none;">
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-outline" onclick="nextStep(2)">Back</button>
-                    <button class="btn btn-primary" onclick="nextStep(4)">Next Phase</button>
-                </div>
-            </div>
-
-            <!-- Step 4: Description -->
-            <div class="step-container" id="step-4">
-                <h3 style="font-size: 1.1rem;">Step 4: Observation <span class="text-gradient">Briefing</span></h3>
-                <textarea id="description" placeholder="Provide detailed operational intelligence..." class="glass-card" style="padding: 1rem; background: rgba(255,255,255,0.03); color: white; width: 100%; min-height: 150px;"></textarea>
-                <div style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-outline" onclick="nextStep(3)">Back</button>
-                    <button class="btn btn-primary" onclick="runAIPreCheck()">Run AI Pre-Check</button>
-                </div>
-            </div>
-
-            <!-- Step 5: AI Pre-Check -->
-            <div class="step-container" id="step-5">
-                <h3 style="font-size: 1.1rem;">Step 5: Neural <span class="text-gradient">Analysis</span></h3>
-                <div id="ai-feedback" class="glass-card" style="background: rgba(0, 243, 255, 0.05); border-color: var(--accent-color);">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <i class="fas fa-spinner fa-spin text-gradient" style="font-size: 1.5rem;"></i>
-                        <span>AI is analyzing report parameters...</span>
+                <!-- Recent Activity Table -->
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 2rem;">Live <span class="text-gradient">Intelligence Feed</span></h3>
+                    <div style="overflow-x: auto;">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Incident ID</th>
+                                    <th>Type</th>
+                                    <th>Location</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-activity-feed">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-outline" onclick="nextStep(4)">Back</button>
-                    <button class="btn btn-primary" id="confirm-btn" style="display: none;" onclick="nextStep(6)">Final Review</button>
-                </div>
-            </div>
-
-            <!-- Step 6: Confirm -->
-            <div class="step-container" id="step-6">
-                <h3 style="font-size: 1.1rem;">Step 6: Protocol <span class="text-gradient">Execution</span></h3>
-                <div class="glass-card" style="font-size: 0.9rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div><strong class="text-gradient">Type:</strong> <span id="summary-type">---</span></div>
-                    <div><strong class="text-gradient">Location:</strong> <span id="summary-loc">---</span></div>
-                    <div><strong class="text-gradient">Urgency:</strong> <span id="summary-urgency" style="color: var(--danger);">CRITICAL</span></div>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-outline" onclick="nextStep(5)">Back</button>
-                    <button class="btn btn-primary" onclick="submitReport()">Transmit Report</button>
-                </div>
-            </div>
-
+            </section>
         </div>
     </main>
 
-    <!-- Core Intelligence Scripts -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/theme.js"></script>
-
     <script>
         AUTH.requireAuth();
-        
-        let reportData = { type: '', lat: 0, lon: 0, description: '' };
+        if (localStorage.getItem('role') !== 'admin') window.location.href = 'dashboard.html';
 
-        function selectType(el, type) {
-            document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-            reportData.type = type;
-        }
-
-        function nextStep(step) {
-            document.querySelectorAll('.step-container').forEach(s => s.classList.remove('active'));
-            document.getElementById(`step-${step}`).classList.add('active');
-            
-            document.querySelectorAll('.dot').forEach((d, i) => {
-                if (i < step) d.classList.add('active');
-                else d.classList.remove('active');
-            });
-
-            if (step === 6) {
-                document.getElementById('summary-type').textContent = reportData.type;
-                document.getElementById('summary-loc').textContent = `${document.getElementById('lat').value}, ${document.getElementById('lon').value}`;
-            }
-        }
-
-        function getGPS() {
-            navigator.geolocation.getCurrentPosition(pos => {
-                document.getElementById('lat').value = pos.coords.latitude;
-                document.getElementById('lon').value = pos.coords.longitude;
-            });
-        }
-
-        function runAIPreCheck() {
-            nextStep(5);
-            setTimeout(() => {
-                document.getElementById('ai-feedback').innerHTML = `
-                    <div style="color: var(--success); font-weight: 700; margin-bottom: 0.5rem;">ANALYSIS COMPLETE</div>
-                    <p style="font-size: 0.85rem;">Detected Category: <span class="text-gradient">${reportData.type}</span></p>
-                    <p style="font-size: 0.85rem;">Urgency Score: <span style="color: var(--danger);">8.5/10</span></p>
-                    <p style="font-size: 0.85rem; margin-top: 1rem; color: var(--text-secondary);">Recommendation: Dispatch immediate surface skimmer drones.</p>
-                `;
-                document.getElementById('confirm-btn').style.display = 'inline-flex';
-            }, 2000);
-        }
-
-        // Handle File Upload
-        document.getElementById('img-upload').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const uploadBox = document.querySelector('#step-3 div');
-            const originalContent = uploadBox.innerHTML;
-            uploadBox.innerHTML = '<i class="fas fa-spinner fa-spin text-gradient" style="font-size: 3rem; margin-bottom: 1rem;"></i><p>Uploading to Command Base...</p>';
-
+        async function loadAdminData() {
             try {
-                const data = await API.uploadImage(file);
-                reportData.image_url = data.filename; // Store filename/url
-                uploadBox.innerHTML = `
-                    <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 1rem; color: var(--success);"></i>
-                    <p style="color: var(--success);">Imagery Securely Uploaded: ${file.name}</p>
-                `;
-            } catch (err) {
-                alert('Upload Failed');
-                uploadBox.innerHTML = originalContent;
-            }
-        });
+                const summary = await API.dashboard.summary();
+                document.getElementById('total-reports').textContent = summary.total_reports;
+                document.getElementById('active-alerts').textContent = summary.active_alerts;
+                document.getElementById('critical-risks').textContent = summary.critical_risks;
 
-        async function submitReport() {
-            const btn = document.querySelector('#step-6 .btn-primary');
-            const originalText = btn.textContent;
-            btn.textContent = 'Transmitting...';
-            btn.disabled = true;
-
-            try {
-                const res = await API.reports.create({
-                    title: `Anomaly: ${reportData.type}`,
-                    report_type: reportData.type,
-                    description: document.getElementById('description').value,
-                    latitude: parseFloat(document.getElementById('lat').value),
-                    longitude: parseFloat(document.getElementById('lon').value),
-                    severity: 'HIGH',
-                    image_url: reportData.image_url || null
-                });
-                if (res && res.id) {
-                    alert('Intelligence Transmitted Successfully. ID: ' + res.id);
-                    window.location.href = 'dashboard.html';
-                }
-            } catch (err) { 
-                alert('Transmission Failure: ' + err.message); 
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
+                const feed = document.getElementById('admin-activity-feed');
+                feed.innerHTML = summary.recent_reports.map(r => `
+                    <tr>
+                        <td>#${r.id.toString().padStart(4, '0')}</td>
+                        <td><strong>${r.report_type.replace('_', ' ').toUpperCase()}</strong></td>
+                        <td>${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}</td>
+                        <td><span class="status-tag ${r.severity === 'Critical' ? 'critical' : ''}">${r.severity}</span></td>
+                        <td><span class="status-tag">${r.status.toUpperCase()}</span></td>
+                        <td><button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button></td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
         }
+        loadAdminData();
     </script>
 </body>
 </html>

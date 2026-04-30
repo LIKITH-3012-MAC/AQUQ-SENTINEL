@@ -150,3 +150,38 @@ class DashboardSummary(BaseModel):
 class PreferenceUpdate(BaseModel):
     theme: Optional[str] = None
     language: Optional[str] = None
+
+class SatelliteObservationResponse(BaseModel):
+    id: int
+    latitude: float
+    longitude: float
+    parameter: str
+    value: float
+    unit: Optional[str]
+    source: str
+    captured_at: datetime
+    class Config:
+        from_attributes = True
+
+class WeatherObservationResponse(BaseModel):
+    id: int
+    latitude: float
+    longitude: float
+    temp: Optional[float]
+    wind_speed: Optional[float]
+    description: Optional[str]
+    source: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class OceanCurrentObservationResponse(BaseModel):
+    id: int
+    latitude: float
+    longitude: float
+    speed: Optional[float]
+    direction: Optional[float]
+    source: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
