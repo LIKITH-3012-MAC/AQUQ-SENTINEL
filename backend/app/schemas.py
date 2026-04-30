@@ -1,9 +1,10 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List, Any
 from datetime import datetime
+from uuid import UUID
 
 class UserBase(BaseModel):
-    name: str
+    full_name: str
     email: EmailStr
     role: Optional[str] = "user"
     theme: Optional[str] = "dark"
@@ -17,25 +18,30 @@ class UserLogin(BaseModel):
     password: str
 
 class UserResponse(BaseModel):
-    id: int
-    name: str
+    id: UUID
+    full_name: str
     email: EmailStr
     role: str
     theme: Optional[str]
     language: Optional[str]
-    status: str
-    last_login: Optional[datetime]
+    is_active: bool
+    is_verified: bool
+    last_login_at: Optional[datetime]
     created_at: datetime
     class Config:
         from_attributes = True
 
 class Token(BaseModel):
+    success: bool = True
+    user: UserResponse
     access_token: str
-    token_type: str
+    token_type: str = "bearer"
+    role: str
 
 class TokenData(BaseModel):
     email: Optional[str] = None
     role: Optional[str] = None
+    user_id: Optional[UUID] = None
 
 class MarineReportBase(BaseModel):
     title: str
@@ -51,7 +57,7 @@ class MarineReportCreate(MarineReportBase):
 
 class MarineReportResponse(MarineReportBase):
     id: int
-    user_id: int
+    user_id: UUID
     status: str
     created_at: datetime
     updated_at: Optional[datetime]
@@ -98,6 +104,41 @@ class AlertResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ChatbotRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = "default"
+    language: Optional[str] = "English"
+    location: Optional[str] = "Global"
+    role: Optional[str] = "user"
+
+class ChatbotMessageResponse(BaseModel):
+    success: bool
+    answer: str
+    intent: str
+    language: str
+    sources: List[str]
+    session_id: str
+    model: str
+    error: Optional[str] = None
+
+class ChatbotSessionResponse(BaseModel):
+    id: UUID
+    session_id: str
+    title: Optional[str]
+    language: str
+    location: Optional[str]
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class ChatbotHistoryResponse(BaseModel):
+    id: UUID
+    user_message: str
+    bot_response: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
 class DashboardSummary(BaseModel):
     total_reports: int
     active_alerts: int
@@ -105,3 +146,7 @@ class DashboardSummary(BaseModel):
     data_points_analyzed: int
     recent_reports: List[MarineReportResponse]
     risk_heatmap: List[RiskScoreResponse]
+
+class PreferenceUpdate(BaseModel):
+    theme: Optional[str] = None
+    language: Optional[str] = None

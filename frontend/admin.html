@@ -157,9 +157,15 @@
         </div>
     </main>
 
+    <!-- Core Intelligence Scripts -->
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
     <script src="assets/js/theme.js"></script>
+
     <script>
+        AUTH.requireAuth();
+        
         let reportData = { type: '', lat: 0, lon: 0, description: '' };
 
         function selectType(el, type) {
@@ -203,20 +209,54 @@
             }, 2000);
         }
 
+        // Handle File Upload
+        document.getElementById('img-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const uploadBox = document.querySelector('#step-3 div');
+            const originalContent = uploadBox.innerHTML;
+            uploadBox.innerHTML = '<i class="fas fa-spinner fa-spin text-gradient" style="font-size: 3rem; margin-bottom: 1rem;"></i><p>Uploading to Command Base...</p>';
+
+            try {
+                const data = await API.uploadImage(file);
+                reportData.image_url = data.filename; // Store filename/url
+                uploadBox.innerHTML = `
+                    <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 1rem; color: var(--success);"></i>
+                    <p style="color: var(--success);">Imagery Securely Uploaded: ${file.name}</p>
+                `;
+            } catch (err) {
+                alert('Upload Failed');
+                uploadBox.innerHTML = originalContent;
+            }
+        });
+
         async function submitReport() {
+            const btn = document.querySelector('#step-6 .btn-primary');
+            const originalText = btn.textContent;
+            btn.textContent = 'Transmitting...';
+            btn.disabled = true;
+
             try {
                 const res = await API.reports.create({
-                    title: reportData.type,
+                    title: `Anomaly: ${reportData.type}`,
+                    report_type: reportData.type,
                     description: document.getElementById('description').value,
                     latitude: parseFloat(document.getElementById('lat').value),
                     longitude: parseFloat(document.getElementById('lon').value),
-                    severity: 'HIGH'
+                    severity: 'HIGH',
+                    image_url: reportData.image_url || null
                 });
-                if (res.id) {
+                if (res && res.id) {
                     alert('Intelligence Transmitted Successfully. ID: ' + res.id);
                     window.location.href = 'dashboard.html';
                 }
-            } catch (err) { alert('Transmission Failure'); }
+            } catch (err) { 
+                alert('Transmission Failure: ' + err.message); 
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         }
     </script>
 </body>

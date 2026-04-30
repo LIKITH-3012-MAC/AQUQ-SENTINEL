@@ -1,84 +1,77 @@
 /**
- * AquaSentinel AI - Centralized API Service
- * Handles all futuristic command center data orchestration
+ * AquaSentinel AI - Standardized API Interaction Layer
  */
 
-const API_BASE_URL = "https://aquq-sentinel.onrender.com";
-
 const API = {
-    async request(endpoint, method = "GET", data = null) {
-        const token = localStorage.getItem("token");
+    async request(endpoint, method = 'GET', body = null) {
+        const token = localStorage.getItem('token');
+        const url = endpoint.startsWith('http') ? endpoint : `${CONFIG.API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/api' + endpoint}`;
+        
         const headers = {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
 
         const options = {
             method,
-            headers,
+            headers
         };
-        if (data) options.body = JSON.stringify(data);
+
+        if (body) {
+            options.body = JSON.stringify(body);
+        }
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-            if (response.status === 401) {
-                localStorage.removeItem("token");
-                window.location.href = "login.html";
-                return;
+            const response = await fetch(url, options);
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    console.warn("Session Expired. Terminating interface.");
+                    AUTH.logout();
+                }
+                throw new Error(data.detail || 'Command failed');
             }
-            return await response.json();
-        } catch (error) {
-            console.error(`API Error [${endpoint}]:`, error);
-            throw error;
+
+            return data;
+        } catch (err) {
+            console.error(`API Request Error [${endpoint}]:`, err);
+            throw err;
         }
     },
 
+    // Resource Specific Methods
     auth: {
-        login: (credentials) => API.request("/auth/login", "POST", credentials),
-        register: (data) => API.request("/auth/register", "POST", data),
-        me: () => API.request("/auth/me"),
-    },
-
-    dashboard: {
-        summary: () => API.request("/dashboard/summary"),
-        health: () => API.request("/dashboard/health"),
+        register: (data) => API.request('/auth/register', 'POST', data),
+        login: (data) => API.request('/auth/login', 'POST', data),
+        me: () => API.request('/auth/me', 'GET'),
+        logout: () => API.request('/auth/logout', 'POST'),
+        updatePrefs: (data) => API.request('/auth/preferences', 'PATCH', data)
     },
 
     reports: {
-        create: (data) => API.request("/reports/create", "POST", data),
-        list: () => API.request("/reports"),
-        updateStatus: (id, status) => API.request(`/reports/${id}/status`, "PATCH", { status }),
-        delete: (id) => API.request(`/reports/${id}`, "DELETE"),
+        list: () => API.request('/reports'),
+        create: (data) => API.request('/reports', 'POST', data),
+        get: (id) => API.request(`/reports/${id}`)
     },
 
-    satellite: {
-        data: (lat, lon, param) => API.request(`/satellite/nasa?lat=${lat}&lon=${lon}&parameter=${param}`),
-        layers: () => API.request("/satellite/layers"),
-    },
-
-    weather: {
-        marine: (lat, lon) => API.request(`/weather/marine?lat=${lat}&lon=${lon}`),
-    },
-
-    ocean: {
-        copernicus: (lat, lon) => API.request(`/ocean/copernicus?lat=${lat}&lon=${lon}`),
-    },
-
-    risk: {
-        calculate: (data) => API.request("/risk/calculate", "POST", data),
-        history: () => API.request("/risk/history"),
-    },
-
-    debris: {
-        detect: (reportId, imagePath) => API.request("/debris/detect", "POST", { report_id: reportId, image_path: imagePath }),
+    dashboard: {
+        summary: () => API.request('/dashboard/summary')
     },
 
     chatbot: {
-        query: (msg, lang) => API.request(`/chatbot/query?message=${encodeURIComponent(msg)}&language=${lang}`, "POST"),
-        history: () => API.request("/chatbot/history"),
-    },
-
-    simulation: {
-        pollution: (lat, lon, type, vol) => API.request(`/simulation/pollution?lat=${lat}&lon=${lon}&spill_type=${type}&volume=${vol}`, "POST"),
+        query: (data) => API.request('/chatbot/message', 'POST', {
+            message: data.message,
+            session_id: data.session_id || 'default',
+            language: data.language || 'English',
+            location: data.location || 'Global',
+            role: localStorage.getItem('role') || 'user'
+        }),
+        history: (sessionId) => API.request(`/chatbot/history?session_id=${sessionId}`),
+        sessions: () => API.request('/chatbot/sessions')
     }
 };

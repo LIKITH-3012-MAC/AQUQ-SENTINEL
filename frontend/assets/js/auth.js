@@ -1,37 +1,89 @@
+/**
+ * AquaSentinel AI - Authentication Controller
+ */
+
 const AUTH = {
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = 'login.html';
-  },
+    async login(email, password) {
+        try {
+            const data = await API.auth.login({ email, password });
+            if (data.success) {
+                this.setSession(data);
+                this.redirectByRole(data.role);
+                return data;
+            }
+        } catch (err) {
+            throw err;
+        }
+    },
 
-  isLoggedIn() {
-    return !!localStorage.getItem('token');
-  },
+    async register(userData) {
+        try {
+            const data = await API.auth.register(userData);
+            if (data.success) {
+                this.setSession(data);
+                this.redirectByRole(data.role);
+                return data;
+            }
+        } catch (err) {
+            throw err;
+        }
+    },
 
-  getUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  },
+    setSession(data) {
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('role', data.role);
+    },
 
-  checkAuth() {
-    const path = window.location.pathname;
-    const isAuthPage = path.includes('login.html') || path.includes('register.html') || path === '/' || path.includes('index.html');
-    
-    if (!this.isLoggedIn() && !isAuthPage) {
-      window.location.href = 'login.html';
+    logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('role');
+        window.location.href = 'login.html';
+    },
+
+    getCurrentUser() {
+        const user = localStorage.getItem('user');
+        return user ? JSON.parse(user) : null;
+    },
+
+    getToken() {
+        return localStorage.getItem('token');
+    },
+
+    isAuthenticated() {
+        return !!this.getToken();
+    },
+
+    requireAuth() {
+        if (!this.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+    },
+
+    redirectByRole(role) {
+        if (role === 'admin') {
+            window.location.href = 'dashboard.html'; // Or admin.html if dedicated
+        } else if (role === 'researcher') {
+            window.location.href = 'dashboard.html';
+        } else {
+            window.location.href = 'dashboard.html';
+        }
+    },
+
+    checkAuthState() {
+        const path = window.location.pathname;
+        const publicPages = ['/', '/index.html', '/login.html', '/register.html'];
+        
+        const isPublic = publicPages.some(p => path.endsWith(p));
+        
+        if (!this.isAuthenticated() && !isPublic) {
+            this.logout();
+        } else if (this.isAuthenticated() && (path.endsWith('login.html') || path.endsWith('register.html'))) {
+            this.redirectByRole(localStorage.getItem('role'));
+        }
     }
-  },
-
-  checkAdmin() {
-    const user = this.getUser();
-    if (!user || user.role !== 'admin') {
-      window.location.href = 'dashboard.html';
-    }
-  }
 };
 
-// Auto check auth on load
-document.addEventListener('DOMContentLoaded', () => {
-  AUTH.checkAuth();
-});
+// Initialize auth check
+document.addEventListener('DOMContentLoaded', () => AUTH.checkAuthState());

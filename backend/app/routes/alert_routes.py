@@ -11,19 +11,18 @@ def get_all_alerts(db: Session = Depends(database.get_db), admin_user: models.Us
 
 @router.get("/user", response_model=List[schemas.AlertResponse])
 def get_user_alerts(db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
-    # Users see alerts linked to their assessments
-    return db.query(models.Alert).join(models.RiskAssessment).filter(models.RiskAssessment.user_id == current_user.id).order_by(models.Alert.created_at.desc()).all()
+    # Simple global active alerts for dashboard
+    return db.query(models.Alert).filter(models.Alert.status == "active").order_by(models.Alert.created_at.desc()).all()
 
 @router.post("/manual")
 def create_manual_alert(data: dict, db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):
     db_alert = models.Alert(
         title=data.get("title"),
         message=data.get("message"),
-        risk_level=data.get("risk_level"),
+        severity=data.get("severity", data.get("risk_level", "Medium")),
         latitude=data.get("latitude"),
         longitude=data.get("longitude"),
-        status="active",
-        verified_by_admin=True
+        status="active"
     )
     db.add(db_alert)
     db.commit()

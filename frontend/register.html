@@ -50,37 +50,31 @@
         </div>
     </div>
 
+    <!-- Core Intelligence Scripts -->
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
     <script src="assets/js/theme.js"></script>
+
     <script>
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
             const originalText = btn.textContent;
-            btn.textContent = 'Deploying...';
+            btn.textContent = 'Establishing Identity...';
             btn.disabled = true;
 
+            const userData = {
+                full_name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                role: 'user'
+            };
+
             try {
-                const name = document.getElementById('name').value;
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-
-                const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
-
-                const data = await res.json();
-                if (data.id) {
-                    alert('Identity Deployed. Initialize Session to Continue.');
-                    window.location.href = 'login.html';
-                } else {
-                    alert('Registration Failed: ' + (data.detail || 'Protocol Error'));
-                }
+                await AUTH.register(userData);
             } catch (err) {
-                alert('Connection to Command Base Lost');
-            } finally {
+                alert('Intelligence Registration Failed: ' + err.message);
                 btn.textContent = originalText;
                 btn.disabled = false;
             }

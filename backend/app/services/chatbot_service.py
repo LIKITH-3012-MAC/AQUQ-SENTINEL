@@ -8,7 +8,7 @@ class OceanCopilot:
     def __init__(self):
         self.api_key = settings.GROQ_API_KEY
         self.api_url = "https://api.groq.com/openai/v1/chat/completions"
-        self.model = "llama3-70b-8192"
+        self.model = "llama-3.3-70b-versatile"
 
     def get_system_prompt(self, user_role="user", language="en"):
         # Role-based tone adjustment
@@ -55,7 +55,15 @@ class OceanCopilot:
         }
 
         try:
+            print(f"Chatbot Query: {message} | Role: {user_role} | Lang: {language}")
+            print(f"Using API Key: {self.api_key[:10]}...")
+            
             response = requests.post(self.api_url, headers=headers, json=payload, timeout=20)
+            
+            if response.status_code != 200:
+                print(f"Groq API Error: {response.status_code} - {response.text}")
+                return f"Intelligence OS Error: {response.status_code}"
+                
             data = response.json()
             reply = data["choices"][0]["message"]["content"]
             
@@ -71,6 +79,7 @@ class OceanCopilot:
             
             return reply
         except Exception as e:
+            print(f"Chatbot Exception: {str(e)}")
             return f"Error connecting to Ocean Intelligence OS: {str(e)}"
 
 copilot = OceanCopilot()
