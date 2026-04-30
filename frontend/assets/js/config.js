@@ -4,7 +4,7 @@
 
 const CONFIG = {
     // API_BASE_URL: "https://aquq-sentinel.onrender.com", // Production
-    API_BASE_URL: "http://localhost:8000", // Development
+    API_BASE_URL: "http://127.0.0.1:8000", // Development
     VERSION: "4.0.0-PROD",
     SYSTEM_NAME: "AquaSentinel Intelligence OS"
 };
