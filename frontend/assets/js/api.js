@@ -3,7 +3,7 @@
  * Handles all futuristic command center data orchestration
  */
 
-const API_BASE_URL = "https://aquasentinel-backend.onrender.com";
+const API_BASE_URL = "https://aquq-sentinel.onrender.com";
 
 const API = {
     async request(endpoint, method = "GET", data = null) {
