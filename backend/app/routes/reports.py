@@ -55,7 +55,7 @@ def get_reports(
 @router.patch("/{id}/status", response_model=schemas.MarineReportResponse)
 def update_report_status(
     id: int,
-    status: str,
+    status_update: schemas.ReportStatusUpdate,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
@@ -69,7 +69,7 @@ def update_report_status(
     if not db_report:
         raise HTTPException(status_code=404, detail="Report not found")
         
-    db_report.status = status
+    db_report.status = status_update.status
     db.commit()
     db.refresh(db_report)
     
@@ -78,7 +78,7 @@ def update_report_status(
         admin_id=current_user.id,
         action_type="update_report_status",
         target_id=id,
-        details=f"Status changed to {status}"
+        details=f"Status changed to {status_update.status}"
     )
     db.add(action)
     db.commit()

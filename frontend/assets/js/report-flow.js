@@ -29,17 +29,39 @@ const ReportFlow = {
         });
     },
 
-    handleFileUpload(input) {
+    async handleFileUpload(input) {
         const file = input.files[0];
         if (!file) return;
         
+        // Show local preview
         const reader = new FileReader();
         reader.onload = (e) => {
             document.getElementById('file-preview').style.display = 'block';
             document.getElementById('preview-img').src = e.target.result;
-            this.data.imageUrl = 'assets/img/mock-upload.jpg'; // Mock URL for now
         };
         reader.readAsDataURL(file);
+
+        // Actual upload to Intelligence OS
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${CONFIG.API_BASE_URL}/api/images/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const data = await response.json();
+            if (response.ok) {
+                this.data.imageUrl = data.filename;
+                UI.showToast("Evidence transmitted successfully.", "success");
+            } else {
+                throw new Error(data.detail || "Upload failed");
+            }
+        } catch (err) {
+            UI.showToast("Telemetry failure: " + err.message, "error");
+        }
     },
 
     next() {

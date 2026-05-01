@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional, Any
 from .. import schemas, models, auth, database
 from ..services.groq_service import groq_service
@@ -69,7 +70,22 @@ async def chat_with_copilot(
             "error": ai_resp["error"]
         }
 
-    # 4. Save to Database
+    # 4. Save to Database (Upsert Session + Message)
+    session = db.query(models.ChatbotSession).filter(models.ChatbotSession.session_id == req.session_id).first()
+    if not session:
+        session = models.ChatbotSession(
+            user_id=current_user.id if current_user else None,
+            session_id=req.session_id,
+            title=req.message[:50] + "...",
+            language=req.language,
+            location=req.location
+        )
+        db.add(session)
+    else:
+        session.updated_at = func.now()
+        if not session.user_id and current_user:
+            session.user_id = current_user.id
+
     msg_log = models.ChatbotMessage(
         user_id=current_user.id if current_user else None,
         session_id=req.session_id,

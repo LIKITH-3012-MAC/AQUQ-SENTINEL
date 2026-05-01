@@ -147,6 +147,16 @@
         AUTH.requireAuth();
         if (localStorage.getItem('role') !== 'admin') window.location.href = 'dashboard.html';
 
+        async function verifyReport(id) {
+            try {
+                await API.request(`/reports/${id}/status`, 'PATCH', { status: 'verified' });
+                UI.showToast(`Incident #${id} verified.`, 'success');
+                loadAdminData();
+            } catch (err) {
+                UI.showToast("Verification failed: " + err.message, 'error');
+            }
+        }
+
         async function loadAdminData() {
             try {
                 const summary = await API.dashboard.summary();
@@ -162,7 +172,9 @@
                         <td>${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}</td>
                         <td><span class="status-tag ${r.severity === 'Critical' ? 'critical' : ''}">${r.severity}</span></td>
                         <td><span class="status-tag">${r.status.toUpperCase()}</span></td>
-                        <td><button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button></td>
+                        <td>
+                            ${r.status === 'pending' ? `<button onclick="verifyReport(${r.id})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button>` : `<i class="fas fa-check-circle text-gradient"></i>`}
+                        </td>
                     </tr>
                 `).join('');
             } catch (err) { console.error(err); }

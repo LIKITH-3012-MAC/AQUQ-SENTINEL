@@ -33,7 +33,7 @@ def fetch_nasa_data(db: Session, lat: float, lon: float, parameter: str):
         parameter=parameter,
         value=val,
         unit=unit,
-        observation_time=datetime.now()
+        captured_at=datetime.now()
     )
     
     db.add(obs)

@@ -78,6 +78,9 @@ class MarineReportBase(BaseModel):
 class MarineReportCreate(MarineReportBase):
     pass
 
+class ReportStatusUpdate(BaseModel):
+    status: str
+
 class MarineReportResponse(MarineReportBase):
     id: int
     user_id: UUID

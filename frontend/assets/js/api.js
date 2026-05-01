@@ -89,7 +89,7 @@ const API = {
 
     reports: {
         list: () => API.request('/reports'),
-        create: (data) => API.request('/reports', 'POST', data),
+        create: (data) => API.request('/reports/create', 'POST', data),
         get: (id) => API.request(`/reports/${id}`)
     },
 
