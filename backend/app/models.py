@@ -113,6 +113,7 @@ class Alert(Base):
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     status = Column(String, default="active")
+    verified_by_admin = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class AdminAction(Base):
@@ -219,4 +220,13 @@ class ChatLog(Base): # Legacy, keeping for compatibility if needed, but we use C
     response = Column(Text, nullable=False)
     language = Column(String, nullable=False)
     context = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Simulation(Base):
+    __tablename__ = "simulations"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    simulation_type = Column(String, nullable=False)
+    parameters = Column(JSON, nullable=True)
+    results = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

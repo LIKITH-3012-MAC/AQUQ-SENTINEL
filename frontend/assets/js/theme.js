@@ -53,13 +53,33 @@ const UI = {
         });
     },
 
+    showToast(message, type = 'info') {
+        // Remove existing toast if any
+        const existing = document.getElementById('ui-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'ui-toast';
+        toast.textContent = message;
+        const colors = {
+            success: { bg: 'rgba(0, 255, 136, 0.15)', border: 'rgba(0, 255, 136, 0.3)', text: '#00ff88' },
+            error: { bg: 'rgba(255, 0, 85, 0.15)', border: 'rgba(255, 0, 85, 0.3)', text: '#ff0055' },
+            info: { bg: 'rgba(0, 243, 255, 0.15)', border: 'rgba(0, 243, 255, 0.3)', text: '#00f3ff' }
+        };
+        const c = colors[type] || colors.info;
+        toast.style.cssText = `position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);padding:1rem 2rem;border-radius:12px;font-size:0.9rem;z-index:9999;background:${c.bg};border:1px solid ${c.border};color:${c.text};font-family:inherit;animation:fadeIn 0.3s ease-out;max-width:90%;text-align:center;`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    },
+
 
 
     toggleAICopilot() {
         const widget = document.getElementById('copilot-widget');
         if (widget) {
-            widget.classList.toggle('active');
-            if (widget.classList.contains('active')) {
+            const isVisible = widget.style.display === 'flex';
+            widget.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) {
                 document.getElementById('chat-input').focus();
                 this.loadChatHistory();
                 this.renderSuggestionChips();

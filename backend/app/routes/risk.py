@@ -40,8 +40,10 @@ def calculate_risk(
     # Audit log
     audit = models.AuditLog(
         user_id=current_user.id,
-        event_type="risk_calculation",
-        details={"lat": req.latitude, "lon": req.longitude, "score": risk_entry.score}
+        action="risk_calculation",
+        entity_type="risk_score",
+        entity_id=str(risk_entry.id),
+        action_metadata={"lat": req.latitude, "lon": req.longitude, "score": risk_entry.score}
     )
     db.add(audit)
     db.commit()

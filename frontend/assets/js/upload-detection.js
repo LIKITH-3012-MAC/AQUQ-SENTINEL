@@ -1,109 +1,77 @@
-document.getElementById('imageInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+/**
+ * AquaSentinel AI - Image Upload & AI Detection Controller
+ * Uses the standardized API layer from api.js
+ */
 
-  const uploadArea = document.getElementById('uploadArea');
-  const processingArea = document.getElementById('processingArea');
-  const progressBar = document.getElementById('progressBar');
-  
-  uploadArea.style.display = 'none';
-  processingArea.style.display = 'block';
+const imageInput = document.getElementById('imageInput');
+if (imageInput) {
+  imageInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  try {
-    // 1. Upload Image
-    const formData = new FormData();
-    formData.append('file', file);
+    const uploadArea = document.getElementById('uploadArea');
+    const processingArea = document.getElementById('processingArea');
+    const progressBar = document.getElementById('progressBar');
     
-    progressBar.style.width = '30%';
-    const uploadRes = await API.upload('/api/images/upload', formData);
-    if (!uploadRes.ok) throw new Error('Upload failed');
-    
-    const uploadData = await uploadRes.json();
-    const imageId = uploadData.id;
-    
-    // Show preview immediately
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      document.getElementById('previewImage').src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+    if (uploadArea) uploadArea.style.display = 'none';
+    if (processingArea) processingArea.style.display = 'block';
 
-    // 2. Run Debris Detection
-    progressBar.style.width = '60%';
-    const detectRes = await API.post(`/api/detect/debris/${imageId}`, {});
-    const detectData = await detectRes.json();
+    try {
+      // 1. Upload Image via FormData
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      if (progressBar) progressBar.style.width = '30%';
+      
+      const token = localStorage.getItem('token');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      const uploadResponse = await fetch(`${CONFIG.API_BASE_URL}/api/images/upload`, {
+        method: 'POST',
+        headers,
+        body: formData
+      });
+      
+      if (!uploadResponse.ok) throw new Error('Upload failed');
+      const uploadData = await uploadResponse.json();
+      
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const previewImg = document.getElementById('previewImage');
+        if (previewImg) previewImg.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
 
-    // 3. Run Ecosystem Segmentation
-    progressBar.style.width = '90%';
-    const segmentRes = await API.post(`/api/ecosystem/segment/${imageId}`, {});
-    const segmentData = await segmentRes.json();
+      // 2. Show completion
+      if (progressBar) progressBar.style.width = '100%';
+      setTimeout(() => {
+        if (processingArea) processingArea.style.display = 'none';
+        displayUploadSuccess(uploadData);
+      }, 500);
 
-    // 4. Display Results
-    progressBar.style.width = '100%';
-    setTimeout(() => {
-      processingArea.style.display = 'none';
-      displayPrediction(detectData, segmentData);
-    }, 500);
+    } catch (err) {
+      console.error(err);
+      alert('AI processing failed. Please try again.');
+      if (uploadArea) uploadArea.style.display = 'block';
+      if (processingArea) processingArea.style.display = 'none';
+    }
+  });
+}
 
-  } catch (err) {
-    console.error(err);
-    alert('AI processing failed. Please try again.');
-    uploadArea.style.display = 'block';
-    processingArea.style.display = 'none';
-  }
-});
-
-function displayPrediction(detectData, segmentData) {
+function displayUploadSuccess(data) {
   const resultsArea = document.getElementById('predictionResult');
+  if (!resultsArea) return;
+  
   resultsArea.style.display = 'grid';
-
-  document.getElementById('densityScore').textContent = `${detectData.debris_density_score}%`;
-  document.getElementById('densitySummary').textContent = detectData.summary;
-
-  const segList = document.getElementById('segmentationList');
-  const segments = [
-    { label: 'Water', val: segmentData.water, color: '#0070f3' },
-    { label: 'Algae', val: segmentData.algae, color: '#10b981' },
-    { label: 'Coral', val: segmentData.coral, color: '#ef4444' },
-    { label: 'Debris', val: segmentData.debris, color: '#f97316' },
-    { label: 'Turbid Water', val: segmentData.turbid_water, color: '#8892b0' }
-  ];
-
-  segList.innerHTML = segments.map(s => `
-    <div class="segmentation-item">
-      <div class="segment-label">
-        <span>${s.label}</span>
-        <span>${s.val}%</span>
-      </div>
-      <div class="segment-bar">
-        <div class="segment-fill" style="width: ${s.val}%; background-color: ${s.color};"></div>
-      </div>
+  resultsArea.innerHTML = `
+    <div class="glass-card" style="text-align: center; padding: 2rem;">
+      <i class="fas fa-check-circle text-gradient" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+      <h3>Image Uploaded Successfully</h3>
+      <p style="color: var(--text-secondary); margin-top: 1rem;">File: ${data.filename || 'Unknown'}</p>
+      <p style="color: var(--text-secondary);">ID: ${data.id || 'N/A'}</p>
+      <p style="color: var(--accent-color); margin-top: 1rem; font-size: 0.85rem;">AI analysis pipeline has been queued.</p>
     </div>
-  `).join('');
-
-  // Draw Mock Bounding Boxes
-  const boxesContainer = document.getElementById('boundingBoxes');
-  boxesContainer.innerHTML = detectData.detections.map(d => `
-    <div style="
-      position: absolute;
-      left: ${d.bbox[0]}%;
-      top: ${d.bbox[1]}%;
-      width: ${d.bbox[2] - d.bbox[0]}%;
-      height: ${d.bbox[3] - d.bbox[1]}%;
-      border: 2px solid var(--accent-cyan);
-      box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
-    ">
-      <span style="
-        position: absolute;
-        top: -20px;
-        left: -2px;
-        background: var(--accent-cyan);
-        color: var(--bg-dark);
-        padding: 0 5px;
-        font-size: 0.7rem;
-        font-weight: bold;
-        white-space: nowrap;
-      ">${d.class} (${Math.round(d.confidence * 100)}%)</span>
-    </div>
-  `).join('');
+  `;
 }

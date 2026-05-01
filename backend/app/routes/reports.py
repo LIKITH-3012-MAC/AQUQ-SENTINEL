@@ -26,8 +26,10 @@ def create_report(
     # Log Audit
     audit = models.AuditLog(
         user_id=current_user.id,
-        event_type="report_created",
-        details={"report_id": db_report.id, "type": db_report.report_type}
+        action="report_created",
+        entity_type="marine_report",
+        entity_id=str(db_report.id),
+        action_metadata={"report_id": db_report.id, "type": db_report.report_type}
     )
     db.add(audit)
     db.commit()
