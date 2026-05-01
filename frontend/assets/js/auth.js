@@ -31,11 +31,19 @@ const AUTH = {
         localStorage.setItem('role', data.user.role);
     },
 
-    logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('role');
-        window.location.href = 'login.html';
+    async logout() {
+        try {
+            if (this.isAuthenticated()) {
+                await API.auth.logout();
+            }
+        } catch (e) {
+            console.warn("Backend logout failed, forcing client logout.", e);
+        } finally {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('role');
+            window.location.href = 'login.html';
+        }
     },
 
     getCurrentUser() {
@@ -67,7 +75,7 @@ const AUTH = {
 
     checkAuthState() {
         const path = window.location.pathname;
-        const publicPages = ['/', '/index.html', '/login.html', '/register.html'];
+        const publicPages = ['/', '/index.html', '/login.html', '/register.html', '/forgot-password.html'];
         
         const isPublic = publicPages.some(p => path.endsWith(p));
         

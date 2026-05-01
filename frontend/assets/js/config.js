@@ -3,13 +3,13 @@
  */
 
 const CONFIG = {
-    // API_BASE_URL: "https://aquq-sentinel.onrender.com", // Production
-    API_BASE_URL: "http://127.0.0.1:8000", // Development
+    // Development default
+    API_BASE_URL: "http://127.0.0.1:8000",
     VERSION: "4.0.0-PROD",
     SYSTEM_NAME: "AquaSentinel Intelligence OS"
 };
 
-// Auto-switch to production if on vercel
-if (window.location.hostname.includes('vercel.app')) {
+// Auto-switch to ONE CENTRAL Render API in production
+if (window.location.hostname !== '127.0.0.1' && window.location.hostname !== 'localhost') {
     CONFIG.API_BASE_URL = "https://aquq-sentinel.onrender.com";
 }

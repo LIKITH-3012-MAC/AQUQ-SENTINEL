@@ -42,7 +42,8 @@ const API = {
             }
 
             if (!response.ok) {
-                if (response.status === 401) {
+                const isAuthFlow = endpoint.includes('/auth/') && !endpoint.includes('/auth/me');
+                if (response.status === 401 && !isAuthFlow) {
                     console.warn("Session Expired. Terminating interface.");
                     if (typeof AUTH !== 'undefined') {
                         AUTH.logout();
