@@ -124,6 +124,11 @@ const API = {
         updateProgress: (missionId, data) => API.request(`/missions/${missionId}/progress`, 'PATCH', data)
     },
 
+    profile: {
+        get: () => API.request('/profile/me'),
+        update: (data) => API.request('/profile/me', 'PATCH', data)
+    },
+
     chatbot: {
         query: (data) => API.request('/chatbot/message', 'POST', {
             message: data.message,

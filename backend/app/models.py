@@ -25,6 +25,30 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    phone = Column(String, nullable=True)
+    state = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    preferred_language = Column(String, default="English")
+    preferred_theme = Column(String, default="dark")
+    preferred_region = Column(String, nullable=True)
+    bio = Column(Text, nullable=True)
+    profile_image_url = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class UserWatchlistRegion(Base):
+    __tablename__ = "user_watchlist_regions"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    region_name = Column(String, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 class LoginSession(Base):
     __tablename__ = "login_sessions"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

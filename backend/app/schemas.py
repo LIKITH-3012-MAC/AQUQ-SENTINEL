@@ -209,6 +209,34 @@ class PreferenceUpdate(BaseModel):
     theme: Optional[str] = None
     language: Optional[str] = None
 
+class UserProfileBase(BaseModel):
+    phone: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    preferred_language: Optional[str] = "English"
+    preferred_theme: Optional[str] = "dark"
+    preferred_region: Optional[str] = None
+    bio: Optional[str] = None
+    profile_image_url: Optional[str] = None
+
+class UserProfileUpdate(UserProfileBase):
+    full_name: Optional[str] = None
+
+class UserActivityStats(BaseModel):
+    total_reports: int
+    active_reports: int
+    resolved_reports: int
+    total_chat_queries: int
+    missions_joined: int
+
+class FullProfileResponse(BaseModel):
+    success: bool
+    user: UserResponse
+    profile: UserProfileBase
+    stats: UserActivityStats
+    recent_reports: List[MarineReportResponse]
+    watchlist_regions: List[Any]
+
 class SatelliteObservationResponse(BaseModel):
     id: int
     latitude: float

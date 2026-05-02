@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | AquaSentinel AI</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .profile-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .avatar-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+        }
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent-color);
+            padding: 5px;
+            background: var(--surface-color);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 1.2rem;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+        .info-group {
+            margin-bottom: 1.5rem;
+        }
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .info-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        .edit-card {
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <div class="nav-container">
+        <nav class="navbar">
+            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-microchip text-gradient" style="font-size: 1.5rem;"></i>
+                <span style="font-weight: 800; font-size: 1.1rem; letter-spacing: 1px;">AQUA<span class="text-gradient">SENTINEL</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="map.html">Tactical Map</a></li>
+                <li><a href="report.html">Submit Report</a></li>
+            </ul>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="theme-toggle" onclick="UI.toggleTheme()">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <a href="dashboard.html" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.8rem;">Command Base</a>
+            </div>
+        </nav>
+    </div>
+
+    <main style="padding: 10rem 2rem 6rem;">
+        <div class="profile-container">
+            <!-- Sidebar -->
+            <aside class="profile-sidebar">
+                <div class="glass-card" style="text-align: center; padding: 2.5rem 2rem;">
+                    <div class="avatar-container">
+                        <img id="display-avatar" src="https://ui-avatars.com/api/?name=User&background=00f3ff&color=000" alt="Avatar" class="profile-avatar">
+                    </div>
+                    <h2 id="display-name" style="margin-bottom: 0.3rem;">Loading...</h2>
+                    <p id="display-role" class="status-tag success" style="display: inline-block; margin-bottom: 1.5rem;">USER</p>
+                    <p id="display-bio" style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                        No bio provided.
+                    </p>
+                    <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                        <button onclick="Profile.openEdit()" class="btn btn-outline" style="width: 100%;"><i class="fas fa-edit"></i> Edit Profile</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="glass-card stat-card">
+                        <div id="stat-reports" class="stat-value">0</div>
+                        <div class="stat-label">Reports</div>
+                    </div>
+                    <div id="stat-chats-card" class="glass-card stat-card">
+                        <div id="stat-chats" class="stat-value">0</div>
+                        <div class="stat-label">AI Queries</div>
+                    </div>
+                    <div class="glass-card stat-card" style="grid-column: 1 / -1;">
+                        <div id="stat-missions" class="stat-value">0</div>
+                        <div class="stat-label">Missions Joined</div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 2rem;"><i class="fas fa-id-card text-gradient"></i> Personal <span class="text-gradient">Information</span></h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div class="info-group">
+                            <span class="info-label">Email Address</span>
+                            <span id="display-email" class="info-value">...</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Phone Number</span>
+                            <span id="display-phone" class="info-value">Not provided</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Location (State/City)</span>
+                            <span id="display-location" class="info-value">Not provided</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Preferred Region</span>
+                            <span id="display-region" class="info-value">Global</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Preferred Language</span>
+                            <span id="display-language" class="info-value">English</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Member Since</span>
+                            <span id="display-joined" class="info-value">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 2rem;"><i class="fas fa-clock-rotate-left text-gradient"></i> Recent <span class="text-gradient">Activity</span></h3>
+                    <div id="activity-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Populated via JS -->
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No recent activity detected.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="edit-modal">
+        <div class="glass-card edit-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>Edit <span class="text-gradient">Profile</span></h2>
+                <button onclick="Profile.closeEdit()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem;"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="edit-form" onsubmit="Profile.save(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="edit-name" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <input type="text" id="edit-phone">
+                    </div>
+                    <div class="input-group">
+                        <label>State</label>
+                        <input type="text" id="edit-state">
+                    </div>
+                    <div class="input-group">
+                        <label>City</label>
+                        <input type="text" id="edit-city">
+                    </div>
+                    <div class="input-group">
+                        <label>Preferred Language</label>
+                        <select id="edit-language">
+                            <option value="English">English</option>
+                            <option value="Telugu">Telugu</option>
+                            <option value="Tamil">Tamil</option>
+                            <option value="Hindi">Hindi</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Preferred Region</label>
+                        <input type="text" id="edit-region">
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 1.5rem;">
+                    <label>Bio</label>
+                    <textarea id="edit-bio" style="height: 100px; resize: none;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Update Profile Information</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/profile.js"></script>
+    <script>AUTH.requireAuth();</script>
+</body>
+</html>
