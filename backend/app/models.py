@@ -232,24 +232,67 @@ class Alert(Base):
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     status = Column(String, default="active")
+    target_scope = Column(String, default="global") # global, region, user
     verified_by_admin = Column(Boolean, default=False)
     is_simulated = Column(Boolean, default=False)
     simulation_id = Column(UUID(as_uuid=True), nullable=True)
+    related_scenario_id = Column(UUID(as_uuid=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class AlertBroadcastLog(Base):
+    __tablename__ = "alert_broadcast_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    alert_id = Column(Integer, ForeignKey("alerts.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    delivered = Column(Boolean, default=False)
+    displayed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class SimulatedIncident(Base):
+    __tablename__ = "simulated_incidents"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    admin_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    scenario_title = Column(String, nullable=False)
+    debris_type = Column(String, nullable=False) # plastic, oil, net, etc.
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    severity = Column(String, nullable=False)
+    density_score = Column(Float, nullable=False)
+    affected_radius = Column(Float, nullable=False) # in km
+    drift_direction = Column(Float, nullable=True) # degrees
+    message_title = Column(String, nullable=True)
+    message_body = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    health_impact_enabled = Column(Boolean, default=True)
+    alert_broadcast_enabled = Column(Boolean, default=True)
+    mission_flow_enabled = Column(Boolean, default=True)
+    judge_note = Column(Text, nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class SimulatedMapEvent(Base):
+    __tablename__ = "simulated_map_events"
+    id = Column(Integer, primary_key=True, index=True)
+    simulation_scenario_id = Column(UUID(as_uuid=True), ForeignKey("simulated_incidents.id", ondelete="CASCADE"), nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    marker_type = Column(String, nullable=False) # hotspot, cluster, marker
+    severity = Column(String, nullable=False)
+    radius_km = Column(Float, nullable=False)
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class AdminAction(Base):
     __tablename__ = "admin_actions"
-
     id = Column(Integer, primary_key=True, index=True)
     admin_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     action_type = Column(String, nullable=False)
-    target_id = Column(String, nullable=True) # Could be UUID or Int depending on target
+    target_id = Column(String, nullable=True)
     details = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
-
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), nullable=True)
     action = Column(Text, nullable=False)
@@ -301,7 +344,7 @@ class SatelliteObservation(Base):
     id = Column(Integer, primary_key=True, index=True)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    parameter = Column(String, nullable=False) # e.g., 'chlorophyll', 'sst'
+    parameter = Column(String, nullable=False)
     value = Column(Float, nullable=False)
     unit = Column(String, nullable=True)
     source = Column(String, default="NASA")
@@ -333,16 +376,6 @@ class OceanCurrentObservation(Base):
     source = Column(String, default="Copernicus")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-class ChatLog(Base): # Legacy, keeping for compatibility if needed, but we use ChatbotMessage now
-    __tablename__ = "chat_logs"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    message = Column(Text, nullable=False)
-    response = Column(Text, nullable=False)
-    language = Column(String, nullable=False)
-    context = Column(JSON, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
 class Simulation(Base):
     __tablename__ = "simulations"
     id = Column(Integer, primary_key=True, index=True)
@@ -350,24 +383,4 @@ class Simulation(Base):
     simulation_type = Column(String, nullable=False)
     parameters = Column(JSON, nullable=True)
     results = Column(JSON, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-class SimulatedIncident(Base):
-    __tablename__ = "simulated_incidents"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    admin_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    scenario_title = Column(String, nullable=False)
-    debris_type = Column(String, nullable=False) # plastic, oil, net, etc.
-    latitude = Column(Float, nullable=False)
-    longitude = Column(Float, nullable=False)
-    severity = Column(String, nullable=False)
-    density_score = Column(Float, nullable=False)
-    affected_radius = Column(Float, nullable=False) # in km
-    drift_direction = Column(Float, nullable=True) # degrees
-    is_active = Column(Boolean, default=True)
-    health_impact_enabled = Column(Boolean, default=True)
-    alert_broadcast_enabled = Column(Boolean, default=True)
-    mission_flow_enabled = Column(Boolean, default=True)
-    judge_note = Column(Text, nullable=True)
-    expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

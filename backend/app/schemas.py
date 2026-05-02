@@ -278,11 +278,26 @@ class SimulatedIncidentCreate(BaseModel):
     density_score: float
     affected_radius: float
     drift_direction: Optional[float] = None
+    message_title: Optional[str] = None
+    message_body: Optional[str] = None
     health_impact_enabled: bool = True
     alert_broadcast_enabled: bool = True
     mission_flow_enabled: bool = True
     judge_note: Optional[str] = None
     duration_minutes: int = 60
+
+class SimulatedMapEventResponse(BaseModel):
+    id: int
+    simulation_scenario_id: UUID
+    latitude: float
+    longitude: float
+    marker_type: str
+    severity: str
+    radius_km: float
+    is_active: bool
+    created_at: datetime
+    class Config:
+        from_attributes = True
 
 class SimulatedIncidentResponse(SimulatedIncidentCreate):
     id: UUID

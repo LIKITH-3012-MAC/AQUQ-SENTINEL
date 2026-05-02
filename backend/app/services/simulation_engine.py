@@ -47,19 +47,33 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
     # 3. Create Demo Alerts if enabled
     if sim.alert_broadcast_enabled:
         alert = models.Alert(
-            title=f"⚠️ [SIMULATED] {sim.scenario_title}",
-            message=f"DEMO MODE: High density {sim.debris_type} activity simulated near your monitored zone. (Evaluation Purposes Only)",
+            title=sim.message_title or f"⚠️ [SIMULATED] {sim.scenario_title}",
+            message=sim.message_body or f"DEMO MODE: High density {sim.debris_type} activity simulated near your monitored zone. (Evaluation Purposes Only)",
             severity=sim.severity,
             latitude=sim.latitude,
             longitude=sim.longitude,
             verified_by_admin=True,
             status="active",
+            target_scope="global", # Broadcast to all
             is_simulated=True,
-            simulation_id=sim.id
+            simulation_id=sim.id,
+            related_scenario_id=sim.id
         )
         db.add(alert)
 
-    # 4. Impact Health Score if enabled
+    # 4. Create Simulated Map Event (Persistent marker)
+    map_event = models.SimulatedMapEvent(
+        simulation_scenario_id=sim.id,
+        latitude=sim.latitude,
+        longitude=sim.longitude,
+        marker_type="hotspot",
+        severity=sim.severity,
+        radius_km=sim.affected_radius,
+        is_active=True
+    )
+    db.add(map_event)
+
+    # 5. Impact Health Score if enabled
     if sim.health_impact_enabled:
         # Create a new local health score entry that is lower
         score_impact = random.randint(15, 30) if sim.severity == "High" else 10
@@ -108,10 +122,12 @@ def clear_all_simulations(db: Session):
     """
     Clear all demo data using strict simulation flags.
     """
-    # 1. Deactivate simulation scenarios
-    db.query(models.SimulatedIncident).update({"is_active": False})
+    # 1. Purge simulation scenarios
+    db.query(models.SimulatedIncident).delete(synchronize_session=False)
+    db.query(models.SimulatedMapEvent).delete(synchronize_session=False)
+    db.query(models.AlertBroadcastLog).delete(synchronize_session=False)
     
-    # 2. Purge simulated entities (Hard delete for demo cleanup is safer to avoid map clutter)
+    # 2. Purge simulated entities
     db.query(models.Alert).filter(models.Alert.is_simulated == True).delete(synchronize_session=False)
     db.query(models.Mission).filter(models.Mission.is_simulated == True).delete(synchronize_session=False)
     db.query(models.MarineReport).filter(models.MarineReport.is_simulated == True).delete(synchronize_session=False)

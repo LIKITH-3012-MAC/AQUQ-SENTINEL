@@ -11,8 +11,12 @@ def get_all_alerts(db: Session = Depends(database.get_db), admin_user: models.Us
 
 @router.get("/user", response_model=List[schemas.AlertResponse])
 def get_user_alerts(db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
-    # Simple global active alerts for dashboard
+    # Global active alerts including simulated ones
     return db.query(models.Alert).filter(models.Alert.status == "active").order_by(models.Alert.created_at.desc()).all()
+
+@router.get("/map-events", response_model=List[schemas.SimulatedMapEventResponse])
+def get_simulated_map_events(db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    return db.query(models.SimulatedMapEvent).filter(models.SimulatedMapEvent.is_active == True).all()
 
 @router.post("/manual")
 def create_manual_alert(data: dict, db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):

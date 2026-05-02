@@ -37,6 +37,8 @@ def create_simulation(
         density_score=sim_data.density_score,
         affected_radius=sim_data.affected_radius,
         drift_direction=sim_data.drift_direction,
+        message_title=sim_data.message_title,
+        message_body=sim_data.message_body,
         health_impact_enabled=sim_data.health_impact_enabled,
         alert_broadcast_enabled=sim_data.alert_broadcast_enabled,
         mission_flow_enabled=sim_data.mission_flow_enabled,

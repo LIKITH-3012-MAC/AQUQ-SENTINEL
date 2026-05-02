@@ -221,7 +221,8 @@
             }),
             riskZones: L.layerGroup(),
             heatmap: null, // Initialized on demand
-            drift: L.layerGroup()
+            drift: L.layerGroup(),
+            simulated: L.layerGroup().addTo(map)
         };
 
         window.MAP = {
@@ -318,11 +319,39 @@
             }
         };
 
+        async function loadSimulatedEvents() {
+            try {
+                const events = await API.request('/alerts/map-events');
+                layers.simulated.clearLayers();
+                events.forEach(ev => {
+                    const icon = L.divIcon({
+                        className: 'sim-event-icon',
+                        html: `<div class="pulse-animation" style="background: ${ev.severity === 'Critical' ? '#ef4444' : '#00f3ff'}; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
+                        iconSize: [15, 15]
+                    });
+                    
+                    const marker = L.marker([ev.latitude, ev.longitude], { icon }).bindPopup(`
+                        <div style="font-family: 'Outfit'; min-width: 150px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span class="status-tag critical" style="font-size: 0.6rem;">SIMULATED</span>
+                                <span style="font-size: 0.7rem; color: var(--text-secondary);">${new Date(ev.created_at).toLocaleTimeString()}</span>
+                            </div>
+                            <div style="font-weight: 800; font-size: 0.9rem; color: var(--accent-color); margin-bottom: 0.3rem;">RISK DETECTED</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Type: ${ev.marker_type.toUpperCase()}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Severity: ${ev.severity}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Radius: ${ev.radius_km}km</div>
+                        </div>
+                    `);
+                    layers.simulated.addLayer(marker);
+                });
+            } catch (err) { console.error("Failed to load simulated events:", err); }
+        }
+
         // Real-time Alert Polling for Demo Mode
         let lastAlertId = 0;
         async function pollAlerts() {
             try {
-                const alerts = await API.request('/alerts');
+                const alerts = await API.request('/alerts/user');
                 if (alerts.length > 0) {
                     const latest = alerts[0];
                     if (latest.id > lastAlertId) {
@@ -331,23 +360,20 @@
                         // Show Premium Alert Popup
                         const isSim = latest.title.includes('[SIMULATED]');
                         UI.showToast(`
-                            <div style="display:flex; align-items:center; gap:1rem;">
-                                <i class="fas ${isSim ? 'fa-robot' : 'fa-triangle-exclamation'} text-gradient" style="font-size:1.5rem;"></i>
+                            <div style="display:flex; align-items:center; gap:1rem; min-width: 300px; padding: 0.5rem;">
+                                <i class="fas ${isSim ? 'fa-robot' : 'fa-triangle-exclamation'} text-gradient" style="font-size:2rem;"></i>
                                 <div>
-                                    <div style="font-weight:800; font-size:0.8rem; letter-spacing:1px;">${latest.title}</div>
-                                    <div style="font-size:0.75rem; opacity:0.8;">${latest.message}</div>
+                                    <div style="font-weight:800; font-size:0.9rem; letter-spacing:1px; color: var(--accent-color);">${latest.title}</div>
+                                    <div style="font-size:0.8rem; opacity:0.9; margin-top: 0.2rem;">${latest.message}</div>
+                                    <div style="font-size: 0.6rem; color: var(--text-secondary); margin-top: 0.5rem;">LOCATION: ${latest.latitude.toFixed(2)}, ${latest.longitude.toFixed(2)}</div>
                                 </div>
                             </div>
                         `, latest.severity === 'Critical' ? 'error' : 'warning');
 
                         // Auto-center map if it's a simulated judge event
                         if (isSim) {
-                            map.flyTo([latest.latitude, latest.longitude], 12);
-                            // Add a temporary hotspot pulse
-                            const pulse = L.circle([latest.latitude, latest.longitude], {
-                                radius: 5000, color: '#00f3ff', fillColor: '#00f3ff', fillOpacity: 0.3, className: 'pulse-animation'
-                            }).addTo(map);
-                            setTimeout(() => map.removeLayer(pulse), 10000);
+                            map.flyTo([latest.latitude, latest.longitude], 11);
+                            loadSimulatedEvents(); // Refresh persistent markers
                         }
                     }
                 }
@@ -361,7 +387,11 @@
             
             // Start Polling
             pollAlerts();
-            setInterval(pollAlerts, 10000);
+            loadSimulatedEvents();
+            setInterval(() => {
+                pollAlerts();
+                loadSimulatedEvents();
+            }, 10000);
         }, 500);
 
     </script>

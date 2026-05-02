@@ -198,6 +198,14 @@
                                         <input type="number" id="sim-radius" value="5">
                                     </div>
                                 </div>
+                                <div class="input-group" style="margin-top: 1rem;">
+                                    <label>Broadcast Message Title</label>
+                                    <input type="text" id="sim-msg-title" placeholder="⚠️ Marine Risk Alert">
+                                </div>
+                                <div class="input-group" style="margin-top: 1rem;">
+                                    <label>Broadcast Message Body</label>
+                                    <textarea id="sim-msg-body" placeholder="Describe the risk to users..." style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.8rem; color: white; width: 100%; min-height: 80px; outline: none;"></textarea>
+                                </div>
                                 <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
                                     <label style="display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; cursor: pointer;">
                                         <input type="checkbox" id="sim-health" checked> Impact Ocean Health Score
@@ -369,6 +377,8 @@
                     severity: document.getElementById('sim-severity').value,
                     density_score: parseFloat(document.getElementById('sim-density').value),
                     affected_radius: parseFloat(document.getElementById('sim-radius').value),
+                    message_title: document.getElementById('sim-msg-title').value,
+                    message_body: document.getElementById('sim-msg-body').value,
                     health_impact_enabled: document.getElementById('sim-health').checked,
                     alert_broadcast_enabled: document.getElementById('sim-alert').checked,
                     mission_flow_enabled: document.getElementById('sim-mission').checked,
