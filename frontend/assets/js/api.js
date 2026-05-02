@@ -136,6 +136,15 @@ const API = {
         delete: (id) => API.request(`/admin/simulations/${id}`, 'DELETE')
     },
 
+    health: {
+        score: (lat, lon, radius = 20) => API.request(`/health/score?lat=${lat}&lon=${lon}&radius=${radius}`),
+        global: () => API.request('/health/global')
+    },
+
+    hyperlocal: {
+        intelligence: (lat, lon, radius = 20) => API.request(`/hyperlocal/intelligence?lat=${lat}&lon=${lon}&radius=${radius}`)
+    },
+
     chatbot: {
         query: (data) => API.request('/chatbot/message', 'POST', {
             message: data.message,

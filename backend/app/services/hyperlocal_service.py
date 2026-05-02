@@ -1,46 +1,51 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from .. import models
-from . import health_service
-from typing import List, Dict, Any
+from .ocean_health_service import OceanHealthService
+import math
 
-def get_hyperlocal_intelligence(db: Session, lat: float, lon: float, radius_km: float = 50.0) -> Dict[str, Any]:
-    """
-    Aggregates intelligence for a specific location.
-    """
-    # 1. Get local health score
-    health_score = health_service.get_latest_health_score(db, lat, lon)
-    
-    # 2. Find nearby alerts (simplistic box search for now)
-    # 1 degree is roughly 111km
-    delta = radius_km / 111.0
-    alerts = db.query(models.Alert).filter(
-        models.Alert.latitude.between(lat - delta, lat + delta),
-        models.Alert.longitude.between(lon - delta, lon + delta),
-        models.Alert.status == "active"
-    ).all()
-    
-    # 3. Find nearby debris reports
-    reports = db.query(models.MarineReport).filter(
-        models.MarineReport.latitude.between(lat - delta, lat + delta),
-        models.MarineReport.longitude.between(lon - delta, lon + delta),
-        models.MarineReport.status != "Closed"
-    ).all()
-    
-    # 4. Identify Hotspots (Zones with high report density or critical alerts)
-    hotspots = []
-    if len(reports) > 5 or health_score.score < 40:
-        hotspots.append({
-            "name": f"High Activity Zone near {health_score.region_name}",
-            "risk_level": "High" if health_score.score < 40 else "Moderate",
-            "reason": f"Detected {len(reports)} reports and {len(alerts)} active alerts."
-        })
-    
-    return {
-        "location": {"lat": lat, "lon": lon, "region": health_score.region_name},
-        "health_score": health_score,
-        "alerts_count": len(alerts),
-        "nearby_alerts": alerts,
-        "reports_count": len(reports),
-        "hotspots": hotspots,
-        "summary": f"The region is currently {health_score.category.lower()}. {len(alerts)} alerts active within {radius_km}km."
-    }
+class HyperlocalService:
+    @staticmethod
+    def get_hyperlocal_intelligence(db: Session, lat: float, lon: float, radius: float = 50.0):
+        """
+        Aggregate localized intelligence for a specific coordinate.
+        Combines Health Score, Nearby Alerts, Hotspots, and Regional Summary.
+        """
+        # 1. Get Health Score
+        health = OceanHealthService.calculate_health_score(db, lat, lon, radius)
+
+        # 2. Get Nearby Alerts (Specific to this region)
+        alerts = db.query(models.Alert).filter(
+            func.sqrt(
+                func.pow(models.Alert.latitude - lat, 2) + 
+                func.pow(models.Alert.longitude - lon, 2)
+            ) * 111.0 <= radius,
+            models.Alert.status == "active"
+        ).order_by(models.Alert.created_at.desc()).limit(5).all()
+
+        # 3. Get Recent Nearby Reports
+        reports = db.query(models.MarineReport).filter(
+            func.sqrt(
+                func.pow(models.MarineReport.latitude - lat, 2) + 
+                func.pow(models.MarineReport.longitude - lon, 2)
+            ) * 111.0 <= radius
+        ).order_by(models.MarineReport.created_at.desc()).limit(5).all()
+
+        # 4. Generate Regional Intelligence Summary
+        summary = ""
+        if health['score'] < 40:
+            summary = f"CRITICAL: Multiple high-density debris zones detected near {lat}, {lon}. Risk is accelerating."
+        elif health['score'] < 60:
+            summary = f"Watchlist: Increasing marine activity detected. Monitor coastal drift paths for possible accumulation."
+        else:
+            summary = f"Stable: Marine conditions are within normal parameters for this coastal sector."
+
+        return {
+            "location": {"lat": lat, "lon": lon},
+            "radius_km": radius,
+            "health_score": health,
+            "alerts": alerts,
+            "recent_reports": reports,
+            "intelligence_summary": summary,
+            "hotspot_status": "HIGH" if health['score'] < 50 else "LOW"
+        }

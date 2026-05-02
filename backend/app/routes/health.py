@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import database, models, auth
-from ..services import health_service
+from ..services.ocean_health_service import OceanHealthService
 
 router = APIRouter(prefix="/api/health", tags=["health"])
 
@@ -9,31 +9,19 @@ router = APIRouter(prefix="/api/health", tags=["health"])
 def get_ocean_health(
     lat: float, 
     lon: float, 
+    radius: float = 20.0,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
     """
-    Get the Ocean Health Score for a specific location.
+    Get the Ocean Health Score for a specific location using advanced intelligence logic.
     """
-    score = health_service.get_latest_health_score(db, lat, lon)
+    score = OceanHealthService.calculate_health_score(db, lat, lon, radius)
     return score
 
-@router.post("/calculate")
-def calculate_health(
-    lat: float,
-    lon: float,
-    debris: float = 0.0,
-    sst: float = 0.0,
-    chl: float = 0.0,
-    wave: float = 0.0,
-    region: str = "Target Zone",
+@router.get("/global")
+def get_global_health(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    """
-    Manually trigger a health score calculation.
-    """
-    score = health_service.calculate_ocean_health(
-        db, lat, lon, debris, chl, sst, wave, region_name=region
-    )
-    return score
+    return OceanHealthService.get_global_averages(db)

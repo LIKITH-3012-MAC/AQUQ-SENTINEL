@@ -75,34 +75,56 @@
             <!-- Left Column -->
             <div style="display: flex; flex-direction: column; gap: 2rem;">
                 
-                <!-- Status Row -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                    <div class="glass-card hologram" style="text-align: center; border-color: var(--accent-color); position: relative; overflow: hidden;">
-                        <div id="health-score" style="font-size: 3rem; font-weight: 800;" class="text-gradient">--%</div>
-                        <div id="health-category" style="font-size: 0.7rem; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: 1px; margin-top: -5px;">Detecting...</div>
-                        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); margin-top: 10px;">Ocean Health Score</div>
+                <!-- Phase 1: Ocean Health Score & Hyperlocal Intelligence -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <!-- Ocean Health Score Card -->
+                    <div class="glass-card hologram" style="padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; border-color: var(--accent-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="font-size: 1.1rem; letter-spacing: 1px;"><i class="fas fa-heartbeat text-gradient"></i> OCEAN <span class="text-gradient">HEALTH</span></h3>
+                            <span id="health-category" class="status-tag success">CALCULATING...</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 2rem;">
+                            <div class="health-circle" style="position: relative; width: 100px; height: 100px;">
+                                <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3" />
+                                    <path id="health-progress" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent-color)" stroke-width="3" stroke-dasharray="0, 100" style="transition: stroke-dasharray 1s ease-out;" />
+                                </svg>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; font-weight: 800;">
+                                    <span id="health-score">--</span>
+                                </div>
+                            </div>
+                            <div style="flex: 1;">
+                                <p id="health-explanation" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">Initial intelligence scan in progress...</p>
+                                <div id="health-factors" style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem;"></div>
+                            </div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 0.8rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                            <label style="font-size: 0.6rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Recommended Action</label>
+                            <p id="health-action" style="font-size: 0.75rem; font-weight: 600; margin-top: 0.2rem;">Awaiting data...</p>
+                        </div>
                     </div>
-                    <div class="glass-card" style="text-align: center;">
-                        <div id="local-risk" style="font-size: 3rem; font-weight: 800; color: var(--warning);">LOW</div>
-                        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary);">Local Risk Level</div>
-                    </div>
-                    <div class="glass-card" style="text-align: center;">
-                        <div id="active-alerts" style="font-size: 3rem; font-weight: 800; color: var(--danger);">0</div>
-                        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary);">Active Alerts</div>
-                    </div>
-                </div>
 
-                <!-- Hyperlocal Intelligence -->
-                <div class="glass-card" style="background: linear-gradient(135deg, rgba(0, 243, 255, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h3 style="font-size: 1.2rem;">Hyperlocal <span class="text-gradient">Intelligence</span></h3>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary);"><i class="fas fa-location-dot"></i> <span id="current-location-text">Detecting Location...</span></div>
-                    </div>
-                    <div id="hyperlocal-summary" style="margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
-                        Initializing sensors for localized marine scanning...
-                    </div>
-                    <div id="hotspot-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                        <!-- Hotspots dynamically added -->
+                    <!-- Hyperlocal Intelligence Card -->
+                    <div class="glass-card" style="padding: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 1.1rem; letter-spacing: 1px;"><i class="fas fa-location-crosshairs text-gradient"></i> HYPERLOCAL <span class="text-gradient">INTEL</span></h3>
+                            <div id="hotspot-status" class="status-tag">SCANNING</div>
+                        </div>
+                        <div id="hyperlocal-content" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-location-dot"></i> <span id="current-location-text">Detecting Location...</span></div>
+                            <p id="regional-summary" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6;">Identifying nearby risks and hotspot clusters...</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+                                <div class="glass-card" style="padding: 1rem; text-align: center; background: rgba(0,243,255,0.02);">
+                                    <div id="nearby-alerts-count" style="font-size: 1.2rem; font-weight: 800;">0</div>
+                                    <div style="font-size: 0.6rem; text-transform: uppercase; color: var(--text-secondary);">Active Alerts</div>
+                                </div>
+                                <div class="glass-card" style="padding: 1rem; text-align: center; background: rgba(0,243,255,0.02);">
+                                    <div id="nearby-reports-count" style="font-size: 1.2rem; font-weight: 800;">0</div>
+                                    <div style="font-size: 0.6rem; text-transform: uppercase; color: var(--text-secondary);">Local Reports</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -153,10 +175,18 @@
                 </div>
 
                 <!-- Mission Mode (NGO/Volunteer) -->
-                <div id="mission-mode-section" class="glass-card" style="display: none; border-color: var(--success); background: rgba(0, 255, 157, 0.03);">
-                    <h3 style="margin-bottom: 1.2rem; font-size: 1.1rem;"><i class="fas fa-flag text-gradient"></i> Mission <span class="text-gradient">Control</span></h3>
+                <div id="mission-mode-section" class="glass-card" style="border-color: var(--success); background: rgba(0, 255, 157, 0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.1rem;"><i class="fas fa-flag text-gradient"></i> MISSION <span class="text-gradient">CONTROL</span></h3>
+                        <div id="mission-status-tag" class="status-tag success">NGO MODE</div>
+                    </div>
                     <div id="active-missions" style="display: flex; flex-direction: column; gap: 1rem;">
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; text-align: center;">Scanning for nearby cleanup missions...</p>
+                        <!-- Missions rendered by JS -->
+                        <div style="text-align: center; padding: 2rem; border: 1px dashed var(--border-color); border-radius: 12px;">
+                            <i class="fas fa-satellite text-gradient" style="font-size: 1.5rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p style="color: var(--text-secondary); font-size: 0.8rem;">No active missions in your current sector.</p>
+                            <button onclick="UI.scanMissions()" class="btn btn-outline" style="margin-top: 1rem; font-size: 0.7rem;">Scan for Nearby Tasks</button>
+                        </div>
                     </div>
                 </div>
 
@@ -170,6 +200,64 @@
             </div>
         </div>
     </main>
+
+    <!-- Incident Lifecycle Tracking Modal -->
+    <div id="lifecycle-modal" class="modal" style="display: none;">
+        <div class="modal-content glass-card" style="max-width: 600px; padding: 0; overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <i class="fas fa-list-check text-gradient"></i>
+                    <h3 id="modal-report-title" style="font-size: 1rem;">INCIDENT LIFECYCLE</h3>
+                </div>
+                <i class="fas fa-times" style="cursor: pointer; opacity: 0.5;" onclick="UI.closeModal('lifecycle-modal')"></i>
+            </div>
+            <div style="padding: 2rem; display: flex; flex-direction: column; gap: 2rem;">
+                <!-- Status Header -->
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div id="modal-tracking-id" style="font-family: monospace; font-weight: 800; color: var(--accent-color); font-size: 1.2rem;">AQUA-00000000</div>
+                        <div id="modal-report-type" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;">Report Type: Plastic Waste</div>
+                    </div>
+                    <div id="modal-current-status" class="status-badge" style="padding: 0.5rem 1rem; font-size: 0.75rem;">SUBMITTED</div>
+                </div>
+
+                <!-- AI Assistant Analysis (Phase 2) -->
+                <div id="modal-ai-analysis" class="glass-card" style="padding: 1.2rem; background: rgba(0, 243, 255, 0.03); border-color: var(--accent-color);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                        <i class="fas fa-robot text-gradient"></i> AI Assistant Intelligence
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase;">Suggested Category</label>
+                            <p id="modal-ai-category" style="font-size: 0.8rem; font-weight: 600;">--</p>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase;">Confidence</label>
+                            <p id="modal-ai-confidence" style="font-size: 0.8rem; font-weight: 600;">--%</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase;">Likely Impact</label>
+                        <p id="modal-ai-impact" style="font-size: 0.75rem; color: var(--text-secondary);">--</p>
+                    </div>
+                </div>
+
+                <!-- Lifecycle Timeline -->
+                <div>
+                    <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; color: var(--text-secondary); border-left: 2px solid var(--accent-color); padding-left: 0.8rem;">Operational Timeline</h4>
+                    <div id="modal-lifecycle-timeline" style="display: flex; flex-direction: column; gap: 1.5rem; position: relative;">
+                        <!-- Vertical line -->
+                        <div style="position: absolute; left: 7px; top: 0; bottom: 0; width: 1px; background: var(--border-color);"></div>
+                        <!-- Updates rendered by JS -->
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="modal-mission-btn" class="btn btn-outline" style="font-size: 0.75rem; border-color: var(--success); color: var(--success); display: none;">View Active Mission</button>
+                <button class="btn btn-outline" style="font-size: 0.75rem;" onclick="UI.closeModal('lifecycle-modal')">Close Tracker</button>
+            </div>
+        </div>
+    </div>
 
     <!-- AI Copilot Interface -->
     <div class="ai-trigger" id="ai-copilot-trigger">
@@ -229,13 +317,56 @@
                     await refreshLocationData(lat, lon);
                 }
 
+                async function refreshLocationData(lat, lon) {
+                    try {
+                        // 1. Get Hyperlocal Intel
+                        const intel = await API.hyperlocal.intelligence(lat, lon);
+                        document.getElementById('current-location-text').textContent = `Sector: ${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+                        document.getElementById('regional-summary').textContent = intel.intelligence_summary;
+                        document.getElementById('nearby-alerts-count').textContent = intel.alerts.length;
+                        document.getElementById('nearby-reports-count').textContent = intel.recent_reports.length;
+                        
+                        const statusTag = document.getElementById('hotspot-status');
+                        statusTag.textContent = intel.hotspot_status === 'HIGH' ? 'CRITICAL HOTSPOT' : 'LOW RISK ZONE';
+                        statusTag.className = `status-tag ${intel.hotspot_status === 'HIGH' ? 'critical' : 'success'}`;
+
+                        // 2. Get Ocean Health Score
+                        const health = intel.health_score;
+                        const scoreEl = document.getElementById('health-score');
+                        const categoryEl = document.getElementById('health-category');
+                        const progressEl = document.getElementById('health-progress');
+                        
+                        scoreEl.textContent = `${health.score}%`;
+                        categoryEl.textContent = health.category.toUpperCase();
+                        categoryEl.className = `status-tag ${health.category === 'Excellent' || health.category === 'Stable' ? 'success' : health.category === 'Watchlist' ? 'warning' : 'critical'}`;
+                        
+                        // Update Progress Circle
+                        progressEl.style.strokeDasharray = `${health.score}, 100`;
+                        progressEl.style.stroke = health.score > 70 ? 'var(--success)' : health.score > 40 ? 'var(--warning)' : 'var(--danger)';
+
+                        document.getElementById('health-explanation').textContent = health.explanation;
+                        document.getElementById('health-action').textContent = health.recommended_action;
+
+                        // Factors
+                        const factorsContainer = document.getElementById('health-factors');
+                        factorsContainer.innerHTML = health.contributing_factors.map(f => `
+                            <span class="status-tag" style="font-size: 0.6rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.05); color: ${f.impact < 0 ? 'var(--danger)' : 'var(--success)'};">
+                                ${f.name} (${f.impact > 0 ? '+' : ''}${f.impact})
+                            </span>
+                        `).join('');
+
+                    } catch (err) {
+                        console.error("Failed to load hyperlocal intel:", err);
+                    }
+                }
+
                 const summary = await API.dashboard.summary();
                 
                 // Update Timeline
                 const timeline = document.getElementById('reports-timeline');
                 if (summary.recent_reports && summary.recent_reports.length > 0) {
                     timeline.innerHTML = summary.recent_reports.map(r => `
-                        <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-left: 3px solid ${getStatusColor(r.status)};">
+                        <div class="glass-card clickable" onclick="UI.openLifecycleModal(${r.id})" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-left: 3px solid ${getStatusColor(r.status)}; cursor: pointer;">
                             <div>
                                 <div style="font-weight: 700; font-size: 0.9rem;">
                                     ${r.title}
@@ -251,6 +382,104 @@
                         </div>
                     `).join('');
                 }
+
+                // Add to UI object
+                Object.assign(UI, {
+                    openLifecycleModal: async (id) => {
+                        try {
+                            const reports = await API.reports.all();
+                            const report = reports.find(r => r.id === id);
+                            if (!report) return;
+
+                            document.getElementById('modal-report-title').textContent = report.title.toUpperCase();
+                            document.getElementById('modal-tracking-id').textContent = report.tracking_id;
+                            document.getElementById('modal-report-type').textContent = `Type: ${report.report_type.replace('_', ' ').toUpperCase()}`;
+                            
+                            const statusEl = document.getElementById('modal-current-status');
+                            statusEl.textContent = report.status.toUpperCase();
+                            statusEl.style.background = `${getStatusColor(report.status)}20`;
+                            statusEl.style.color = getStatusColor(report.status);
+                            statusEl.style.border = `1px solid ${getStatusColor(report.status)}40`;
+
+                            // AI Analysis
+                            if (report.ai_analysis) {
+                                document.getElementById('modal-ai-analysis').style.display = 'block';
+                                document.getElementById('modal-ai-category').textContent = report.ai_analysis.suggested_category;
+                                document.getElementById('modal-ai-confidence').textContent = `${report.ai_analysis.confidence}%`;
+                                document.getElementById('modal-ai-impact').textContent = report.ai_analysis.possible_impact || report.ai_analysis.environmental_impact;
+                            } else {
+                                document.getElementById('modal-ai-analysis').style.display = 'none';
+                            }
+
+                            // Lifecycle Timeline
+                            const history = await API.request(`/reports/${id}/history`);
+                            const timelineEl = document.getElementById('modal-lifecycle-timeline');
+                            
+                            if (history && history.length > 0) {
+                                timelineEl.innerHTML = `
+                                    <div style="position: absolute; left: 7px; top: 0; bottom: 0; width: 1px; background: var(--border-color);"></div>
+                                    ${history.map(update => `
+                                        <div style="display: flex; gap: 1.5rem; position: relative; z-index: 1;">
+                                            <div style="width: 15px; height: 15px; border-radius: 50%; background: ${getStatusColor(update.status)}; border: 3px solid var(--bg-dark); margin-top: 3px;"></div>
+                                            <div style="flex: 1;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <span style="font-weight: 700; font-size: 0.85rem; color: ${getStatusColor(update.status)};">${update.status.toUpperCase()}</span>
+                                                    <span style="font-size: 0.65rem; color: var(--text-secondary);">${new Date(update.created_at).toLocaleString()}</span>
+                                                </div>
+                                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem; line-height: 1.4;">${update.notes || 'Status synchronized with intelligence network.'}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                `;
+                            } else {
+                                timelineEl.innerHTML = '<p style="text-align: center; font-size: 0.8rem; color: var(--text-secondary);">No historical records found.</p>';
+                            }
+
+                            document.getElementById('lifecycle-modal').style.display = 'flex';
+                        } catch (err) {
+                            console.error("Failed to load lifecycle data:", err);
+                        }
+                    },
+                    closeModal: (id) => {
+                        document.getElementById(id).style.display = 'none';
+                    },
+                    scanMissions: async () => {
+                        const btn = event.target;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning...';
+                        try {
+                            const missions = await API.request(`/missions/nearby?lat=${lat}&lon=${lon}`);
+                            const container = document.getElementById('active-missions');
+                            
+                            if (missions && missions.length > 0) {
+                                container.innerHTML = missions.map(m => `
+                                    <div class="glass-card" style="padding: 1.2rem; background: rgba(0, 255, 157, 0.05); border-color: var(--success);">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
+                                            <h4 style="font-size: 0.9rem; font-weight: 800;">${m.title}</h4>
+                                            <span class="status-tag critical" style="font-size: 0.6rem;">${m.urgency}</span>
+                                        </div>
+                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 1rem;">${m.description}</p>
+                                        <button onclick="UI.acceptMission('${m.id}')" class="btn btn-primary" style="width: 100%; font-size: 0.7rem; background: var(--success); border: none; color: black;">Accept Mission</button>
+                                    </div>
+                                `).join('');
+                            } else {
+                                container.innerHTML = '<p style="text-align: center; padding: 1rem; font-size: 0.8rem; color: var(--text-secondary);">Intelligence suggests no active threats requiring immediate intervention.</p>';
+                            }
+                        } catch (err) {
+                            console.error("Mission scan failed:", err);
+                        } finally {
+                            btn.innerHTML = 'Scan for Nearby Tasks';
+                        }
+                    },
+                    acceptMission: async (id) => {
+                        try {
+                            await API.request(`/missions/${id}/accept`, 'POST');
+                            UI.showNotification('Mission accepted. Coordinate sync complete.', 'success');
+                            UI.scanMissions();
+                        } catch (err) {
+                            UI.showNotification('Security error accepting mission.', 'danger');
+                        }
+                    }
+                });
 
                 // Update Clock
                 setInterval(() => {

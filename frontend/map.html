@@ -99,6 +99,10 @@
                     <input type="checkbox" checked>
                 </div>
                 <div class="layer-item">
+                    <span>Predictive Drift</span>
+                    <input type="checkbox" id="drift-layer-toggle" onchange="MAP.toggleDriftLayer(this.checked)">
+                </div>
+                <div class="layer-item">
                     <span>Sea Surface Temp</span>
                     <input type="checkbox">
                 </div>
@@ -218,6 +222,48 @@
             } catch (err) { console.error(err); }
         }
         initMapData();
+
+        // Prediction Layer Logic
+        let predictionLayers = [];
+        window.MAP = {
+            toggleDriftLayer: async (enabled) => {
+                predictionLayers.forEach(l => map.removeLayer(l));
+                predictionLayers = [];
+                
+                if (enabled) {
+                    try {
+                        const predictions = await API.request('/predictions/hotspots');
+                        predictions.forEach(p => {
+                            if (p.drift_path) {
+                                const latlngs = p.drift_path.map(pt => [pt.lat, pt.lon]);
+                                const poly = L.polyline(latlngs, {
+                                    color: '#f59e0b',
+                                    weight: 3,
+                                    dashArray: '10, 10',
+                                    opacity: 0.6
+                                }).addTo(map);
+                                
+                                const target = L.circle(latlngs[latlngs.length - 1], {
+                                    radius: 2000,
+                                    color: '#ef4444',
+                                    fillColor: '#ef4444',
+                                    fillOpacity: 0.2
+                                }).addTo(map);
+                                
+                                target.bindPopup(`
+                                    <div style="font-family: 'Outfit'; color: white;">
+                                        <h4 style="color: #ef4444; font-size: 0.8rem; margin-bottom: 0.5rem;">FUTURE HOTSPOT</h4>
+                                        <p style="font-size: 0.75rem; line-height: 1.4;">${p.action_recommendation}</p>
+                                    </div>
+                                `);
+                                
+                                predictionLayers.push(poly, target);
+                            }
+                        });
+                    } catch (err) { console.error(err); }
+                }
+            }
+        };
     </script>
 </body>
 </html>

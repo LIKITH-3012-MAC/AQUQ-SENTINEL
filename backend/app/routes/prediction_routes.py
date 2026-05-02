@@ -2,19 +2,24 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from .. import database, models, auth, schemas
-from ..services import prediction_service
+from ..services.hotspot_prediction_service import HotspotPredictionService
 
 router = APIRouter(prefix="/api/predictions", tags=["predictions"])
 
-@router.get("/hotspots", response_model=schemas.HotspotPredictionResponse)
-def get_hotspot_prediction(
-    lat: float, 
-    lon: float, 
-    hours: int = 24,
+@router.get("/hotspots")
+def get_all_predictions(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    """
-    Get debris drift prediction for a specific location.
-    """
-    return prediction_service.predict_debris_hotspots(db, lat, lon, hours)
+    return HotspotPredictionService.get_all_predictions(db)
+
+@router.post("/trigger/{report_id}")
+def trigger_prediction(
+    report_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    prediction = HotspotPredictionService.predict_drift(db, report_id)
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return prediction
