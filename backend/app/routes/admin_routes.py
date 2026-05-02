@@ -32,3 +32,6 @@ def update_user_status(user_id: UUID, active: bool, db: Session = Depends(databa
     user.is_active = active
     db.commit()
     return {"status": "success", "is_active": active}
+@router.get("/audit-logs", response_model=List[schemas.AuditLogResponse])
+def get_audit_logs(db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):
+    return db.query(models.AuditLog).order_by(models.AuditLog.created_at.desc()).limit(100).all()

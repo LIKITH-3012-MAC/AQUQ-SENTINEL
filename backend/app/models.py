@@ -140,6 +140,8 @@ class MarineReport(Base):
     image_url = Column(String, nullable=True)
     ai_analysis = Column(JSON, nullable=True) # AI Report Assistant results
     tracking_id = Column(String, unique=True, index=True, default=lambda: f"AQUA-{uuid.uuid4().hex[:8].upper()}")
+    is_simulated = Column(Boolean, default=False)
+    simulation_id = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -176,6 +178,8 @@ class Mission(Base):
     before_image = Column(String, nullable=True)
     after_image = Column(String, nullable=True)
     progress_notes = Column(Text, nullable=True)
+    is_simulated = Column(Boolean, default=False)
+    simulation_id = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True), nullable=True)
 
@@ -214,6 +218,8 @@ class RiskScore(Base):
     explanation = Column(Text, nullable=True)
     recommended_action = Column(Text, nullable=True)
     factors = Column(JSON, nullable=True)
+    is_simulated = Column(Boolean, default=False)
+    simulation_id = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class Alert(Base):
@@ -227,6 +233,8 @@ class Alert(Base):
     longitude = Column(Float, nullable=False)
     status = Column(String, default="active")
     verified_by_admin = Column(Boolean, default=False)
+    is_simulated = Column(Boolean, default=False)
+    simulation_id = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class AdminAction(Base):

@@ -51,6 +51,17 @@ def create_simulation(
     # Trigger intelligence side-effects
     simulation_engine.trigger_simulation_effects(db, new_sim, admin.id)
 
+    # Log Audit
+    audit = models.AuditLog(
+        user_id=admin.id,
+        action="simulation_created",
+        entity_type="simulation",
+        entity_id=str(new_sim.id),
+        action_metadata={"title": new_sim.scenario_title, "severity": new_sim.severity}
+    )
+    db.add(audit)
+    db.commit()
+
     return new_sim
 
 @router.get("/", response_model=List[schemas.SimulatedIncidentResponse])
@@ -69,6 +80,17 @@ def reset_all_simulations(
     Clear all simulated data from the system.
     """
     simulation_engine.clear_all_simulations(db)
+    
+    # Log Audit
+    audit = models.AuditLog(
+        user_id=admin.id,
+        action="simulation_reset",
+        entity_type="system",
+        action_metadata={"purged_by": admin.full_name}
+    )
+    db.add(audit)
+    db.commit()
+    
     return {"success": True, "message": "All simulation data purged from the system."}
 
 @router.delete("/{sim_id}", status_code=status.HTTP_204_NO_CONTENT)

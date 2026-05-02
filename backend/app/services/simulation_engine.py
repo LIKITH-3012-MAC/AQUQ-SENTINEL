@@ -20,6 +20,8 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
         report_type=sim.debris_type,
         severity=sim.severity,
         status="Submitted",
+        is_simulated=True,
+        simulation_id=sim.id,
         ai_analysis={
             "suggested_category": sim.debris_type.title(),
             "urgency": sim.severity,
@@ -51,7 +53,9 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
             latitude=sim.latitude,
             longitude=sim.longitude,
             verified_by_admin=True,
-            status="active"
+            status="active",
+            is_simulated=True,
+            simulation_id=sim.id
         )
         db.add(alert)
 
@@ -71,7 +75,8 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
             explanation=f"SIMULATED IMPACT: This score has been temporarily lowered for evaluation due to a simulated {sim.debris_type} event.",
             contributing_factors={
                 "debris_density": sim.density_score,
-                "is_simulated": True
+                "is_simulated": True,
+                "simulation_id": str(sim.id)
             },
             recommended_action="Resolve simulation to restore baseline health metrics."
         )
@@ -90,7 +95,9 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
                 {"task": "Initialize tactical team (Simulated)", "completed": False},
                 {"task": "Deploy containment (Simulated)", "completed": False},
                 {"task": "Extract debris (Simulated)", "completed": False}
-            ]
+            ],
+            is_simulated=True,
+            simulation_id=sim.id
         )
         db.add(mission)
 
@@ -99,21 +106,20 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
 
 def clear_all_simulations(db: Session):
     """
-    Clear all demo data.
+    Clear all demo data using strict simulation flags.
     """
-    # 1. Deactivate simulation records
+    # 1. Deactivate simulation scenarios
     db.query(models.SimulatedIncident).update({"is_active": False})
     
-    # 2. Delete/Close simulated reports
-    sim_reports = db.query(models.MarineReport).filter(models.MarineReport.title.like("SIMULATED%")).all()
-    for r in sim_reports:
-        r.status = "Closed"
+    # 2. Purge simulated entities (Hard delete for demo cleanup is safer to avoid map clutter)
+    db.query(models.Alert).filter(models.Alert.is_simulated == True).delete(synchronize_session=False)
+    db.query(models.Mission).filter(models.Mission.is_simulated == True).delete(synchronize_session=False)
+    db.query(models.MarineReport).filter(models.MarineReport.is_simulated == True).delete(synchronize_session=False)
+    db.query(models.RiskScore).filter(models.RiskScore.is_simulated == True).delete(synchronize_session=False)
     
-    # 3. Clear simulated alerts
-    db.query(models.Alert).filter(models.Alert.title.like("%[SIMULATED]%")).delete(synchronize_session=False)
-    
-    # 4. Missions
-    db.query(models.Mission).filter(models.Mission.title.like("%[DEMO]%")).delete(synchronize_session=False)
+    # 3. Handle OceanHealthScore which uses JSON for simulation flag
+    # (Simplified for now, but in prod we'd use a proper column)
+    db.query(models.OceanHealthScore).filter(models.OceanHealthScore.region_name.like("SIMULATED%")).delete(synchronize_session=False)
     
     db.commit()
     return True

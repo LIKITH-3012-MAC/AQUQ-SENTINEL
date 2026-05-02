@@ -56,6 +56,16 @@
         .leaflet-container { background: #020617 !important; }
         .leaflet-control-zoom { border: none !important; box-shadow: var(--glow) !important; }
         .leaflet-bar a { background: var(--surface-color) !important; color: var(--text-primary) !important; border: 1px solid var(--border-color) !important; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.5); opacity: 0.3; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite ease-out;
+            transform-origin: center;
+        }
     </style>
 </head>
 <body>
@@ -308,10 +318,50 @@
             }
         };
 
+        // Real-time Alert Polling for Demo Mode
+        let lastAlertId = 0;
+        async function pollAlerts() {
+            try {
+                const alerts = await API.request('/alerts');
+                if (alerts.length > 0) {
+                    const latest = alerts[0];
+                    if (latest.id > lastAlertId) {
+                        lastAlertId = latest.id;
+                        
+                        // Show Premium Alert Popup
+                        const isSim = latest.title.includes('[SIMULATED]');
+                        UI.showToast(`
+                            <div style="display:flex; align-items:center; gap:1rem;">
+                                <i class="fas ${isSim ? 'fa-robot' : 'fa-triangle-exclamation'} text-gradient" style="font-size:1.5rem;"></i>
+                                <div>
+                                    <div style="font-weight:800; font-size:0.8rem; letter-spacing:1px;">${latest.title}</div>
+                                    <div style="font-size:0.75rem; opacity:0.8;">${latest.message}</div>
+                                </div>
+                            </div>
+                        `, latest.severity === 'Critical' ? 'error' : 'warning');
+
+                        // Auto-center map if it's a simulated judge event
+                        if (isSim) {
+                            map.flyTo([latest.latitude, latest.longitude], 12);
+                            // Add a temporary hotspot pulse
+                            const pulse = L.circle([latest.latitude, latest.longitude], {
+                                radius: 5000, color: '#00f3ff', fillColor: '#00f3ff', fillOpacity: 0.3, className: 'pulse-animation'
+                            }).addTo(map);
+                            setTimeout(() => map.removeLayer(pulse), 10000);
+                        }
+                    }
+                }
+            } catch (err) { console.warn("Alert Polling Failed:", err); }
+        }
+
         // Initialize default active layers
         setTimeout(() => {
             if (document.getElementById('layer-risk').checked) MAP.toggleRiskZones(true);
             if (document.getElementById('layer-chlorophyll').checked) MAP.toggleChlorophyll(true);
+            
+            // Start Polling
+            pollAlerts();
+            setInterval(pollAlerts, 10000);
         }, 500);
 
     </script>

@@ -90,7 +90,7 @@
                     <a href="#" class="menu-item" onclick="Admin.comingSoon('Authorities')"><i class="fas fa-users"></i> Authorities</a>
                     <a href="#" class="menu-item" onclick="Admin.comingSoon('NASA Monitor')"><i class="fas fa-satellite"></i> NASA Monitor</a>
                     <a href="#" class="menu-item" onclick="Admin.comingSoon('Risk Settings')"><i class="fas fa-shield-halved"></i> Risk Settings</a>
-                    <a href="#" class="menu-item" onclick="Admin.comingSoon('Audit Logs')"><i class="fas fa-clock-rotate-left"></i> Audit Logs</a>
+                    <a href="#" class="menu-item" onclick="Admin.switchTab('audit')"><i class="fas fa-clock-rotate-left"></i> Audit Logs</a>
                 </div>
             </aside>
 
@@ -260,6 +260,28 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Audit Logs Section -->
+            <section id="audit-section" style="display: none; flex-direction: column; gap: 2rem;">
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 2rem;"><i class="fas fa-clock-rotate-left text-gradient"></i> Operational <span class="text-gradient">Audit Logs</span></h3>
+                    <div style="overflow-x: auto;">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>Target</th>
+                                    <th>Metadata</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-logs-list">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 
@@ -290,6 +312,10 @@
                     document.getElementById('reports-section').style.display = 'flex';
                     document.querySelector('[onclick="Admin.switchTab(\'reports\')"]').classList.add('active');
                     this.loadFullReports();
+                } else if (tab === 'audit') {
+                    document.getElementById('audit-section').style.display = 'flex';
+                    document.querySelector('[onclick="Admin.switchTab(\'audit\')"]').classList.add('active');
+                    this.loadAuditLogs();
                 }
             },
 
@@ -307,6 +333,21 @@
                             <td>
                                 ${r.status === 'Submitted' ? `<button onclick="verifyReport(${r.id})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button>` : `<i class="fas fa-check-circle text-gradient"></i>`}
                             </td>
+                        </tr>
+                    `).join('');
+                } catch (err) { console.error(err); }
+            },
+
+            async loadAuditLogs() {
+                try {
+                    const logs = await API.request('/admin/audit-logs');
+                    const list = document.getElementById('audit-logs-list');
+                    list.innerHTML = logs.map(l => `
+                        <tr>
+                            <td>${new Date(l.created_at).toLocaleString()}</td>
+                            <td><span class="status-tag">${l.action.toUpperCase()}</span></td>
+                            <td>${l.entity_type || 'N/A'}</td>
+                            <td style="font-size: 0.75rem; color: var(--text-secondary);">${JSON.stringify(l.action_metadata || {})}</td>
                         </tr>
                     `).join('');
                 } catch (err) { console.error(err); }
@@ -394,24 +435,54 @@
 
         async function loadAdminData() {
             try {
-                const summary = await API.dashboard.summary();
+                const [summary, logs] = await Promise.all([
+                    API.dashboard.summary(),
+                    API.request('/admin/audit-logs')
+                ]);
+                
                 document.getElementById('total-reports').textContent = summary.total_reports;
                 document.getElementById('active-alerts').textContent = summary.active_alerts;
                 document.getElementById('critical-risks').textContent = summary.critical_risks;
 
+                // Create a Unified Intelligence Feed (Reports + Audit Logs)
+                const combinedEvents = [
+                    ...summary.recent_reports.map(r => ({
+                        time: new Date(r.created_at),
+                        id: `#R${r.id.toString().padStart(4, '0')}`,
+                        type: r.report_type.replace('_', ' ').toUpperCase(),
+                        loc: `${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}`,
+                        sev: r.severity,
+                        status: r.status,
+                        is_report: true,
+                        raw: r
+                    })),
+                    ...logs.slice(0, 10).map(l => ({
+                        time: new Date(l.created_at),
+                        id: `#A${l.id.substring(0,4).toUpperCase()}`,
+                        type: l.action.replace('_', ' ').toUpperCase(),
+                        loc: 'SYSTEM',
+                        sev: 'Info',
+                        status: 'COMPLETED',
+                        is_report: false,
+                        raw: l
+                    }))
+                ].sort((a, b) => b.time - a.time);
+
                 const feed = document.getElementById('admin-activity-feed');
-                feed.innerHTML = summary.recent_reports.map(r => `
-                    <tr>
-                        <td>#${r.id.toString().padStart(4, '0')}</td>
+                feed.innerHTML = combinedEvents.map(ev => `
+                    <tr style="${!ev.is_report ? 'background: rgba(100, 255, 218, 0.03);' : ''}">
+                        <td>${ev.id}</td>
                         <td>
-                            <strong>${r.report_type.replace('_', ' ').toUpperCase()}</strong>
-                            ${r.title.includes('SIMULATED') ? '<span class="status-tag critical" style="font-size:0.5rem; padding: 0.1rem 0.3rem; margin-left:5px;">SIM</span>' : ''}
+                            <strong style="${!ev.is_report ? 'color: var(--accent-color);' : ''}">${ev.type}</strong>
+                            ${ev.is_report && ev.raw.title.includes('SIMULATED') ? '<span class="status-tag critical" style="font-size:0.5rem; padding: 0.1rem 0.3rem; margin-left:5px;">SIM</span>' : ''}
                         </td>
-                        <td>${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}</td>
-                        <td><span class="status-tag ${r.severity === 'Critical' ? 'critical' : ''}">${r.severity}</span></td>
-                        <td><span class="status-tag">${r.status.toUpperCase()}</span></td>
+                        <td>${ev.loc}</td>
+                        <td><span class="status-tag ${ev.sev === 'Critical' || ev.sev === 'High' ? 'critical' : ''}">${ev.sev}</span></td>
+                        <td><span class="status-tag">${ev.status.toUpperCase()}</span></td>
                         <td>
-                            ${r.status === 'Submitted' ? `<button onclick="verifyReport(${r.id})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button>` : `<i class="fas fa-check-circle text-gradient"></i>`}
+                            ${ev.is_report && ev.status === 'Submitted' ? 
+                                `<button onclick="verifyReport(${ev.raw.id})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button>` : 
+                                `<i class="fas fa-check-circle text-gradient"></i>`}
                         </td>
                     </tr>
                 `).join('');
