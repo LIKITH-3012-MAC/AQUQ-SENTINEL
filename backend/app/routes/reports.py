@@ -121,6 +121,7 @@ def update_report_status(
     db.add(update)
     db.commit()
     db.refresh(db_report)
+    return db_report
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_report(

@@ -86,11 +86,11 @@
                 <div class="glass-card sidebar-menu">
                     <a href="#" class="menu-item active" onclick="Admin.switchTab('ops')"><i class="fas fa-chart-line"></i> Operations</a>
                     <a href="#" class="menu-item" onclick="Admin.switchTab('sim')"><i class="fas fa-microchip"></i> Simulation Engine</a>
-                    <a href="#" class="menu-item"><i class="fas fa-file-invoice"></i> Reports Queue</a>
-                    <a href="#" class="menu-item"><i class="fas fa-users"></i> Authorities</a>
-                    <a href="#" class="menu-item"><i class="fas fa-satellite"></i> NASA Monitor</a>
-                    <a href="#" class="menu-item"><i class="fas fa-shield-halved"></i> Risk Settings</a>
-                    <a href="#" class="menu-item"><i class="fas fa-clock-rotate-left"></i> Audit Logs</a>
+                    <a href="#" class="menu-item" onclick="Admin.switchTab('reports')"><i class="fas fa-file-invoice"></i> Reports Queue</a>
+                    <a href="#" class="menu-item" onclick="Admin.comingSoon('Authorities')"><i class="fas fa-users"></i> Authorities</a>
+                    <a href="#" class="menu-item" onclick="Admin.comingSoon('NASA Monitor')"><i class="fas fa-satellite"></i> NASA Monitor</a>
+                    <a href="#" class="menu-item" onclick="Admin.comingSoon('Risk Settings')"><i class="fas fa-shield-halved"></i> Risk Settings</a>
+                    <a href="#" class="menu-item" onclick="Admin.comingSoon('Audit Logs')"><i class="fas fa-clock-rotate-left"></i> Audit Logs</a>
                 </div>
             </aside>
 
@@ -230,6 +230,36 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Reports Queue Section -->
+            <section id="reports-section" style="display: none; flex-direction: column; gap: 2rem;">
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3><i class="fas fa-file-invoice text-gradient"></i> Global <span class="text-gradient">Reports Queue</span></h3>
+                        <div style="display: flex; gap: 1rem;">
+                            <input type="text" placeholder="Filter ID or Type..." id="report-search" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 1rem; color: white; font-size: 0.8rem; outline: none;">
+                            <button onclick="Admin.loadFullReports()" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.8rem;"><i class="fas fa-sync"></i> Refresh Queue</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Location</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="full-reports-list">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 
@@ -256,7 +286,34 @@
                     document.getElementById('sim-section').style.display = 'flex';
                     document.querySelector('[onclick="Admin.switchTab(\'sim\')"]').classList.add('active');
                     this.loadSimulations();
+                } else if (tab === 'reports') {
+                    document.getElementById('reports-section').style.display = 'flex';
+                    document.querySelector('[onclick="Admin.switchTab(\'reports\')"]').classList.add('active');
+                    this.loadFullReports();
                 }
+            },
+
+            async loadFullReports() {
+                try {
+                    const reports = await API.reports.list();
+                    const list = document.getElementById('full-reports-list');
+                    list.innerHTML = reports.map(r => `
+                        <tr>
+                            <td>#${r.id.toString().padStart(4, '0')}</td>
+                            <td><strong>${r.report_type.toUpperCase()}</strong></td>
+                            <td>${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}</td>
+                            <td><span class="status-tag ${r.severity === 'Critical' ? 'critical' : ''}">${r.severity}</span></td>
+                            <td><span class="status-tag">${r.status.toUpperCase()}</span></td>
+                            <td>
+                                ${r.status === 'Submitted' ? `<button onclick="verifyReport(${r.id})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button>` : `<i class="fas fa-check-circle text-gradient"></i>`}
+                            </td>
+                        </tr>
+                    `).join('');
+                } catch (err) { console.error(err); }
+            },
+
+            comingSoon(module) {
+                UI.showToast(`${module} interface is being calibrated. Check back soon.`, "info");
             },
 
             async triggerSimulation(e) {
@@ -329,6 +386,7 @@
                 await API.request(`/reports/${id}/status`, 'PATCH', { status: 'verified' });
                 UI.showToast(`Incident #${id} verified.`, 'success');
                 loadAdminData();
+                if (Admin.loadFullReports) Admin.loadFullReports();
             } catch (err) {
                 UI.showToast("Verification failed: " + err.message, 'error');
             }
