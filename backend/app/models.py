@@ -31,14 +31,40 @@ class UserProfile(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     phone = Column(String, nullable=True)
     state = Column(String, nullable=True)
+    district = Column(String, nullable=True)
     city = Column(String, nullable=True)
+    country = Column(String, default="India")
     preferred_language = Column(String, default="English")
     preferred_theme = Column(String, default="dark")
     preferred_region = Column(String, nullable=True)
+    preferred_weather_unit = Column(String, default="metric")
     bio = Column(Text, nullable=True)
+    organization = Column(String, nullable=True)
+    occupation = Column(String, nullable=True)
+    impact_score = Column(Integer, default=0)
+    profile_completion_percent = Column(Integer, default=0)
     profile_image_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class UserProfileImage(Base):
+    __tablename__ = "user_profile_images"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    from sqlalchemy import LargeBinary
+    binary_data = Column(LargeBinary, nullable=True)
+    mime_type = Column(String, nullable=True)
+    file_size = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class UserActivityTimeline(Base):
+    __tablename__ = "user_activity_timeline"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    event_type = Column(String, nullable=False) # 'profile_update', 'report_submitted', 'mission_joined', etc.
+    description = Column(Text, nullable=False)
+    metadata_json = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class UserWatchlistRegion(Base):
     __tablename__ = "user_watchlist_regions"

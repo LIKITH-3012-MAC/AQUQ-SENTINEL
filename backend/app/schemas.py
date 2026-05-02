@@ -212,15 +212,43 @@ class PreferenceUpdate(BaseModel):
 class UserProfileBase(BaseModel):
     phone: Optional[str] = None
     state: Optional[str] = None
+    district: Optional[str] = None
     city: Optional[str] = None
+    country: Optional[str] = "India"
     preferred_language: Optional[str] = "English"
     preferred_theme: Optional[str] = "dark"
     preferred_region: Optional[str] = None
+    preferred_weather_unit: Optional[str] = "metric"
     bio: Optional[str] = None
+    organization: Optional[str] = None
+    occupation: Optional[str] = None
     profile_image_url: Optional[str] = None
+    impact_score: int = 0
+    profile_completion_percent: int = 0
 
-class UserProfileUpdate(UserProfileBase):
+class UserProfileUpdate(BaseModel):
     full_name: Optional[str] = None
+    phone: Optional[str] = None
+    state: Optional[str] = None
+    district: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    preferred_language: Optional[str] = None
+    preferred_theme: Optional[str] = None
+    preferred_region: Optional[str] = None
+    preferred_weather_unit: Optional[str] = None
+    bio: Optional[str] = None
+    organization: Optional[str] = None
+    occupation: Optional[str] = None
+
+class UserActivityTimelineResponse(BaseModel):
+    id: UUID
+    event_type: str
+    description: str
+    metadata_json: Optional[Any]
+    created_at: datetime
+    class Config:
+        from_attributes = True
 
 class UserActivityStats(BaseModel):
     total_reports: int
@@ -228,6 +256,9 @@ class UserActivityStats(BaseModel):
     resolved_reports: int
     total_chat_queries: int
     missions_joined: int
+    missions_completed: int
+    alerts_received: int
+    watched_regions_count: int
 
 class FullProfileResponse(BaseModel):
     success: bool
@@ -235,6 +266,7 @@ class FullProfileResponse(BaseModel):
     profile: UserProfileBase
     stats: UserActivityStats
     recent_reports: List[MarineReportResponse]
+    recent_activity: List[UserActivityTimelineResponse]
     watchlist_regions: List[Any]
 
 class SimulatedIncidentCreate(BaseModel):

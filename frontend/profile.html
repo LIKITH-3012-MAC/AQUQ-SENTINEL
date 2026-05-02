@@ -116,11 +116,24 @@
             <!-- Sidebar -->
             <aside class="profile-sidebar">
                 <div class="glass-card" style="text-align: center; padding: 2.5rem 2rem;">
-                    <div class="avatar-container">
+                    <div class="avatar-container" style="cursor: pointer;" onclick="document.getElementById('photo-upload').click()">
                         <img id="display-avatar" src="https://ui-avatars.com/api/?name=User&background=00f3ff&color=000" alt="Avatar" class="profile-avatar">
+                        <div style="position: absolute; bottom: 5px; right: 5px; background: var(--accent-color); color: black; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; border: 3px solid var(--surface-color);">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <input type="file" id="photo-upload" style="display: none;" onchange="Profile.uploadPhoto(event)">
                     </div>
                     <h2 id="display-name" style="margin-bottom: 0.3rem;">Loading...</h2>
-                    <p id="display-role" class="status-tag success" style="display: inline-block; margin-bottom: 1.5rem;">USER</p>
+                    <p id="display-role" class="status-tag success" style="display: inline-block; margin-bottom: 1rem;">USER</p>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 0.5rem;">Intelligence Completion</div>
+                        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden;">
+                            <div id="completion-bar" style="width: 0%; height: 100%; background: var(--accent-color); transition: width 1s ease-out;"></div>
+                        </div>
+                        <div id="completion-text" style="font-size: 0.75rem; margin-top: 0.3rem; font-weight: 700;">0%</div>
+                    </div>
+
                     <p id="display-bio" style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
                         No bio provided.
                     </p>
@@ -134,13 +147,17 @@
                         <div id="stat-reports" class="stat-value">0</div>
                         <div class="stat-label">Reports</div>
                     </div>
-                    <div id="stat-chats-card" class="glass-card stat-card">
+                    <div class="glass-card stat-card">
+                        <div id="stat-impact" class="stat-value">0</div>
+                        <div class="stat-label">Impact Score</div>
+                    </div>
+                    <div class="glass-card stat-card">
                         <div id="stat-chats" class="stat-value">0</div>
                         <div class="stat-label">AI Queries</div>
                     </div>
-                    <div class="glass-card stat-card" style="grid-column: 1 / -1;">
+                    <div class="glass-card stat-card">
                         <div id="stat-missions" class="stat-value">0</div>
-                        <div class="stat-label">Missions Joined</div>
+                        <div class="stat-label">Missions</div>
                     </div>
                 </div>
             </aside>
@@ -148,7 +165,7 @@
             <!-- Main Content -->
             <div style="display: flex; flex-direction: column; gap: 2rem;">
                 <div class="glass-card">
-                    <h3 style="margin-bottom: 2rem;"><i class="fas fa-id-card text-gradient"></i> Personal <span class="text-gradient">Information</span></h3>
+                    <h3 style="margin-bottom: 2rem;"><i class="fas fa-id-card text-gradient"></i> Identity <span class="text-gradient">Matrix</span></h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div class="info-group">
                             <span class="info-label">Email Address</span>
@@ -159,29 +176,37 @@
                             <span id="display-phone" class="info-value">Not provided</span>
                         </div>
                         <div class="info-group">
-                            <span class="info-label">Location (State/City)</span>
+                            <span class="info-label">Geography (District/State)</span>
                             <span id="display-location" class="info-value">Not provided</span>
                         </div>
                         <div class="info-group">
-                            <span class="info-label">Preferred Region</span>
+                            <span class="info-label">Monitored Region</span>
                             <span id="display-region" class="info-value">Global</span>
                         </div>
                         <div class="info-group">
-                            <span class="info-label">Preferred Language</span>
+                            <span class="info-label">Organization / Occupation</span>
+                            <span id="display-org" class="info-value">Independent Research</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Intelligence Language</span>
                             <span id="display-language" class="info-value">English</span>
                         </div>
                         <div class="info-group">
-                            <span class="info-label">Member Since</span>
+                            <span class="info-label">Operational Since</span>
                             <span id="display-joined" class="info-value">...</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="glass-card">
-                    <h3 style="margin-bottom: 2rem;"><i class="fas fa-clock-rotate-left text-gradient"></i> Recent <span class="text-gradient">Activity</span></h3>
-                    <div id="activity-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3><i class="fas fa-clock-rotate-left text-gradient"></i> Activity <span class="text-gradient">Timeline</span></h3>
+                        <button class="btn btn-outline" style="font-size: 0.7rem; padding: 0.4rem 1rem;">Export Log</button>
+                    </div>
+                    <div id="activity-list" style="display: flex; flex-direction: column; gap: 1.5rem; position: relative;">
+                        <div style="position: absolute; left: 15px; top: 0; bottom: 0; width: 1px; background: var(--border-color);"></div>
                         <!-- Populated via JS -->
-                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No recent activity detected.</p>
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Synchronizing operational history...</p>
                     </div>
                 </div>
             </div>
@@ -192,7 +217,7 @@
     <div id="edit-modal" class="edit-modal">
         <div class="glass-card edit-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h2>Edit <span class="text-gradient">Profile</span></h2>
+                <h2>Modify <span class="text-gradient">Profile</span></h2>
                 <button onclick="Profile.closeEdit()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem;"><i class="fas fa-times"></i></button>
             </div>
             <form id="edit-form" onsubmit="Profile.save(event)">
@@ -206,12 +231,24 @@
                         <input type="text" id="edit-phone">
                     </div>
                     <div class="input-group">
+                        <label>Country</label>
+                        <input type="text" id="edit-country">
+                    </div>
+                    <div class="input-group">
                         <label>State</label>
                         <input type="text" id="edit-state">
                     </div>
                     <div class="input-group">
-                        <label>City</label>
-                        <input type="text" id="edit-city">
+                        <label>District / City</label>
+                        <input type="text" id="edit-district">
+                    </div>
+                    <div class="input-group">
+                        <label>Occupation</label>
+                        <input type="text" id="edit-occupation">
+                    </div>
+                    <div class="input-group">
+                        <label>Organization</label>
+                        <input type="text" id="edit-organization">
                     </div>
                     <div class="input-group">
                         <label>Preferred Language</label>
@@ -226,12 +263,22 @@
                         <label>Preferred Region</label>
                         <input type="text" id="edit-region">
                     </div>
+                    <div class="input-group">
+                        <label>Weather Units</label>
+                        <select id="edit-weather">
+                            <option value="metric">Metric (°C, m/s)</option>
+                            <option value="imperial">Imperial (°F, mph)</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="input-group" style="margin-top: 1.5rem;">
-                    <label>Bio</label>
+                    <label>Bio / Mission Statement</label>
                     <textarea id="edit-bio" style="height: 100px; resize: none;"></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Update Profile Information</button>
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Commit Changes</button>
+                    <button type="button" onclick="Profile.closeEdit()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+                </div>
             </form>
         </div>
     </div>
