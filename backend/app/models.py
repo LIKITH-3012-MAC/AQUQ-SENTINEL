@@ -143,6 +143,16 @@ class MarineReport(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+class MarineReportImage(Base):
+    __tablename__ = "marine_report_images"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    report_id = Column(Integer, ForeignKey("marine_reports.id", ondelete="CASCADE"), unique=True, nullable=False)
+    from sqlalchemy import LargeBinary
+    binary_data = Column(LargeBinary, nullable=False)
+    mime_type = Column(String, nullable=False)
+    file_size = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 class IncidentUpdate(Base):
     __tablename__ = "incident_updates"
     id = Column(Integer, primary_key=True, index=True)

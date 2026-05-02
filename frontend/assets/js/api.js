@@ -92,7 +92,12 @@ const API = {
         create: (data) => API.request('/reports/create', 'POST', data),
         analyze: (data) => API.request('/reports/analyze', 'POST', data),
         get: (id) => API.request(`/reports/${id}`),
-        history: (id) => API.request(`/reports/${id}/history`)
+        history: (id) => API.request(`/reports/${id}/history`),
+        uploadImage: (id, formData) => fetch(`${CONFIG.API_BASE_URL}/api/reports/${id}/image`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData
+        }).then(r => r.json())
     },
 
     dashboard: {
@@ -126,7 +131,12 @@ const API = {
 
     profile: {
         get: () => API.request('/profile/me'),
-        update: (data) => API.request('/profile/me', 'PATCH', data)
+        update: (data) => API.request('/profile/me', 'PATCH', data),
+        uploadPhoto: (formData) => fetch(`${CONFIG.API_BASE_URL}/api/profile/me/photo`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData
+        }).then(r => r.json())
     },
 
     simulation: {

@@ -33,6 +33,9 @@ const ReportFlow = {
         const file = input.files[0];
         if (!file) return;
         
+        // Store file for later upload
+        this.selectedFile = file;
+
         // Show local preview
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -41,27 +44,7 @@ const ReportFlow = {
         };
         reader.readAsDataURL(file);
 
-        // Actual upload to Intelligence OS
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${CONFIG.API_BASE_URL}/api/images/upload`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-            const data = await response.json();
-            if (response.ok) {
-                this.data.imageUrl = data.filename;
-                UI.showToast("Evidence transmitted successfully.", "success");
-            } else {
-                throw new Error(data.detail || "Upload failed");
-            }
-        } catch (err) {
-            UI.showToast("Telemetry failure: " + err.message, "error");
-        }
+        UI.showToast("Evidence captured and staged for transmission.", "info");
     },
 
     next() {
@@ -167,8 +150,15 @@ const ReportFlow = {
                 longitude: parseFloat(this.data.lon),
                 report_type: this.data.type,
                 severity: this.aiAnalysis ? this.aiAnalysis.urgency : "Medium",
-                image_url: this.data.imageUrl
+                image_url: "" // Will be updated by binary upload
             });
+
+            if (this.selectedFile) {
+                UI.showToast("Uploading evidence...", "info");
+                const formData = new FormData();
+                formData.append('file', this.selectedFile);
+                await API.reports.uploadImage(report.id, formData);
+            }
 
             UI.showToast("Mission Synchronized. ID: " + report.tracking_id, "success");
             setTimeout(() => {

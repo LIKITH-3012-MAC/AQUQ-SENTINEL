@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Response
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from .. import models, schemas, database, auth
@@ -140,4 +140,60 @@ def delete_report(
         
     db.delete(db_report)
     db.commit()
-    return None
+@router.post("/{id}/image")
+async def upload_report_image(
+    id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    Upload and persist a binary image for a specific report.
+    """
+    db_report = db.query(models.MarineReport).filter(models.MarineReport.id == id).first()
+    if not db_report:
+        raise HTTPException(status_code=404, detail="Report not found")
+        
+    if current_user.role != "admin" and db_report.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to attach image to this report")
+
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024: # 5MB limit for reports
+        raise HTTPException(status_code=400, detail="Image size must be less than 5MB")
+    
+    img_record = db.query(models.MarineReportImage).filter(models.MarineReportImage.report_id == id).first()
+    if not img_record:
+        img_record = models.MarineReportImage(report_id=id)
+        db.add(img_record)
+    
+    img_record.binary_data = content
+    img_record.mime_type = file.content_type
+    img_record.file_size = len(content)
+    
+    # Update report URL to use retrieval route
+    db_report.image_url = f"/api/reports/image/{id}"
+    
+    db.commit()
+    
+    # Trigger AI detection if it's a debris report (simulated)
+    if db_report.report_type == 'debris':
+        debris_detector.process_debris_detection(db, db_report.id, db_report.image_url)
+    
+    return {"success": True, "url": db_report.image_url}
+
+@router.get("/image/{report_id}")
+def get_report_image(
+    report_id: int,
+    db: Session = Depends(database.get_db)
+):
+    """
+    Retrieve report image binary directly from PostgreSQL.
+    """
+    img_record = db.query(models.MarineReportImage).filter(models.MarineReportImage.report_id == report_id).first()
+    if not img_record or not img_record.binary_data:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return Response(content=img_record.binary_data, media_type=img_record.mime_type)

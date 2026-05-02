@@ -157,14 +157,7 @@ const Profile = {
         UI.showNotification("Uploading profile identification...", "info");
 
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${CONFIG.API_BASE_URL}/api/profile/me/photo`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-
-            const result = await response.json();
+            const result = await API.profile.uploadPhoto(formData);
             if (result.success) {
                 UI.showNotification("Identification image synced.", "success");
                 document.getElementById('display-avatar').src = result.url + "?t=" + Date.now();
