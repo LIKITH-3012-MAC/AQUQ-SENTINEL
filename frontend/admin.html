@@ -84,7 +84,8 @@
         <div class="admin-grid">
             <aside>
                 <div class="glass-card sidebar-menu">
-                    <a href="#" class="menu-item active"><i class="fas fa-chart-line"></i> Operations</a>
+                    <a href="#" class="menu-item active" onclick="Admin.switchTab('ops')"><i class="fas fa-chart-line"></i> Operations</a>
+                    <a href="#" class="menu-item" onclick="Admin.switchTab('sim')"><i class="fas fa-microchip"></i> Simulation Engine</a>
                     <a href="#" class="menu-item"><i class="fas fa-file-invoice"></i> Reports Queue</a>
                     <a href="#" class="menu-item"><i class="fas fa-users"></i> Authorities</a>
                     <a href="#" class="menu-item"><i class="fas fa-satellite"></i> NASA Monitor</a>
@@ -93,7 +94,7 @@
                 </div>
             </aside>
 
-            <section style="display: flex; flex-direction: column; gap: 2rem;">
+            <section id="ops-section" style="display: flex; flex-direction: column; gap: 2rem;">
                 <!-- Header Stats -->
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
                     <div class="glass-card stat-card">
@@ -136,6 +137,99 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Simulation Engine Section -->
+            <section id="sim-section" style="display: none; flex-direction: column; gap: 2rem;">
+                <div class="glass-card hologram" style="border-color: var(--warning); padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h2 style="margin-bottom: 0.5rem;"><i class="fas fa-microchip text-gradient"></i> AI Simulation <span class="text-gradient">Engine</span></h2>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Judge Evaluation Mode: Trigger controlled debris events for demonstration.</p>
+                        </div>
+                        <span class="status-tag critical" style="padding: 0.5rem 1rem;">EVALUATION MODE ACTIVE</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+                        <!-- Simulation Form -->
+                        <div class="glass-card" style="background: rgba(255,255,255,0.02); padding: 1.5rem;">
+                            <h4 style="margin-bottom: 1.5rem;">Initialize New Scenario</h4>
+                            <form id="sim-form" onsubmit="Admin.triggerSimulation(event)">
+                                <div class="input-group">
+                                    <label>Scenario Title (e.g., Coastal Plastic Accumulation)</label>
+                                    <input type="text" id="sim-title" required placeholder="Judge Demo Scenario A">
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                                    <div class="input-group">
+                                        <label>Target Latitude</label>
+                                        <input type="number" step="any" id="sim-lat" required value="17.68">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Target Longitude</label>
+                                        <input type="number" step="any" id="sim-lon" required value="83.21">
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                                    <div class="input-group">
+                                        <label>Debris Type</label>
+                                        <select id="sim-type">
+                                            <option value="plastic_waste">Plastic Waste</option>
+                                            <option value="ghost_net">Ghost Net</option>
+                                            <option value="oil_patch">Oil Patch</option>
+                                            <option value="algae_anomaly">Algae Anomaly</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Severity</label>
+                                        <select id="sim-severity">
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High" selected>High</option>
+                                            <option value="Critical">Critical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                                    <div class="input-group">
+                                        <label>Density (0-100)</label>
+                                        <input type="number" id="sim-density" value="85">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Affected Radius (km)</label>
+                                        <input type="number" id="sim-radius" value="5">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; cursor: pointer;">
+                                        <input type="checkbox" id="sim-health" checked> Impact Ocean Health Score
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; cursor: pointer;">
+                                        <input type="checkbox" id="sim-alert" checked> Broadcast Demo Alerts
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; cursor: pointer;">
+                                        <input type="checkbox" id="sim-mission" checked> Initialize Mission Workflow
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem;">Activate Simulation Scenario</button>
+                            </form>
+                        </div>
+
+                        <!-- Active Simulations & Controls -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <div class="glass-card" style="padding: 1.5rem; flex: 1;">
+                                <h4 style="margin-bottom: 1.5rem;">Active Scenarios</h4>
+                                <div id="active-sims-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <p style="color: var(--text-secondary); font-size: 0.85rem; text-align: center; padding: 2rem;">No active simulations.</p>
+                                </div>
+                            </div>
+                            <div class="glass-card" style="padding: 1.5rem; border-color: var(--danger);">
+                                <h4 style="margin-bottom: 1rem; color: var(--danger);">Emergency Reset</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Purge all simulated data, alerts, and missions from the live environment.</p>
+                                <button onclick="Admin.resetSimulations()" class="btn btn-outline" style="width: 100%; border-color: var(--danger); color: var(--danger);">Reset Demo Environment</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 
@@ -146,6 +240,89 @@
     <script>
         AUTH.requireAuth();
         if (localStorage.getItem('role') !== 'admin') window.location.href = 'dashboard.html';
+
+        const Admin = {
+            currentTab: 'ops',
+
+            switchTab(tab) {
+                this.currentTab = tab;
+                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+
+                if (tab === 'ops') {
+                    document.getElementById('ops-section').style.display = 'flex';
+                    document.querySelector('[onclick="Admin.switchTab(\'ops\')"]').classList.add('active');
+                } else if (tab === 'sim') {
+                    document.getElementById('sim-section').style.display = 'flex';
+                    document.querySelector('[onclick="Admin.switchTab(\'sim\')"]').classList.add('active');
+                    this.loadSimulations();
+                }
+            },
+
+            async triggerSimulation(e) {
+                e.preventDefault();
+                UI.showToast("Initializing neural simulation...", "info");
+
+                const data = {
+                    scenario_title: document.getElementById('sim-title').value,
+                    latitude: parseFloat(document.getElementById('sim-lat').value),
+                    longitude: parseFloat(document.getElementById('sim-lon').value),
+                    debris_type: document.getElementById('sim-type').value,
+                    severity: document.getElementById('sim-severity').value,
+                    density_score: parseFloat(document.getElementById('sim-density').value),
+                    affected_radius: parseFloat(document.getElementById('sim-radius').value),
+                    health_impact_enabled: document.getElementById('sim-health').checked,
+                    alert_broadcast_enabled: document.getElementById('sim-alert').checked,
+                    mission_flow_enabled: document.getElementById('sim-mission').checked,
+                    duration_minutes: 60
+                };
+
+                try {
+                    await API.simulation.create(data);
+                    UI.showToast("Simulation Scenario Active.", "success");
+                    this.loadSimulations();
+                } catch (err) {
+                    UI.showToast("Simulation failed: " + err.message, "error");
+                }
+            },
+
+            async loadSimulations() {
+                try {
+                    const sims = await API.simulation.list();
+                    const list = document.getElementById('active-sims-list');
+                    if (sims.length === 0) {
+                        list.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem; text-align: center; padding: 2rem;">No active simulations.</p>`;
+                        return;
+                    }
+
+                    list.innerHTML = sims.map(s => `
+                        <div class="glass-card" style="padding: 1rem; border-left: 3px solid var(--warning); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.85rem;">${s.scenario_title}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary);">${s.debris_type.toUpperCase()} | ${s.severity}</div>
+                            </div>
+                            <button onclick="Admin.deleteSim('${s.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `).join('');
+                } catch (err) { console.error(err); }
+            },
+
+            async deleteSim(id) {
+                try {
+                    await API.simulation.delete(id);
+                    this.loadSimulations();
+                } catch (err) { UI.showToast(err.message, 'error'); }
+            },
+
+            async resetSimulations() {
+                if (!confirm("Are you sure? This will purge all simulated events, alerts, and demo missions.")) return;
+                try {
+                    await API.simulation.reset();
+                    UI.showToast("Environment Reset Complete.", "success");
+                    this.loadSimulations();
+                } catch (err) { UI.showToast(err.message, 'error'); }
+            }
+        };
 
         async function verifyReport(id) {
             try {
@@ -168,12 +345,15 @@
                 feed.innerHTML = summary.recent_reports.map(r => `
                     <tr>
                         <td>#${r.id.toString().padStart(4, '0')}</td>
-                        <td><strong>${r.report_type.replace('_', ' ').toUpperCase()}</strong></td>
+                        <td>
+                            <strong>${r.report_type.replace('_', ' ').toUpperCase()}</strong>
+                            ${r.title.includes('SIMULATED') ? '<span class="status-tag critical" style="font-size:0.5rem; padding: 0.1rem 0.3rem; margin-left:5px;">SIM</span>' : ''}
+                        </td>
                         <td>${r.latitude.toFixed(2)}, ${r.longitude.toFixed(2)}</td>
                         <td><span class="status-tag ${r.severity === 'Critical' ? 'critical' : ''}">${r.severity}</span></td>
                         <td><span class="status-tag">${r.status.toUpperCase()}</span></td>
                         <td>
-                            ${r.status === 'pending' ? `<button onclick="verifyReport(${r.id})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button>` : `<i class="fas fa-check-circle text-gradient"></i>`}
+                            ${r.status === 'Submitted' ? `<button onclick="verifyReport(${r.id})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Verify</button>` : `<i class="fas fa-check-circle text-gradient"></i>`}
                         </td>
                     </tr>
                 `).join('');

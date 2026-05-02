@@ -129,6 +129,13 @@ const API = {
         update: (data) => API.request('/profile/me', 'PATCH', data)
     },
 
+    simulation: {
+        create: (data) => API.request('/admin/simulations', 'POST', data),
+        list: () => API.request('/admin/simulations'),
+        reset: () => API.request('/admin/simulations/reset', 'POST'),
+        delete: (id) => API.request(`/admin/simulations/${id}`, 'DELETE')
+    },
+
     chatbot: {
         query: (data) => API.request('/chatbot/message', 'POST', {
             message: data.message,

@@ -307,3 +307,23 @@ class Simulation(Base):
     parameters = Column(JSON, nullable=True)
     results = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class SimulatedIncident(Base):
+    __tablename__ = "simulated_incidents"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    admin_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    scenario_title = Column(String, nullable=False)
+    debris_type = Column(String, nullable=False) # plastic, oil, net, etc.
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    severity = Column(String, nullable=False)
+    density_score = Column(Float, nullable=False)
+    affected_radius = Column(Float, nullable=False) # in km
+    drift_direction = Column(Float, nullable=True) # degrees
+    is_active = Column(Boolean, default=True)
+    health_impact_enabled = Column(Boolean, default=True)
+    alert_broadcast_enabled = Column(Boolean, default=True)
+    mission_flow_enabled = Column(Boolean, default=True)
+    judge_note = Column(Text, nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

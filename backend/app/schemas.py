@@ -237,6 +237,29 @@ class FullProfileResponse(BaseModel):
     recent_reports: List[MarineReportResponse]
     watchlist_regions: List[Any]
 
+class SimulatedIncidentCreate(BaseModel):
+    scenario_title: str
+    debris_type: str
+    latitude: float
+    longitude: float
+    severity: str
+    density_score: float
+    affected_radius: float
+    drift_direction: Optional[float] = None
+    health_impact_enabled: bool = True
+    alert_broadcast_enabled: bool = True
+    mission_flow_enabled: bool = True
+    judge_note: Optional[str] = None
+    duration_minutes: int = 60
+
+class SimulatedIncidentResponse(SimulatedIncidentCreate):
+    id: UUID
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class SatelliteObservationResponse(BaseModel):
     id: int
     latitude: float
