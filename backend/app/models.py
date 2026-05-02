@@ -61,6 +61,20 @@ class AuthResetToken(Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+class OceanHealthScore(Base):
+    __tablename__ = "ocean_health_scores"
+
+    id = Column(Integer, primary_key=True, index=True)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    region_name = Column(String, nullable=True)
+    score = Column(Integer, nullable=False) # 0 to 100
+    category = Column(String, nullable=False) # Excellent, Stable, Watchlist, At Risk, Critical
+    explanation = Column(Text, nullable=True)
+    contributing_factors = Column(JSON, nullable=True)
+    recommended_action = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 class MarineReport(Base):
     __tablename__ = "marine_reports"
 
@@ -72,10 +86,49 @@ class MarineReport(Base):
     longitude = Column(Float, nullable=False)
     report_type = Column(String, nullable=False) # 'debris', 'oil_spill', 'illegal_fishing', 'bleaching'
     severity = Column(String, nullable=False) # 'Low', 'Medium', 'High', 'Critical'
-    status = Column(String, default="pending") # 'pending', 'verified', 'resolved', 'dismissed'
+    status = Column(String, default="Submitted") # 'Submitted', 'Under Review', 'Verified', 'Assigned', 'Action in Progress', 'Resolved', 'Closed'
     image_url = Column(String, nullable=True)
+    ai_analysis = Column(JSON, nullable=True) # AI Report Assistant results
+    tracking_id = Column(String, unique=True, index=True, default=lambda: f"AQUA-{uuid.uuid4().hex[:8].upper()}")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class IncidentUpdate(Base):
+    __tablename__ = "incident_updates"
+    id = Column(Integer, primary_key=True, index=True)
+    report_id = Column(Integer, ForeignKey("marine_reports.id"), nullable=False)
+    status = Column(String, nullable=False)
+    notes = Column(Text, nullable=True)
+    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Mission(Base):
+    __tablename__ = "missions"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    report_id = Column(Integer, ForeignKey("marine_reports.id"), nullable=False)
+    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True) # NGO/Volunteer User ID
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    urgency = Column(String, nullable=False)
+    status = Column(String, default="Pending") # Pending, Accepted, In Progress, Completed
+    recommended_equipment = Column(Text, nullable=True)
+    checklist = Column(JSON, nullable=True)
+    before_image = Column(String, nullable=True)
+    after_image = Column(String, nullable=True)
+    progress_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+class HotspotPrediction(Base):
+    __tablename__ = "hotspot_predictions"
+    id = Column(Integer, primary_key=True, index=True)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    drift_path = Column(JSON, nullable=True) # List of lat/lon points
+    risk_level = Column(String, nullable=False)
+    time_window = Column(String, nullable=False) # e.g., "Next 24h"
+    action_recommendation = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class DebrisDetection(Base):
     __tablename__ = "debris_detections"

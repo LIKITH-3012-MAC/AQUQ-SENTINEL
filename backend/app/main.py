@@ -4,7 +4,8 @@ from . import models, database, auth
 from .routes import (
     auth_routes, dashboard, reports, satellite, 
     weather, ocean, debris, risk, admin_routes,
-    chatbot, simulation, alert_routes, image_routes
+    chatbot, simulation, alert_routes, image_routes,
+    health, hyperlocal, prediction_routes, mission_routes
 )
 
 # Auto-create tables (use migrations in real production)
@@ -71,6 +72,10 @@ app.include_router(chatbot.router)
 app.include_router(simulation.router)
 app.include_router(alert_routes.router)
 app.include_router(image_routes.router)
+app.include_router(health.router)
+app.include_router(hyperlocal.router)
+app.include_router(prediction_routes.router)
+app.include_router(mission_routes.router)
 
 @app.get("/")
 def read_root():

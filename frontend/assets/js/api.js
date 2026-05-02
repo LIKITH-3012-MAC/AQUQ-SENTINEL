@@ -90,11 +90,38 @@ const API = {
     reports: {
         list: () => API.request('/reports'),
         create: (data) => API.request('/reports/create', 'POST', data),
-        get: (id) => API.request(`/reports/${id}`)
+        analyze: (data) => API.request('/reports/analyze', 'POST', data),
+        get: (id) => API.request(`/reports/${id}`),
+        history: (id) => API.request(`/reports/${id}/history`)
     },
 
     dashboard: {
         summary: () => API.request('/dashboard/summary')
+    },
+
+    health: {
+        getScore: (lat, lon) => API.request(`/health/score?lat=${lat}&lon=${lon}`),
+        calculate: (data) => API.request('/health/calculate', 'POST', data)
+    },
+
+    hyperlocal: {
+        getIntelligence: (lat, lon, radius = 50) => API.request(`/hyperlocal/intelligence?lat=${lat}&lon=${lon}&radius=${radius}`)
+    },
+
+    weather: {
+        getMarine: (lat, lon) => API.request(`/weather/marine?lat=${lat}&lon=${lon}`),
+        getByCity: (place) => API.request(`/weather/current?place=${place}`)
+    },
+
+    predictions: {
+        getHotspots: (lat, lon, hours = 24) => API.request(`/predictions/hotspots?lat=${lat}&lon=${lon}&hours=${hours}`)
+    },
+
+    missions: {
+        list: () => API.request('/missions'),
+        create: (reportId) => API.request(`/missions/${reportId}/create`, 'POST'),
+        accept: (missionId) => API.request(`/missions/${missionId}/accept`, 'POST'),
+        updateProgress: (missionId, data) => API.request(`/missions/${missionId}/progress`, 'PATCH', data)
     },
 
     chatbot: {

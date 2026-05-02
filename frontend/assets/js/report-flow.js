@@ -97,28 +97,42 @@ const ReportFlow = {
         document.getElementById('next-btn').style.display = this.currentStep === 6 ? 'none' : 'flex';
     },
 
-    runAIPreAnalysis() {
+    async runAIPreAnalysis() {
         document.getElementById('ai-loading').style.display = 'block';
         document.getElementById('ai-result').style.display = 'none';
 
-        setTimeout(() => {
+        try {
+            this.data.lat = document.getElementById('rep-lat').value || 0;
+            this.data.lon = document.getElementById('rep-lon').value || 0;
+            this.data.description = document.getElementById('rep-desc').value || "Manual report";
+
+            const analysis = await API.reports.analyze({
+                title: "Pre-Analysis",
+                description: this.data.description,
+                latitude: parseFloat(this.data.lat),
+                longitude: parseFloat(this.data.lon),
+                report_type: this.data.type,
+                severity: "Medium" // Initial guess
+            });
+
             document.getElementById('ai-loading').style.display = 'none';
             document.getElementById('ai-result').style.display = 'block';
             
-            // Mock AI results based on type
-            const types = {
-                'plastic_waste': { cat: 'Plastic Debris Cluster', urgency: 'MEDIUM', impact: 'High risk of microplastic degradation. Cleanup recommended within 7 days.' },
-                'oil_spill': { cat: 'Petroleum Surface Slick', urgency: 'CRITICAL', impact: 'Severe toxicity to marine avifauna. Immediate containment required.' },
-                'algae_bloom': { cat: 'Eutrophication Event', urgency: 'HIGH', impact: 'Hypoxic conditions detected. Fish kill risk imminent.' },
-                'dead_fish': { cat: 'Mass Mortality Incident', urgency: 'CRITICAL', impact: 'Pathogen risk high. Immediate investigation by regional authorities needed.' }
-            };
-
-            const res = types[this.data.type] || types['plastic_waste'];
-            document.getElementById('ai-category').textContent = res.cat;
-            document.getElementById('ai-urgency').textContent = res.urgency;
-            document.getElementById('ai-urgency').className = 'status-tag ' + (res.urgency === 'CRITICAL' ? 'critical' : 'success');
-            document.getElementById('ai-impact').textContent = res.impact;
-        }, 1500);
+            document.getElementById('ai-category').textContent = analysis.suggested_category;
+            document.getElementById('ai-urgency').textContent = analysis.urgency.toUpperCase();
+            document.getElementById('ai-conf').textContent = analysis.confidence + "%";
+            document.getElementById('ai-impact').textContent = analysis.possible_impact;
+            document.getElementById('ai-suggestion').innerHTML = `<strong>Intelligence Suggestion:</strong> ${analysis.recommended_action}`;
+            
+            const urgencyClass = analysis.urgency === 'Extreme' || analysis.urgency === 'High' ? 'critical' : 'success';
+            document.getElementById('ai-urgency').className = 'status-tag ' + urgencyClass;
+            
+            // Store results for submission
+            this.aiAnalysis = analysis;
+        } catch (err) {
+            console.error("AI Analysis failed", err);
+            document.getElementById('ai-loading').innerHTML = `<p style="color:var(--danger);">AI Telemetry Failure: ${err.message}</p>`;
+        }
     },
 
     generateSummary() {
@@ -146,20 +160,22 @@ const ReportFlow = {
 
     async submit() {
         try {
-            const report = await API.request('/reports/create', 'POST', {
+            const report = await API.reports.create({
                 title: `${this.data.type.replace('_', ' ')} Incident`,
                 description: this.data.description,
                 latitude: parseFloat(this.data.lat),
                 longitude: parseFloat(this.data.lon),
                 report_type: this.data.type,
-                severity: document.getElementById('ai-urgency').textContent,
+                severity: this.aiAnalysis ? this.aiAnalysis.urgency : "Medium",
                 image_url: this.data.imageUrl
             });
 
-            alert("Mission Synchronized. Tracking ID: " + report.id);
-            window.location.href = 'dashboard.html';
+            UI.showToast("Mission Synchronized. ID: " + report.tracking_id, "success");
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
         } catch (err) {
-            alert("Submission failed: " + err.message);
+            UI.showToast("Submission failed: " + err.message, "error");
         }
     }
 };

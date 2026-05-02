@@ -34,6 +34,19 @@
     </div>
 
     <main class="container" style="padding-top: 8rem; padding-bottom: 6rem;">
+        <!-- Weather Widget (Top Left) -->
+        <div id="weather-widget" class="glass-card" style="position: absolute; top: 1.5rem; left: 2rem; padding: 0.8rem 1.2rem; border-radius: 15px; display: flex; align-items: center; gap: 1rem; z-index: 1001; min-width: 200px;">
+            <div id="weather-emoji" style="font-size: 2rem;">🌡️</div>
+            <div style="display: flex; flex-direction: column;">
+                <div id="weather-city" style="font-weight: 800; font-size: 0.9rem; letter-spacing: 0.5px;">Detecting...</div>
+                <div id="weather-desc" style="font-size: 0.75rem; color: var(--text-secondary);">Local Conditions</div>
+                <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.2rem;">
+                    <span id="weather-temp" style="font-weight: 700; font-size: 1.1rem; color: var(--accent-color);">--°C</span>
+                    <span id="weather-meta" style="font-size: 0.65rem; color: var(--text-secondary);">Wind: --</span>
+                </div>
+            </div>
+        </div>
+
         <header style="margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 2rem;">
             <div>
                 <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Intelligence <span class="text-gradient">Command</span></h1>
@@ -58,9 +71,10 @@
                 
                 <!-- Status Row -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                    <div class="glass-card hologram" style="text-align: center; border-color: var(--accent-color);">
-                        <div id="health-score" style="font-size: 3rem; font-weight: 800;" class="text-gradient">84%</div>
-                        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary);">Ocean Health Score</div>
+                    <div class="glass-card hologram" style="text-align: center; border-color: var(--accent-color); position: relative; overflow: hidden;">
+                        <div id="health-score" style="font-size: 3rem; font-weight: 800;" class="text-gradient">--%</div>
+                        <div id="health-category" style="font-size: 0.7rem; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: 1px; margin-top: -5px;">Detecting...</div>
+                        <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); margin-top: 10px;">Ocean Health Score</div>
                     </div>
                     <div class="glass-card" style="text-align: center;">
                         <div id="local-risk" style="font-size: 3rem; font-weight: 800; color: var(--warning);">LOW</div>
@@ -71,6 +85,22 @@
                         <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary);">Active Alerts</div>
                     </div>
                 </div>
+
+                <!-- Hyperlocal Intelligence -->
+                <div class="glass-card" style="background: linear-gradient(135deg, rgba(0, 243, 255, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.2rem;">Hyperlocal <span class="text-gradient">Intelligence</span></h3>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);"><i class="fas fa-location-dot"></i> <span id="current-location-text">Detecting Location...</span></div>
+                    </div>
+                    <div id="hyperlocal-summary" style="margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+                        Initializing sensors for localized marine scanning...
+                    </div>
+                    <div id="hotspot-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <!-- Hotspots dynamically added -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
 
                 <!-- Quick Actions -->
                 <div class="glass-card">
@@ -105,13 +135,22 @@
 
             <!-- Right Column -->
             <div style="display: flex; flex-direction: column; gap: 2rem;">
-                <!-- AI Recommendations -->
-                <div class="glass-card hologram" style="border-color: var(--accent-color);">
-                    <h3 style="margin-bottom: 1.2rem; font-size: 1.1rem;"><i class="fas fa-brain text-gradient"></i> AI <span class="text-gradient">Insights</span></h3>
-                    <div id="ai-recs" style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div style="font-size: 0.85rem; color: var(--text-secondary); background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; border-left: 3px solid var(--accent-color);">
-                            Scanning your region... Recommendation: Check Sea Surface Temp in Sector 7-G.
-                        </div>
+                <!-- Predictive Analytics -->
+                <div class="glass-card hologram" style="border-color: var(--warning); background: rgba(255, 204, 0, 0.03);">
+                    <h3 style="margin-bottom: 1.2rem; font-size: 1.1rem;"><i class="fas fa-wand-magic-sparkles text-gradient"></i> Predictive <span class="text-gradient">Drift</span></h3>
+                    <div id="drift-prediction" style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Analyzing currents for trajectory estimation...
+                    </div>
+                    <div id="prediction-path" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <!-- Drift points -->
+                    </div>
+                </div>
+
+                <!-- Mission Mode (NGO/Volunteer) -->
+                <div id="mission-mode-section" class="glass-card" style="display: none; border-color: var(--success); background: rgba(0, 255, 157, 0.03);">
+                    <h3 style="margin-bottom: 1.2rem; font-size: 1.1rem;"><i class="fas fa-flag text-gradient"></i> Mission <span class="text-gradient">Control</span></h3>
+                    <div id="active-missions" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; text-align: center;">Scanning for nearby cleanup missions...</p>
                     </div>
                 </div>
 
@@ -168,44 +207,40 @@
                 const user = AUTH.getCurrentUser();
                 if (user) document.getElementById('user-name-display').textContent = user.full_name;
 
-                const summary = await API.dashboard.summary();
+                // 1. Get User Location
+                let lat = 17.6868, lon = 83.2185; // Default (Visakhapatnam)
                 
-                // Update Stats
-                const healthScore = 70 + (summary.data_points_analyzed % 30); // Dynamic mock health
-                document.getElementById('health-score').textContent = healthScore + "%";
-                document.getElementById('active-alerts').textContent = summary.active_alerts;
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        lat = position.coords.latitude;
+                        lon = position.coords.longitude;
+                        await refreshLocationData(lat, lon);
+                    }, async (err) => {
+                        console.warn("Location denied, using default sector.");
+                        await refreshLocationData(lat, lon);
+                    });
+                } else {
+                    await refreshLocationData(lat, lon);
+                }
+
+                const summary = await API.dashboard.summary();
                 
                 // Update Timeline
                 const timeline = document.getElementById('reports-timeline');
                 if (summary.recent_reports && summary.recent_reports.length > 0) {
                     timeline.innerHTML = summary.recent_reports.map(r => `
-                        <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+                        <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-left: 3px solid ${getStatusColor(r.status)};">
                             <div>
                                 <div style="font-weight: 700; font-size: 0.9rem;">${r.title}</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">${new Date(r.created_at).toLocaleDateString()} | ${r.report_type}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">
+                                    <span style="color: var(--accent-color); font-family: monospace; font-weight: 600;">${r.tracking_id}</span> | ${new Date(r.created_at).toLocaleDateString()}
+                                </div>
                             </div>
-                            <div class="glass-card" style="padding: 0.3rem 0.8rem; font-size: 0.7rem; font-weight: 800; border-color: ${r.status === 'verified' ? 'var(--success)' : 'var(--warning)'};">
+                            <div class="status-badge" style="padding: 0.3rem 0.8rem; font-size: 0.65rem; font-weight: 800; border-radius: 50px; background: ${getStatusColor(r.status)}20; color: ${getStatusColor(r.status)}; border: 1px solid ${getStatusColor(r.status)}40;">
                                 ${r.status.toUpperCase()}
                             </div>
                         </div>
                     `).join('');
-                } else {
-                    timeline.innerHTML = `
-                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
-                            <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                            <p>No active missions found in your sector.</p>
-                        </div>
-                    `;
-                }
-
-                // AI Insights
-                const aiRecs = document.getElementById('ai-recs');
-                if (summary.recent_reports && summary.recent_reports.length > 0) {
-                    aiRecs.innerHTML = `
-                        <div style="font-size: 0.85rem; color: var(--text-secondary); background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; border-left: 3px solid var(--accent-color);">
-                            Detected ${summary.recent_reports[0].report_type}. Recommendation: Deploy regional response team to coordinates.
-                        </div>
-                    `;
                 }
 
                 // Update Clock
@@ -216,6 +251,115 @@
             } catch (err) {
                 console.error("Dashboard error", err);
             }
+        }
+
+        async function refreshLocationData(lat, lon) {
+            try {
+                // Fetch Hyperlocal Intelligence
+                const intel = await API.hyperlocal.getIntelligence(lat, lon);
+                
+                // Update Weather
+                const weather = await API.weather.getMarine(lat, lon);
+                document.getElementById('weather-emoji').textContent = weather.emoji;
+                document.getElementById('weather-city').textContent = weather.city;
+                document.getElementById('weather-desc').textContent = weather.description.charAt(0).toUpperCase() + weather.description.slice(1);
+                document.getElementById('weather-temp').textContent = Math.round(weather.temp) + "°C";
+                document.getElementById('weather-meta').textContent = `Wind: ${weather.wind_speed}km/h | Hum: ${weather.humidity}%`;
+
+                // Update Health Score
+                const health = intel.health_score;
+                document.getElementById('health-score').textContent = health.score + "%";
+                document.getElementById('health-category').textContent = health.category;
+                document.getElementById('health-category').style.color = getHealthColor(health.category);
+                
+                // Update Local Risk (from health logic)
+                const riskLevel = 100 - health.score;
+                const riskText = riskLevel > 75 ? 'CRITICAL' : riskLevel > 50 ? 'HIGH' : riskLevel > 25 ? 'MEDIUM' : 'LOW';
+                document.getElementById('local-risk').textContent = riskText;
+                document.getElementById('local-risk').style.color = getHealthColor(health.category, true);
+
+                document.getElementById('active-alerts').textContent = intel.alerts_count;
+
+                // Update Hyperlocal Section
+                document.getElementById('current-location-text').textContent = `${lat.toFixed(2)}, ${lon.toFixed(2)} (${intel.location.region})`;
+                document.getElementById('hyperlocal-summary').textContent = intel.summary;
+
+                const hotspotList = document.getElementById('hotspot-list');
+                if (intel.hotspots && intel.hotspots.length > 0) {
+                    hotspotList.innerHTML = intel.hotspots.map(h => `
+                        <div class="glass-card" style="border-left: 4px solid var(--danger); background: rgba(255, 51, 102, 0.05);">
+                            <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.3rem;">${h.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${h.reason}</div>
+                            <div style="margin-top: 0.5rem; font-size: 0.7rem; font-weight: 800; color: var(--danger);">RISK: ${h.risk_level.toUpperCase()}</div>
+                        </div>
+                    `).join('');
+                }
+
+                // 2. Fetch Predictions
+                const pred = await API.predictions.getHotspots(lat, lon);
+                document.getElementById('drift-prediction').innerHTML = `
+                    <div style="margin-bottom: 0.5rem; font-weight: 600;">Risk Level: <span style="color:var(--warning);">${pred.risk_level}</span></div>
+                    <div>${pred.action_recommendation}</div>
+                `;
+                const pathEl = document.getElementById('prediction-path');
+                pathEl.innerHTML = pred.drift_path.slice(0, 5).map(p => `
+                    <div style="display:flex; justify-content:space-between; font-size: 0.7rem; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0.2rem 0;">
+                        <span>T+${p.hour}h</span>
+                        <span>${p.lat}, ${p.lon}</span>
+                    </div>
+                `).join('') + `<div style="text-align:center; font-size:0.6rem; opacity:0.5; margin-top:0.3rem;">+ ${pred.drift_path.length - 5} more points</div>`;
+
+                // 3. Fetch Missions (if role matches)
+                const user = AUTH.getCurrentUser();
+                if (['ngo', 'volunteer', 'admin', 'authority'].includes(user.role)) {
+                    document.getElementById('mission-mode-section').style.display = 'block';
+                    const missions = await API.missions.list();
+                    const missionList = document.getElementById('active-missions');
+                    if (missions.length > 0) {
+                        missionList.innerHTML = missions.map(m => `
+                            <div class="glass-card" style="padding: 1rem; border-color: ${m.status === 'Pending' ? 'var(--warning)' : 'var(--success)'};">
+                                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">
+                                    <div style="font-weight:700; font-size:0.85rem;">${m.title}</div>
+                                    <div style="font-size:0.6rem; padding:0.2rem 0.5rem; border-radius:5px; background:rgba(255,255,255,0.05);">${m.urgency}</div>
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.8rem;">${m.description.substring(0, 60)}...</div>
+                                ${m.status === 'Pending' ? `<button onclick="acceptMission('${m.id}')" class="btn btn-primary" style="width:100%; padding:0.4rem; font-size:0.7rem;">Accept Mission</button>` : `<div style="font-size:0.7rem; font-weight:800; color:var(--success); text-align:center;">IN PROGRESS</div>`}
+                            </div>
+                        `).join('');
+                    }
+                }
+
+            } catch (err) {
+                console.error("Location data refresh error", err);
+            }
+        }
+
+        async function acceptMission(id) {
+            try {
+                await API.missions.accept(id);
+                UI.showToast("Mission Accepted. Gear up!", "success");
+                loadDashboard();
+            } catch (err) {
+                UI.showToast("Mission failed: " + err.message, "error");
+            }
+        }
+
+        function getHealthColor(cat, inverse = false) {
+            const colors = {
+                'Excellent': '#00ff9d',
+                'Stable': '#00f3ff',
+                'Watchlist': '#ffcc00',
+                'At Risk': '#ff9900',
+                'Critical': '#ff3366'
+            };
+            return colors[cat] || 'var(--accent-color)';
+        }
+
+        function getStatusColor(status) {
+            const s = status.toLowerCase();
+            if (s === 'verified' || s === 'resolved' || s === 'closed') return 'var(--success)';
+            if (s === 'pending' || s === 'submitted') return 'var(--warning)';
+            return 'var(--accent-color)';
         }
         
         loadDashboard();

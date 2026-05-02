@@ -17,3 +17,14 @@ def get_weather_data(
     """
     return openweather_service.fetch_marine_weather(db, lat, lon)
 
+@router.get("/current")
+def get_current_weather(
+    place: str,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    Fetch weather by city name.
+    """
+    return openweather_service.fetch_weather_by_city(db, place)
+

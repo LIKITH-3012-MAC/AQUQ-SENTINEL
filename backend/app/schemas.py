@@ -85,8 +85,40 @@ class MarineReportResponse(MarineReportBase):
     id: int
     user_id: UUID
     status: str
+    tracking_id: str
+    ai_analysis: Optional[Any]
     created_at: datetime
     updated_at: Optional[datetime]
+    class Config:
+        from_attributes = True
+
+class MissionResponse(BaseModel):
+    id: UUID
+    report_id: int
+    assigned_to: Optional[UUID]
+    title: str
+    description: str
+    urgency: str
+    status: str
+    recommended_equipment: Optional[str]
+    checklist: Optional[Any]
+    before_image: Optional[str]
+    after_image: Optional[str]
+    progress_notes: Optional[str]
+    created_at: datetime
+    completed_at: Optional[datetime]
+    class Config:
+        from_attributes = True
+
+class HotspotPredictionResponse(BaseModel):
+    id: int
+    latitude: float
+    longitude: float
+    drift_path: Optional[Any]
+    risk_level: str
+    time_window: str
+    action_recommendation: Optional[str]
+    created_at: datetime
     class Config:
         from_attributes = True
 
