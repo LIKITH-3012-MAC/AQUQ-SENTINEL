@@ -31,7 +31,23 @@ class HyperlocalService:
             ) * 111.0 <= radius
         ).order_by(models.MarineReport.created_at.desc()).limit(5).all()
 
-        # 4. Generate Regional Intelligence Summary
+        # 4. Get Total Counts for the region
+        total_alerts_count = db.query(models.Alert).filter(
+            func.sqrt(
+                func.pow(models.Alert.latitude - lat, 2) + 
+                func.pow(models.Alert.longitude - lon, 2)
+            ) * 111.0 <= radius,
+            models.Alert.status == "active"
+        ).count()
+
+        total_reports_count = db.query(models.MarineReport).filter(
+            func.sqrt(
+                func.pow(models.MarineReport.latitude - lat, 2) + 
+                func.pow(models.MarineReport.longitude - lon, 2)
+            ) * 111.0 <= radius
+        ).count()
+
+        # 5. Generate Regional Intelligence Summary
         summary = ""
         if health['score'] < 40:
             summary = f"CRITICAL: Multiple high-density debris zones detected near {lat}, {lon}. Risk is accelerating."
@@ -45,7 +61,9 @@ class HyperlocalService:
             "radius_km": radius,
             "health_score": health,
             "alerts": alerts,
+            "total_alerts_count": total_alerts_count,
             "recent_reports": reports,
+            "total_reports_count": total_reports_count,
             "intelligence_summary": summary,
             "hotspot_status": "HIGH" if health['score'] < 50 else "LOW"
         }

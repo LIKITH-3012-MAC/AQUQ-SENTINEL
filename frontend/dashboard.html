@@ -60,11 +60,21 @@
             </div>
         </header>
 
-        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 3rem;">
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 3rem; flex-wrap: wrap;">
             <div class="glass-card" style="padding: 1rem 2rem; border-radius: 50px; display: flex; gap: 1.5rem; align-items: center;">
                 <div style="text-align: center;">
                     <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Network</div>
                     <div style="font-weight: 700; color: var(--success);">SECURE</div>
+                </div>
+                <div style="width: 1px; height: 20px; background: var(--border-color);"></div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Reports</div>
+                    <div id="global-reports-count" style="font-weight: 700; color: var(--accent-color);">--</div>
+                </div>
+                <div style="width: 1px; height: 20px; background: var(--border-color);"></div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px;">Threats</div>
+                    <div id="global-alerts-count" style="font-weight: 700; color: var(--danger);">--</div>
                 </div>
                 <div style="width: 1px; height: 20px; background: var(--border-color);"></div>
                 <div style="text-align: center;">
@@ -301,311 +311,301 @@
     <script>
         AUTH.requireAuth();
         
-        async function loadDashboard() {
-            try {
-                const user = AUTH.getCurrentUser();
-                if (user) document.getElementById('user-name-display').textContent = user.full_name;
+        // Tactical Intelligence Controller
+        const Dashboard = {
+            async init() {
+                try {
+                    const user = AUTH.getCurrentUser();
+                    if (user) document.getElementById('user-name-display').textContent = user.full_name;
 
-                // 1. Get User Location
-                let lat = 17.6868, lon = 83.2185; // Default (Visakhapatnam)
+                    // 1. Initialize Clock
+                    setInterval(() => {
+                        const clock = document.getElementById('utc-clock');
+                        if (clock) clock.textContent = new Date().toISOString().split('T')[1].split('.')[0] + ' UTC';
+                    }, 1000);
+
+                    // 2. Trigger Global Summary
+                    await this.loadGlobalMetrics();
+
+                    // 3. Trigger Geolocation & Local Intelligence
+                    this.initGeolocation();
+
+                } catch (err) {
+                    console.error("Dashboard Boot Failure:", err);
+                    UI.showNotification("Critical System Error: Operational grid offline.", "danger");
+                }
+            },
+
+            async loadGlobalMetrics() {
+                try {
+                    const summary = await API.dashboard.summary();
+                    
+                    // Update Timeline (Recent Reports)
+                    const timeline = document.getElementById('reports-timeline');
+                    if (summary.recent_reports && summary.recent_reports.length > 0) {
+                        timeline.innerHTML = summary.recent_reports.map(r => `
+                            <div class="glass-card clickable" onclick="UI.openLifecycleModal('${r.id}')" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-left: 3px solid ${this.getStatusColor(r.status)}; cursor: pointer;">
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.9rem;">
+                                        ${r.title}
+                                        ${r.title.includes('SIMULATED') ? '<span class="status-tag critical" style="font-size:0.5rem; padding: 0.1rem 0.3rem; margin-left:5px; vertical-align:middle;">SIMULATED</span>' : ''}
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">
+                                        <span style="color: var(--accent-color); font-family: monospace; font-weight: 600;">${r.tracking_id}</span> | ${new Date(r.created_at).toLocaleDateString()}
+                                    </div>
+                                </div>
+                                <div class="status-badge" style="padding: 0.3rem 0.8rem; font-size: 0.65rem; font-weight: 800; border-radius: 50px; background: ${this.getStatusColor(r.status)}20; color: ${this.getStatusColor(r.status)}; border: 1px solid ${this.getStatusColor(r.status)}40;">
+                                    ${r.status.toUpperCase()}
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        timeline.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary); opacity: 0.5;">No active mission reports found.</div>';
+                    }
+
+                    // Update Global Stats in Header
+                    document.getElementById('global-reports-count').textContent = summary.total_reports;
+                    document.getElementById('global-alerts-count').textContent = summary.active_alerts;
+
+                } catch (err) {
+                    console.error("Global Metrics Error:", err);
+                }
+            },
+
+            initGeolocation() {
+                let lat = 17.6868, lon = 83.2185; // Default Tactical Sector
                 
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(async (position) => {
-                        lat = position.coords.latitude;
-                        lon = position.coords.longitude;
-                        await refreshLocationData(lat, lon);
-                    }, async (err) => {
-                        console.warn("Location denied, using default sector.");
-                        await refreshLocationData(lat, lon);
-                    });
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => this.refreshIntelligence(pos.coords.latitude, pos.coords.longitude),
+                        (err) => {
+                            console.warn("Location Access Denied. Using fallback sector.");
+                            this.refreshIntelligence(lat, lon);
+                        }
+                    );
                 } else {
-                    await refreshLocationData(lat, lon);
+                    this.refreshIntelligence(lat, lon);
                 }
+            },
 
-                async function refreshLocationData(lat, lon) {
-                    try {
-                        // 1. Get Hyperlocal Intel
-                        const intel = await API.hyperlocal.intelligence(lat, lon);
-                        document.getElementById('current-location-text').textContent = `Sector: ${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-                        document.getElementById('regional-summary').textContent = intel.intelligence_summary;
-                        document.getElementById('nearby-alerts-count').textContent = intel.alerts.length;
-                        document.getElementById('nearby-reports-count').textContent = intel.recent_reports.length;
-                        
-                        const statusTag = document.getElementById('hotspot-status');
-                        statusTag.textContent = intel.hotspot_status === 'HIGH' ? 'CRITICAL HOTSPOT' : 'LOW RISK ZONE';
-                        statusTag.className = `status-tag ${intel.hotspot_status === 'HIGH' ? 'critical' : 'success'}`;
+            async refreshIntelligence(lat, lon) {
+                console.log(`[INTEL] Refreshing coordinates: ${lat}, ${lon}`);
+                
+                try {
+                    // Start Parallel Intelligence Streams
+                    const [intel, weather, predictions] = await Promise.all([
+                        API.hyperlocal.intelligence(lat, lon),
+                        API.weather.getMarine(lat, lon),
+                        API.predictions.getHotspots(lat, lon)
+                    ]);
 
-                        // 2. Get Ocean Health Score
-                        const health = intel.health_score;
-                        const scoreEl = document.getElementById('health-score');
-                        const categoryEl = document.getElementById('health-category');
-                        const progressEl = document.getElementById('health-progress');
-                        
-                        scoreEl.textContent = `${health.score}%`;
-                        categoryEl.textContent = health.category.toUpperCase();
-                        categoryEl.className = `status-tag ${health.category === 'Excellent' || health.category === 'Stable' ? 'success' : health.category === 'Watchlist' ? 'warning' : 'critical'}`;
-                        
-                        // Update Progress Circle
-                        progressEl.style.strokeDasharray = `${health.score}, 100`;
-                        progressEl.style.stroke = health.score > 70 ? 'var(--success)' : health.score > 40 ? 'var(--warning)' : 'var(--danger)';
+                    // 1. Render Local Conditions (Weather)
+                    document.getElementById('weather-emoji').textContent = weather.emoji || '🌡️';
+                    document.getElementById('weather-city').textContent = weather.city || 'Marine Sector';
+                    document.getElementById('weather-desc').textContent = (weather.description || 'Clear skies').toUpperCase();
+                    document.getElementById('weather-temp').textContent = Math.round(weather.temp || 0) + "°C";
+                    document.getElementById('weather-meta').textContent = `WIND: ${weather.wind_speed || 0}KM/H | HUM: ${weather.humidity || 0}%`;
 
-                        document.getElementById('health-explanation').textContent = health.explanation;
-                        document.getElementById('health-action').textContent = health.recommended_action;
+                    // 2. Render Hyperlocal Intelligence
+                    document.getElementById('current-location-text').textContent = `SECTOR: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+                    document.getElementById('regional-summary').textContent = intel.intelligence_summary;
+                    document.getElementById('nearby-alerts-count').textContent = intel.total_alerts_count;
+                    document.getElementById('nearby-reports-count').textContent = intel.total_reports_count;
+                    
+                    const hotspotTag = document.getElementById('hotspot-status');
+                    hotspotTag.textContent = intel.hotspot_status === 'HIGH' ? 'CRITICAL HOTSPOT' : 'STABLE ZONE';
+                    hotspotTag.className = `status-tag ${intel.hotspot_status === 'HIGH' ? 'critical' : 'success'}`;
 
-                        // Factors
-                        const factorsContainer = document.getElementById('health-factors');
-                        factorsContainer.innerHTML = health.contributing_factors.map(f => `
-                            <span class="status-tag" style="font-size: 0.6rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.05); color: ${f.impact < 0 ? 'var(--danger)' : 'var(--success)'};">
-                                ${f.name} (${f.impact > 0 ? '+' : ''}${f.impact})
-                            </span>
+                    // 3. Render Ocean Health
+                    const health = intel.health_score;
+                    document.getElementById('health-score').textContent = health.score + "%";
+                    document.getElementById('health-category').textContent = health.category.toUpperCase();
+                    document.getElementById('health-category').className = `status-tag ${this.getHealthClass(health.category)}`;
+                    
+                    const progressEl = document.getElementById('health-progress');
+                    progressEl.style.strokeDasharray = `${health.score}, 100`;
+                    progressEl.style.stroke = this.getHealthHex(health.category);
+
+                    document.getElementById('health-explanation').textContent = health.explanation;
+                    document.getElementById('health-action').textContent = health.recommended_action;
+
+                    // 4. Render Health Factors
+                    const factorsContainer = document.getElementById('health-factors');
+                    factorsContainer.innerHTML = health.contributing_factors.map(f => `
+                        <span class="status-tag" style="font-size: 0.6rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.05); color: ${f.impact < 0 ? 'var(--danger)' : 'var(--success)'};">
+                            ${f.name} (${f.impact > 0 ? '+' : ''}${f.impact})
+                        </span>
+                    `).join('');
+
+                    // 5. Render Drift Predictions
+                    const pred = Array.isArray(predictions) ? predictions[0] : predictions;
+                    
+                    const driftEl = document.getElementById('drift-prediction');
+                    if (pred) {
+                        driftEl.innerHTML = `
+                            <div style="margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-color);">TRAJECTORY: ${pred.drift_path && pred.drift_path.length > 0 ? 'CALCULATED' : 'STABLE'}</div>
+                            <div style="font-size: 0.8rem; line-height: 1.4;">${pred.action_recommendation}</div>
+                        `;
+
+                        const pathEl = document.getElementById('prediction-path');
+                        if (pred.drift_path && pred.drift_path.length > 0) {
+                            pathEl.innerHTML = pred.drift_path.slice(0, 5).map(p => `
+                                <div style="display:flex; justify-content:space-between; font-size: 0.7rem; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0.3rem 0;">
+                                    <span style="font-weight: 700; color: var(--accent-color);">T+${p.hour}H</span>
+                                    <span>${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}</span>
+                                </div>
+                            `).join('');
+                        } else {
+                            pathEl.innerHTML = '<p style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">No drift anomalies detected.</p>';
+                        }
+                    } else {
+                        driftEl.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-secondary);">No tactical drift data for this sector.</p>';
+                        document.getElementById('prediction-path').innerHTML = '';
+                    }
+
+                    // 6. Handle Sector Alerts (Nearby)
+                    const alertsContainer = document.getElementById('nearby-alerts');
+                    if (intel.alerts && intel.alerts.length > 0) {
+                        alertsContainer.innerHTML = intel.alerts.map(a => `
+                            <div class="glass-card" style="padding: 1rem; border-left: 3px solid ${a.severity === 'CRITICAL' ? 'var(--danger)' : 'var(--warning)'}; background: rgba(255,255,255,0.02);">
+                                <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 800; font-size: 0.75rem; color: ${a.severity === 'CRITICAL' ? 'var(--danger)' : 'var(--warning)'};">${a.severity}</span>
+                                    <span style="font-size: 0.65rem; opacity: 0.6;">${new Date(a.created_at).toLocaleTimeString()}</span>
+                                </div>
+                                <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.2rem;">${a.title}</div>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary);">${a.message}</p>
+                            </div>
                         `).join('');
-
-                    } catch (err) {
-                        console.error("Failed to load hyperlocal intel:", err);
+                    } else {
+                        alertsContainer.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; padding: 1rem;">No active sector threats identified.</p>';
                     }
+
+                    // 7. Mission Mode Refresh (Conditional)
+                    this.loadMissions(lat, lon);
+
+                } catch (err) {
+                    console.error("Intelligence Refresh Failure:", err);
+                    UI.showNotification("Telemetry Sync Failed.", "danger");
                 }
+            },
 
-                const summary = await API.dashboard.summary();
-                
-                // Update Timeline
-                const timeline = document.getElementById('reports-timeline');
-                if (summary.recent_reports && summary.recent_reports.length > 0) {
-                    timeline.innerHTML = summary.recent_reports.map(r => `
-                        <div class="glass-card clickable" onclick="UI.openLifecycleModal(${r.id})" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-left: 3px solid ${getStatusColor(r.status)}; cursor: pointer;">
-                            <div>
-                                <div style="font-weight: 700; font-size: 0.9rem;">
-                                    ${r.title}
-                                    ${r.title.includes('SIMULATED') ? '<span class="status-tag critical" style="font-size:0.5rem; padding: 0.1rem 0.3rem; margin-left:5px; vertical-align:middle;">SIMULATED</span>' : ''}
-                                </div>
-                                <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">
-                                    <span style="color: var(--accent-color); font-family: monospace; font-weight: 600;">${r.tracking_id}</span> | ${new Date(r.created_at).toLocaleDateString()}
-                                </div>
-                            </div>
-                            <div class="status-badge" style="padding: 0.3rem 0.8rem; font-size: 0.65rem; font-weight: 800; border-radius: 50px; background: ${getStatusColor(r.status)}20; color: ${getStatusColor(r.status)}; border: 1px solid ${getStatusColor(r.status)}40;">
-                                ${r.status.toUpperCase()}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-
-                // Add to UI object
-                Object.assign(UI, {
-                    openLifecycleModal: async (id) => {
-                        try {
-                            const reports = await API.reports.all();
-                            const report = reports.find(r => r.id === id);
-                            if (!report) return;
-
-                            document.getElementById('modal-report-title').textContent = report.title.toUpperCase();
-                            document.getElementById('modal-tracking-id').textContent = report.tracking_id;
-                            document.getElementById('modal-report-type').textContent = `Type: ${report.report_type.replace('_', ' ').toUpperCase()}`;
-                            
-                            const statusEl = document.getElementById('modal-current-status');
-                            statusEl.textContent = report.status.toUpperCase();
-                            statusEl.style.background = `${getStatusColor(report.status)}20`;
-                            statusEl.style.color = getStatusColor(report.status);
-                            statusEl.style.border = `1px solid ${getStatusColor(report.status)}40`;
-
-                            // AI Analysis
-                            if (report.ai_analysis) {
-                                document.getElementById('modal-ai-analysis').style.display = 'block';
-                                document.getElementById('modal-ai-category').textContent = report.ai_analysis.suggested_category;
-                                document.getElementById('modal-ai-confidence').textContent = `${report.ai_analysis.confidence}%`;
-                                document.getElementById('modal-ai-impact').textContent = report.ai_analysis.possible_impact || report.ai_analysis.environmental_impact;
-                            } else {
-                                document.getElementById('modal-ai-analysis').style.display = 'none';
-                            }
-
-                            // Lifecycle Timeline
-                            const history = await API.request(`/reports/${id}/history`);
-                            const timelineEl = document.getElementById('modal-lifecycle-timeline');
-                            
-                            if (history && history.length > 0) {
-                                timelineEl.innerHTML = `
-                                    <div style="position: absolute; left: 7px; top: 0; bottom: 0; width: 1px; background: var(--border-color);"></div>
-                                    ${history.map(update => `
-                                        <div style="display: flex; gap: 1.5rem; position: relative; z-index: 1;">
-                                            <div style="width: 15px; height: 15px; border-radius: 50%; background: ${getStatusColor(update.status)}; border: 3px solid var(--bg-dark); margin-top: 3px;"></div>
-                                            <div style="flex: 1;">
-                                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                    <span style="font-weight: 700; font-size: 0.85rem; color: ${getStatusColor(update.status)};">${update.status.toUpperCase()}</span>
-                                                    <span style="font-size: 0.65rem; color: var(--text-secondary);">${new Date(update.created_at).toLocaleString()}</span>
-                                                </div>
-                                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem; line-height: 1.4;">${update.notes || 'Status synchronized with intelligence network.'}</p>
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                `;
-                            } else {
-                                timelineEl.innerHTML = '<p style="text-align: center; font-size: 0.8rem; color: var(--text-secondary);">No historical records found.</p>';
-                            }
-
-                            document.getElementById('lifecycle-modal').style.display = 'flex';
-                        } catch (err) {
-                            console.error("Failed to load lifecycle data:", err);
-                        }
-                    },
-                    closeModal: (id) => {
-                        document.getElementById(id).style.display = 'none';
-                    },
-                    scanMissions: async () => {
-                        const btn = event.target;
-                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning...';
-                        try {
-                            const missions = await API.request(`/missions/nearby?lat=${lat}&lon=${lon}`);
-                            const container = document.getElementById('active-missions');
-                            
-                            if (missions && missions.length > 0) {
-                                container.innerHTML = missions.map(m => `
-                                    <div class="glass-card" style="padding: 1.2rem; background: rgba(0, 255, 157, 0.05); border-color: var(--success);">
-                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
-                                            <h4 style="font-size: 0.9rem; font-weight: 800;">${m.title}</h4>
-                                            <span class="status-tag critical" style="font-size: 0.6rem;">${m.urgency}</span>
-                                        </div>
-                                        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 1rem;">${m.description}</p>
-                                        <button onclick="UI.acceptMission('${m.id}')" class="btn btn-primary" style="width: 100%; font-size: 0.7rem; background: var(--success); border: none; color: black;">Accept Mission</button>
-                                    </div>
-                                `).join('');
-                            } else {
-                                container.innerHTML = '<p style="text-align: center; padding: 1rem; font-size: 0.8rem; color: var(--text-secondary);">Intelligence suggests no active threats requiring immediate intervention.</p>';
-                            }
-                        } catch (err) {
-                            console.error("Mission scan failed:", err);
-                        } finally {
-                            btn.innerHTML = 'Scan for Nearby Tasks';
-                        }
-                    },
-                    acceptMission: async (id) => {
-                        try {
-                            await API.request(`/missions/${id}/accept`, 'POST');
-                            UI.showNotification('Mission accepted. Coordinate sync complete.', 'success');
-                            UI.scanMissions();
-                        } catch (err) {
-                            UI.showNotification('Security error accepting mission.', 'danger');
-                        }
-                    }
-                });
-
-                // Update Clock
-                setInterval(() => {
-                    document.getElementById('utc-clock').textContent = new Date().toISOString().split('T')[1].split('.')[0] + ' UTC';
-                }, 1000);
-
-            } catch (err) {
-                console.error("Dashboard error", err);
-            }
-        }
-
-        async function refreshLocationData(lat, lon) {
-            try {
-                // Fetch Hyperlocal Intelligence
-                const intel = await API.hyperlocal.getIntelligence(lat, lon);
-                
-                // Update Weather
-                const weather = await API.weather.getMarine(lat, lon);
-                document.getElementById('weather-emoji').textContent = weather.emoji;
-                document.getElementById('weather-city').textContent = weather.city;
-                document.getElementById('weather-desc').textContent = weather.description.charAt(0).toUpperCase() + weather.description.slice(1);
-                document.getElementById('weather-temp').textContent = Math.round(weather.temp) + "°C";
-                document.getElementById('weather-meta').textContent = `Wind: ${weather.wind_speed}km/h | Hum: ${weather.humidity}%`;
-
-                // Update Health Score
-                const health = intel.health_score;
-                document.getElementById('health-score').textContent = health.score + "%";
-                document.getElementById('health-category').textContent = health.category;
-                document.getElementById('health-category').style.color = getHealthColor(health.category);
-                
-                // Update Local Risk (from health logic)
-                const riskLevel = 100 - health.score;
-                const riskText = riskLevel > 75 ? 'CRITICAL' : riskLevel > 50 ? 'HIGH' : riskLevel > 25 ? 'MEDIUM' : 'LOW';
-                document.getElementById('local-risk').textContent = riskText;
-                document.getElementById('local-risk').style.color = getHealthColor(health.category, true);
-
-                document.getElementById('active-alerts').textContent = intel.alerts_count;
-
-                // Update Hyperlocal Section
-                document.getElementById('current-location-text').textContent = `${lat.toFixed(2)}, ${lon.toFixed(2)} (${intel.location.region})`;
-                document.getElementById('hyperlocal-summary').textContent = intel.summary;
-
-                const hotspotList = document.getElementById('hotspot-list');
-                if (intel.hotspots && intel.hotspots.length > 0) {
-                    hotspotList.innerHTML = intel.hotspots.map(h => `
-                        <div class="glass-card" style="border-left: 4px solid var(--danger); background: rgba(255, 51, 102, 0.05);">
-                            <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.3rem;">${h.name}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${h.reason}</div>
-                            <div style="margin-top: 0.5rem; font-size: 0.7rem; font-weight: 800; color: var(--danger);">RISK: ${h.risk_level.toUpperCase()}</div>
-                        </div>
-                    `).join('');
-                }
-
-                // 2. Fetch Predictions
-                const pred = await API.predictions.getHotspots(lat, lon);
-                document.getElementById('drift-prediction').innerHTML = `
-                    <div style="margin-bottom: 0.5rem; font-weight: 600;">Risk Level: <span style="color:var(--warning);">${pred.risk_level}</span></div>
-                    <div>${pred.action_recommendation}</div>
-                `;
-                const pathEl = document.getElementById('prediction-path');
-                pathEl.innerHTML = pred.drift_path.slice(0, 5).map(p => `
-                    <div style="display:flex; justify-content:space-between; font-size: 0.7rem; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0.2rem 0;">
-                        <span>T+${p.hour}h</span>
-                        <span>${p.lat}, ${p.lon}</span>
-                    </div>
-                `).join('') + `<div style="text-align:center; font-size:0.6rem; opacity:0.5; margin-top:0.3rem;">+ ${pred.drift_path.length - 5} more points</div>`;
-
-                // 3. Fetch Missions (if role matches)
+            async loadMissions(lat, lon) {
                 const user = AUTH.getCurrentUser();
-                if (['ngo', 'volunteer', 'admin', 'authority'].includes(user.role)) {
-                    document.getElementById('mission-mode-section').style.display = 'block';
+                if (!['ngo', 'volunteer', 'admin', 'authority'].includes(user.role)) return;
+
+                const section = document.getElementById('mission-mode-section');
+                if (section) section.style.display = 'block';
+
+                try {
                     const missions = await API.missions.list();
-                    const missionList = document.getElementById('active-missions');
-                    if (missions.length > 0) {
-                        missionList.innerHTML = missions.map(m => `
-                            <div class="glass-card" style="padding: 1rem; border-color: ${m.status === 'Pending' ? 'var(--warning)' : 'var(--success)'};">
+                    const container = document.getElementById('active-missions');
+                    
+                    if (missions && missions.length > 0) {
+                        container.innerHTML = missions.map(m => `
+                            <div class="glass-card" style="padding: 1rem; border-left: 4px solid ${m.status === 'Pending' ? 'var(--warning)' : 'var(--success)'}; background: rgba(255,255,255,0.02);">
                                 <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">
                                     <div style="font-weight:700; font-size:0.85rem;">${m.title}</div>
                                     <div style="font-size:0.6rem; padding:0.2rem 0.5rem; border-radius:5px; background:rgba(255,255,255,0.05);">${m.urgency}</div>
                                 </div>
-                                <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.8rem;">${m.description.substring(0, 60)}...</div>
-                                ${m.status === 'Pending' ? `<button onclick="acceptMission('${m.id}')" class="btn btn-primary" style="width:100%; padding:0.4rem; font-size:0.7rem;">Accept Mission</button>` : `<div style="font-size:0.7rem; font-weight:800; color:var(--success); text-align:center;">IN PROGRESS</div>`}
+                                <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:1rem;">${m.description.substring(0, 80)}...</p>
+                                ${m.status === 'Pending' ? 
+                                    `<button onclick="Dashboard.acceptMission('${m.id}')" class="btn btn-primary" style="width:100%; padding:0.4rem; font-size:0.7rem;">Engage Mission</button>` : 
+                                    `<div style="font-size:0.7rem; font-weight:800; color:var(--success); text-align:center;"><i class="fas fa-satellite"></i> OPERATIONAL</div>`
+                                }
                             </div>
                         `).join('');
+                    } else {
+                        container.innerHTML = '<div style="text-align: center; padding: 2rem; border: 1px dashed var(--border-color); border-radius: 12px; opacity: 0.5;"><i class="fas fa-check-circle"></i> No assignments in current sector.</div>';
                     }
+                } catch (err) {
+                    console.error("Mission Load Error:", err);
                 }
+            },
 
-            } catch (err) {
-                console.error("Location data refresh error", err);
+            async acceptMission(id) {
+                try {
+                    await API.missions.accept(id);
+                    UI.showNotification("Mission Accepted. Operational sync complete.", "success");
+                    this.loadMissions();
+                } catch (err) {
+                    UI.showNotification("Failed to accept mission.", "danger");
+                }
+            },
+
+            getHealthClass(cat) {
+                const c = cat.toLowerCase();
+                if (c === 'excellent' || c === 'stable') return 'success';
+                if (c === 'watchlist') return 'warning';
+                return 'critical';
+            },
+
+            getHealthHex(cat) {
+                const c = cat.toLowerCase();
+                if (c === 'excellent') return '#00ff9d';
+                if (c === 'stable') return '#00f3ff';
+                if (c === 'watchlist') return '#ffcc00';
+                if (c === 'at risk') return '#ff9900';
+                return '#ff3366';
+            },
+
+            getStatusColor(status) {
+                const s = status.toLowerCase();
+                if (s === 'verified' || s === 'resolved' || s === 'closed') return 'var(--success)';
+                if (s === 'pending' || s === 'submitted') return 'var(--warning)';
+                return 'var(--accent-color)';
             }
-        }
+        };
 
-        async function acceptMission(id) {
-            try {
-                await API.missions.accept(id);
-                UI.showToast("Mission Accepted. Gear up!", "success");
-                loadDashboard();
-            } catch (err) {
-                UI.showToast("Mission failed: " + err.message, "error");
-            }
-        }
+        // Global UI Bridge
+        Object.assign(UI, {
+            openLifecycleModal: async (id) => {
+                try {
+                    const reports = await API.reports.list();
+                    const report = reports.find(r => r.id == id);
+                    if (!report) return;
 
-        function getHealthColor(cat, inverse = false) {
-            const colors = {
-                'Excellent': '#00ff9d',
-                'Stable': '#00f3ff',
-                'Watchlist': '#ffcc00',
-                'At Risk': '#ff9900',
-                'Critical': '#ff3366'
-            };
-            return colors[cat] || 'var(--accent-color)';
-        }
+                    document.getElementById('modal-report-title').textContent = report.title.toUpperCase();
+                    document.getElementById('modal-tracking-id').textContent = report.tracking_id;
+                    document.getElementById('modal-report-type').textContent = `Type: ${report.report_type.replace('_', ' ').toUpperCase()}`;
+                    
+                    const statusEl = document.getElementById('modal-current-status');
+                    statusEl.textContent = report.status.toUpperCase();
+                    statusEl.style.color = Dashboard.getStatusColor(report.status);
+                    statusEl.style.border = `1px solid ${Dashboard.getStatusColor(report.status)}40`;
 
-        function getStatusColor(status) {
-            const s = status.toLowerCase();
-            if (s === 'verified' || s === 'resolved' || s === 'closed') return 'var(--success)';
-            if (s === 'pending' || s === 'submitted') return 'var(--warning)';
-            return 'var(--accent-color)';
-        }
-        
-        loadDashboard();
+                    if (report.ai_analysis) {
+                        document.getElementById('modal-ai-analysis').style.display = 'block';
+                        document.getElementById('modal-ai-category').textContent = report.ai_analysis.suggested_category;
+                        document.getElementById('modal-ai-confidence').textContent = `${report.ai_analysis.confidence}%`;
+                        document.getElementById('modal-ai-impact').textContent = report.ai_analysis.possible_impact;
+                    }
+
+                    const history = await API.reports.history(id);
+                    const timelineEl = document.getElementById('modal-lifecycle-timeline');
+                    timelineEl.innerHTML = history.length > 0 ? history.map(update => `
+                        <div style="display: flex; gap: 1.5rem; position: relative; z-index: 1;">
+                            <div style="width: 15px; height: 15px; border-radius: 50%; background: ${Dashboard.getStatusColor(update.status)}; border: 3px solid var(--bg-dark); margin-top: 3px;"></div>
+                            <div style="flex: 1; padding-bottom: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 700; font-size: 0.85rem; color: ${Dashboard.getStatusColor(update.status)};">${update.status.toUpperCase()}</span>
+                                    <span style="font-size: 0.65rem; color: var(--text-secondary);">${new Date(update.created_at).toLocaleString()}</span>
+                                </div>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem;">${update.notes || 'Intelligence sync complete.'}</p>
+                            </div>
+                        </div>
+                    `).join('') : '<p style="text-align: center; color: var(--text-secondary);">No historical telemetry available.</p>';
+
+                    document.getElementById('lifecycle-modal').style.display = 'flex';
+                } catch (err) {
+                    console.error("Lifecycle Modal Error:", err);
+                }
+            },
+            closeModal: (id) => document.getElementById(id).style.display = 'none',
+            scanMissions: () => Dashboard.loadMissions()
+        });
+
+        // Initialize Dashboard on Load
+        document.addEventListener('DOMContentLoaded', () => Dashboard.init());
     </script>
 </body>
 </html>

@@ -158,7 +158,7 @@ const Profile = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${CONFIG.API_BASE_URL}/profile/me/photo`, {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/api/profile/me/photo`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
