@@ -184,6 +184,25 @@ async def upload_report_image(
     
     return {"success": True, "url": db_report.image_url}
 
+@router.get("/heatmap")
+def get_report_heatmap(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    Get all report coordinates for heatmap rendering.
+    """
+    reports = db.query(models.MarineReport.latitude, models.MarineReport.longitude, models.MarineReport.severity).all()
+    
+    # Map severity to intensity for heatmap
+    severity_map = {"Low": 0.3, "Medium": 0.6, "High": 0.8, "Critical": 1.0}
+    
+    heatmap_data = [
+        [r.latitude, r.longitude, severity_map.get(r.severity, 0.5)]
+        for r in reports
+    ]
+    return heatmap_data
+
 @router.get("/image/{report_id}")
 def get_report_image(
     report_id: int,
