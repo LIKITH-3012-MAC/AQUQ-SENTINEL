@@ -1,0 +1,27 @@
+{
+  "blocker_id": "DATASET_INCOMPLETE",
+  "total_labels_found": 12,
+  "total_images_found": 5,
+  "matched_count": 0,
+  "mismatch_details": {
+    "labels_without_images": [
+      "17058-29747-16",
+      "17027-29718-16",
+      "17028-29718-16",
+      "17021-29735-16",
+      "17021-29736-16",
+      "17022-29730-16",
+      "17022-29734-16",
+      "17022-29735-16",
+      "17022-29736-16",
+      "17023-29729-16",
+      "17023-29730-16"
+    ],
+    "images_without_labels": [
+      "16816-29821-16",
+      "16816-29824-16",
+      "WhatsApp Image"
+    ]
+  },
+  "action_required": "Provide .jpg or .tif files for the missing tile IDs listed in 'labels_without_images'."
+}

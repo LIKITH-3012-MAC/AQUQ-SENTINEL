@@ -1,0 +1,21 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "marine_debris" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-87.625, 15.975],
+            [-87.622, 15.975],
+            [-87.622, 15.972],
+            [-87.625, 15.972],
+            [-87.625, 15.975]
+          ]
+        ]
+      }
+    }
+  ]
+}

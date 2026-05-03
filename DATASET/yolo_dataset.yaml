@@ -1,0 +1,12 @@
+# YOLOv8 Dataset Configuration - AquaSentinel
+path: /Users/likithnaidu/Desktop/AQUQ-SENTINEL/DATASET/yolo_ready
+train: .
+val: .
+test: .
+
+# Classes
+names:
+  0: marine_debris
+  1: ecosystem_algae
+  2: oil_patch
+  3: ghost_net

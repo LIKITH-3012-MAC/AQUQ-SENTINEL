@@ -1,0 +1,17 @@
+{
+  "mapping_logic": "Slippy Map Tile Projection (EPSG:3857 approx)",
+  "source_crs": "EPSG:4326 (WGS84)",
+  "target_format": "YOLO Normalized (cx, cy, w, h)",
+  "conversion_steps": [
+    "1. Extract Tile X, Y, and Zoom from image filename (e.g., 16816-29821-16)",
+    "2. Calculate Tile Bounding Box in WGS84 using Lon/Lat to XYZ inverse",
+    "3. Map GeoJSON Polygon vertices to pixel coordinates within the 256x256 tile",
+    "4. Calculate pixel-space bounding box (xmin, ymin, xmax, ymax)",
+    "5. Normalize coordinates relative to image dimensions: center_x/W, center_y/H, width/W, height/H"
+  ],
+  "tile_system_metadata": {
+    "tile_size_px": 256,
+    "crs_name": "WGS 84 / Pseudo-Mercator",
+    "formula": "Mercator Projection Lon/Lat to X/Y"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "project": "AquaSentinel AI",
+  "dataset_root": "/Users/likithnaidu/Desktop/AQUQ-SENTINEL/DATASET",
+  "statistics": {
+    "total_assets": 32,
+    "images": 5,
+    "labels_geojson": 13,
+    "matched_pairs": 1,
+    "unmatched_images": 4,
+    "unmatched_labels": 12
+  },
+  "verification_status": {
+    "test_once_run": "2026-05-03T16:07:00Z",
+    "result": "SUCCESS",
+    "notes": "Verified geospatial-to-YOLO conversion logic using synthetic match for tile 16816-29821-16."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "project": "AquaSentinel AI",
+  "version": "1.0",
+  "class_mapping": [
+    { "id": 0, "name": "marine_debris", "source_tag": "marine_debris", "description": "General floating plastic and marine waste" },
+    { "id": 1, "name": "ecosystem_algae", "source_tag": "algae_cluster", "description": "Macroalgae or sargassum clusters" },
+    { "id": 2, "name": "oil_patch", "source_tag": "oil_patch", "description": "Surface oil or fuel slicks" },
+    { "id": 3, "name": "ghost_net", "source_tag": "ghost_net", "description": "Discarded fishing gear" }
+  ],
+  "yolo_names": {
+    "0": "marine_debris",
+    "1": "ecosystem_algae",
+    "2": "oil_patch",
+    "3": "ghost_net"
+  }
+}
