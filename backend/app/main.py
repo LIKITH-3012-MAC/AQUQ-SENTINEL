@@ -10,9 +10,7 @@ from .routes import (
     nasa_routes, metrics_routes
 )
 
-# Auto-create tables (use migrations in real production)
-models.Base.metadata.create_all(bind=database.engine)
-models_ai.Base.metadata.create_all(bind=database.engine)
+# app startup handles table creation in startup_event
 
 app = FastAPI(title="AquaSentinel AI Command Center", version="2.0.0")
 
@@ -34,10 +32,9 @@ def startup_event():
         db.execute(text("SELECT 1"))
         print("[SUCCESS] Quantum Core: Database Connection Established.")
         
-        # Verify/Create Tables
+        # Verify/Create Tables (Consolidated)
         models.Base.metadata.create_all(bind=database.engine)
-        models_ai.Base.metadata.create_all(bind=database.engine)
-        print("[SUCCESS] Systems: PostgreSQL Schema Verified and Synced (Core + AI Intelligence Layer).")
+        print("[SUCCESS] Systems: PostgreSQL Schema Verified and Synced (Unified Base).")
 
         # Run schema fixes for missing columns
         db_fixer.fix_database_schema()
