@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="assets/css/alerts.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         #map {
@@ -67,6 +69,50 @@
             animation: pulse 2s infinite ease-out;
             transform-origin: center;
         }
+
+        /* Premium Cluster Styling */
+        .premium-cluster {
+            background: linear-gradient(135deg, var(--accent-color), #0ea5e9);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 0.9rem;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+            backdrop-filter: blur(5px);
+        }
+        
+        .marker-simulated {
+            background: #ef4444;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 0 10px #ef4444;
+        }
+        
+        .marker-report {
+            background: #0ea5e9;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 0 10px #0ea5e9;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: var(--surface-color) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-color) !important;
+            backdrop-filter: blur(10px) !important;
+            border-radius: 12px !important;
+        }
+        .leaflet-popup-tip { background: var(--surface-color) !important; border: 1px solid var(--border-color) !important; }
     </style>
 </head>
 <body>
@@ -172,6 +218,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
     <!-- Core Intelligence Scripts -->
     <script src="assets/js/config.js"></script>
@@ -224,7 +271,20 @@
             riskZones: L.layerGroup(),
             heatmap: null, // Initialized on demand
             drift: L.layerGroup(),
-            simulated: L.layerGroup().addTo(map)
+            incidents: L.markerClusterGroup({
+                showCoverageOnHover: false,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                iconCreateFunction: function(cluster) {
+                    const count = cluster.getChildCount();
+                    return L.divIcon({
+                        html: `<div class="premium-cluster"><span>${count}</span></div>`,
+                        className: 'custom-cluster',
+                        iconSize: [40, 40]
+                    });
+                }
+            }).addTo(map),
+            zones: L.layerGroup().addTo(map)
         };
 
         window.MAP = {
@@ -321,32 +381,69 @@
             }
         };
 
-        async function loadSimulatedEvents() {
+        async function loadMapIncidents() {
             try {
-                const events = await API.request('/alerts/map-events');
-                layers.simulated.clearLayers();
-                events.forEach(ev => {
-                    const icon = L.divIcon({
-                        className: 'sim-event-icon',
-                        html: `<div class="pulse-animation" style="background: ${ev.severity === 'Critical' ? '#ef4444' : '#00f3ff'}; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
-                        iconSize: [15, 15]
-                    });
+                const incidents = await API.request('/map/incidents');
+                layers.incidents.clearLayers();
+                layers.zones.clearLayers();
+
+                incidents.forEach(inc => {
+                    const isSim = inc.source_type === 'admin_simulation';
+                    const iconClass = isSim ? 'marker-simulated' : 'marker-report';
                     
-                    const marker = L.marker([ev.latitude, ev.longitude], { icon }).bindPopup(`
-                        <div style="font-family: 'Outfit'; min-width: 150px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                <span class="status-tag critical" style="font-size: 0.6rem;">SIMULATED</span>
-                                <span style="font-size: 0.7rem; color: var(--text-secondary);">${new Date(ev.created_at).toLocaleTimeString()}</span>
+                    const icon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div class="${iconClass} ${inc.severity === 'Critical' ? 'pulse-animation' : ''}"></div>`,
+                        iconSize: [16, 16]
+                    });
+
+                    const marker = L.marker([inc.latitude, inc.longitude], { icon });
+                    
+                    // Unified Popup Rendering
+                    const popupContent = `
+                        <div style="font-family: 'Outfit'; min-width: 220px; padding: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                                <span style="font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 50px; background: ${isSim ? 'rgba(239, 68, 68, 0.2)' : 'rgba(14, 165, 233, 0.2)'}; color: ${isSim ? '#ef4444' : '#0ea5e9'}; font-weight: 800; letter-spacing: 0.5px;">
+                                    ${isSim ? 'SIMULATED INTEL' : 'FIELD REPORT'}
+                                </span>
+                                <span style="font-size: 0.7rem; color: var(--text-secondary); opacity: 0.8;">${new Date(inc.created_at).toLocaleDateString()}</span>
                             </div>
-                            <div style="font-weight: 800; font-size: 0.9rem; color: var(--accent-color); margin-bottom: 0.3rem;">RISK DETECTED</div>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Type: ${ev.marker_type.toUpperCase()}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Severity: ${ev.severity}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Radius: ${ev.radius_km}km</div>
+                            <div style="font-weight: 800; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.4rem; line-height: 1.2;">${inc.title}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.8rem; line-height: 1.4;">${inc.popup_summary}</div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; padding-top: 0.8rem; border-top: 1px solid var(--border-color);">
+                                <div>
+                                    <div style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase;">Severity</div>
+                                    <div style="font-size: 0.8rem; font-weight: 700; color: ${inc.severity === 'Critical' ? '#ef4444' : '#f59e0b'}">${inc.severity}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase;">Status</div>
+                                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-color)">${inc.status}</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.65rem; color: var(--text-secondary); opacity: 0.6;">
+                                <i class="fas fa-location-dot"></i> ${inc.latitude.toFixed(4)}, ${inc.longitude.toFixed(4)}
+                            </div>
                         </div>
-                    `);
-                    layers.simulated.addLayer(marker);
+                    `;
+
+                    marker.bindPopup(popupContent);
+                    layers.incidents.addLayer(marker);
+
+                    // Add Risk Circle if radius exists
+                    if (inc.radius_km > 0) {
+                        const circle = L.circle([inc.latitude, inc.longitude], {
+                            radius: inc.radius_km * 1000,
+                            color: isSim ? '#ef4444' : '#0ea5e9',
+                            fillColor: isSim ? '#ef4444' : '#0ea5e9',
+                            fillOpacity: 0.1,
+                            weight: 1,
+                            dashArray: '5, 5'
+                        });
+                        layers.zones.addLayer(circle);
+                    }
                 });
-            } catch (err) { console.error("Failed to load simulated events:", err); }
+            } catch (err) { console.error("Map Incident Sync Failure:", err); }
         }
 
         // Real-time Alert Polling is now handled by GlobalAlerts (alerts.js)
@@ -356,10 +453,10 @@
             if (document.getElementById('layer-risk').checked) MAP.toggleRiskZones(true);
             if (document.getElementById('layer-chlorophyll').checked) MAP.toggleChlorophyll(true);
             
-            loadSimulatedEvents();
+            loadMapIncidents();
             setInterval(() => {
-                loadSimulatedEvents();
-            }, 10000);
+                loadMapIncidents();
+            }, 15000);
         }, 500);
 
     </script>

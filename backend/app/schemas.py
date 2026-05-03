@@ -352,3 +352,16 @@ class AuditLogResponse(BaseModel):
     created_at: datetime
     class Config:
         from_attributes = True
+
+class MapIncidentResponse(BaseModel):
+    id: str
+    source_type: str # 'admin_simulation' or 'user_report'
+    latitude: float
+    longitude: float
+    title: str
+    severity: str
+    status: str
+    is_simulated: bool
+    created_at: datetime
+    popup_summary: str
+    radius_km: Optional[float] = 0.0
