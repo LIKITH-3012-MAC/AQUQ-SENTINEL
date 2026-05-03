@@ -8,11 +8,18 @@ class ProfileService:
     @staticmethod
     def get_or_create_profile(db: Session, user_id: UUID):
         profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user_id).first()
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        
         if not profile:
             profile = models.UserProfile(user_id=user_id)
             db.add(profile)
             db.commit()
             db.refresh(profile)
+            
+        # Recalculate completion on every fetch to ensure it's dynamic
+        profile.profile_completion_percent = ProfileService.calculate_completion(profile, user)
+        db.commit()
+        
         return profile
 
     @staticmethod

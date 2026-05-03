@@ -455,46 +455,59 @@
                 try {
                     const summary = await API.dashboard.summary();
 
-                    // Update Timeline (Recent Reports)
+                    // 1. Update Header Stats
+                    const reportsCount = document.getElementById('global-reports-count');
+                    const alertsCount = document.getElementById('global-alerts-count');
+                    const dataPointsCount = document.getElementById('data-points-analyzed'); // Optional ID
+                    const criticalCount = document.getElementById('critical-risks-count'); // Optional ID
+
+                    if (reportsCount) reportsCount.textContent = summary.total_reports || "0";
+                    if (alertsCount) alertsCount.textContent = summary.active_alerts || "0";
+                    if (dataPointsCount) dataPointsCount.textContent = (summary.data_points_analyzed || 0).toLocaleString();
+                    if (criticalCount) criticalCount.textContent = summary.critical_risks || "0";
+
+                    // 2. Update Timeline (Recent Reports)
                     const timeline = document.getElementById('reports-timeline');
-                    if (summary.recent_reports && summary.recent_reports.length > 0) {
-                        timeline.innerHTML = summary.recent_reports.map(r => `
-                            <div class="glass-card clickable" onclick="UI.openLifecycleModal('${r.id}')" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-left: 3px solid ${this.getStatusColor(r.status)}; cursor: pointer;">
-                                <div style="display: flex; gap: 1rem; align-items: center;">
-                                    ${r.image_url ? `
-                                        <div style="width: 45px; height: 45px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
-                                            <img src="${CONFIG.API_BASE_URL}${r.image_url}" style="width: 100%; height: 100%; object-fit: cover;">
-                                        </div>
-                                    ` : `
-                                        <div style="width: 45px; height: 45px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
-                                            <i class="fas fa-image" style="font-size: 0.8rem;"></i>
-                                        </div>
-                                    `}
-                                    <div>
-                                        <div style="font-weight: 700; font-size: 0.9rem;">
-                                            ${r.title}
-                                            ${r.title.includes('SIMULATED') ? '<span class="status-tag critical" style="font-size:0.5rem; padding: 0.1rem 0.3rem; margin-left:5px; vertical-align:middle;">SIMULATED</span>' : ''}
-                                        </div>
-                                        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">
-                                            <span style="color: var(--accent-color); font-family: monospace; font-weight: 600;">${r.tracking_id}</span> | ${new Date(r.created_at).toLocaleDateString()}
+                    if (timeline) {
+                        if (summary.recent_reports && summary.recent_reports.length > 0) {
+                            timeline.innerHTML = summary.recent_reports.map(r => `
+                                <div class="glass-card clickable" onclick="UI.openLifecycleModal('${r.id}')" style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border-left: 3px solid ${this.getStatusColor(r.status)}; cursor: pointer; transition: transform 0.2s;">
+                                    <div style="display: flex; gap: 1rem; align-items: center;">
+                                        ${r.image_url ? `
+                                            <div style="width: 45px; height: 45px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
+                                                <img src="${CONFIG.API_BASE_URL}${r.image_url}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            </div>
+                                        ` : `
+                                            <div style="width: 45px; height: 45px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                                                <i class="fas fa-file-invoice" style="font-size: 0.8rem;"></i>
+                                            </div>
+                                        `}
+                                        <div>
+                                            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary);">
+                                                ${r.title}
+                                                ${r.is_simulated ? '<span class="status-tag critical" style="font-size:0.5rem; padding: 0.1rem 0.3rem; margin-left:5px; vertical-align:middle;">SIMULATED</span>' : ''}
+                                            </div>
+                                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">
+                                                <span style="color: var(--accent-color); font-family: monospace; font-weight: 700;">${r.tracking_id}</span> | ${new Date(r.created_at).toLocaleDateString()}
+                                            </div>
                                         </div>
                                     </div>
+                                    <div class="status-badge" style="padding: 0.3rem 0.8rem; font-size: 0.6rem; font-weight: 800; border-radius: 50px; background: ${this.getStatusColor(r.status)}15; color: ${this.getStatusColor(r.status)}; border: 1px solid ${this.getStatusColor(r.status)}30;">
+                                        ${r.status.toUpperCase()}
+                                    </div>
                                 </div>
-                                <div class="status-badge" style="padding: 0.3rem 0.8rem; font-size: 0.65rem; font-weight: 800; border-radius: 50px; background: ${this.getStatusColor(r.status)}20; color: ${this.getStatusColor(r.status)}; border: 1px solid ${this.getStatusColor(r.status)}40;">
-                                    ${r.status.toUpperCase()}
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        timeline.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary); opacity: 0.5;">No active mission reports found.</div>';
+                            `).join('');
+                        } else {
+                            timeline.innerHTML = `
+                                <div style="text-align: center; padding: 2rem; color: var(--text-secondary); opacity: 0.6; border: 1px dashed var(--border-color); border-radius: 15px;">
+                                    <i class="fas fa-radar" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.3; display: block;"></i>
+                                    No active mission reports found in your tactical sector.
+                                </div>`;
+                        }
                     }
 
-                    // Update Global Stats in Header
-                    document.getElementById('global-reports-count').textContent = summary.total_reports;
-                    document.getElementById('global-alerts-count').textContent = summary.active_alerts;
-
                 } catch (err) {
-                    console.error("Global Metrics Error:", err);
+                    console.error("Global Metrics Sync Failure:", err);
                 }
             },
 
@@ -515,104 +528,137 @@
             },
 
             async refreshIntelligence(lat, lon) {
-                console.log(`[INTEL] Refreshing coordinates: ${lat}, ${lon}`);
+                console.log(`[INTEL] Initiating multi-stream intelligence scan: ${lat}, ${lon}`);
 
-                try {
-                    // Start Parallel Intelligence Streams
-                    const [intel, weather, predictions] = await Promise.all([
-                        API.hyperlocal.intelligence(lat, lon),
-                        API.weather.getMarine(lat, lon),
-                        API.predictions.getHotspots(lat, lon)
-                    ]);
+                // Parallel fetch with individual error boundaries
+                const results = await Promise.allSettled([
+                    API.hyperlocal.intelligence(lat, lon),
+                    API.weather.getMarine(lat, lon),
+                    API.predictions.getHotspots(lat, lon)
+                ]);
 
-                    // 1. Render Local Conditions (Weather)
-                    document.getElementById('weather-emoji').textContent = weather.emoji || '🌡️';
-                    document.getElementById('weather-city').textContent = weather.city || 'Marine Sector';
-                    document.getElementById('weather-desc').textContent = (weather.description || 'Clear skies').toUpperCase();
-                    document.getElementById('weather-temp').textContent = Math.round(weather.temp || 0) + "°C";
-                    document.getElementById('weather-meta').textContent = `WIND: ${weather.wind_speed || 0}KM/H | HUM: ${weather.humidity || 0}%`;
+                const intel = results[0].status === 'fulfilled' ? results[0].value : null;
+                const weather = results[1].status === 'fulfilled' ? results[1].value : null;
+                const predictions = results[2].status === 'fulfilled' ? results[2].value : null;
 
-                    // 2. Render Hyperlocal Intelligence
-                    document.getElementById('current-location-text').textContent = `SECTOR: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
-                    document.getElementById('regional-summary').textContent = intel.intelligence_summary;
-                    document.getElementById('nearby-alerts-count').textContent = intel.total_alerts_count;
-                    document.getElementById('nearby-reports-count').textContent = intel.total_reports_count;
+                // 1. Render Local Conditions (Weather)
+                const weatherEmoji = document.getElementById('weather-emoji');
+                const weatherCity = document.getElementById('weather-city');
+                const weatherDesc = document.getElementById('weather-desc');
+                const weatherTemp = document.getElementById('weather-temp');
+                const weatherMeta = document.getElementById('weather-meta');
+
+                if (weather) {
+                    if (weatherEmoji) weatherEmoji.textContent = weather.emoji || '🌡️';
+                    if (weatherCity) weatherCity.textContent = weather.city || 'Marine Sector';
+                    if (weatherDesc) weatherDesc.textContent = (weather.description || 'Clear skies').toUpperCase();
+                    if (weatherTemp) weatherTemp.textContent = Math.round(weather.temp || 0) + "°C";
+                    if (weatherMeta) weatherMeta.textContent = `WIND: ${weather.wind_speed || 0}KM/H | HUM: ${weather.humidity || 0}%`;
+                } else {
+                    if (weatherCity) weatherCity.textContent = "OFFLINE";
+                    if (weatherDesc) weatherDesc.textContent = "Telemetry Link Broken";
+                }
+
+                // 2. Render Hyperlocal Intelligence
+                if (intel) {
+                    const locText = document.getElementById('current-location-text');
+                    const regSummary = document.getElementById('regional-summary');
+                    const nearbyAlerts = document.getElementById('nearby-alerts-count');
+                    const nearbyReports = document.getElementById('nearby-reports-count');
+
+                    if (locText) locText.textContent = `SECTOR: ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+                    if (regSummary) regSummary.textContent = intel.intelligence_summary || "Localized intelligence verified.";
+                    if (nearbyAlerts) nearbyAlerts.textContent = intel.total_alerts_count || "0";
+                    if (nearbyReports) nearbyReports.textContent = intel.total_reports_count || "0";
 
                     const hotspotTag = document.getElementById('hotspot-status');
-                    hotspotTag.textContent = intel.hotspot_status === 'HIGH' ? 'CRITICAL HOTSPOT' : 'STABLE ZONE';
-                    hotspotTag.className = `status-tag ${intel.hotspot_status === 'HIGH' ? 'critical' : 'success'}`;
+                    if (hotspotTag) {
+                        hotspotTag.textContent = intel.hotspot_status === 'HIGH' ? 'CRITICAL HOTSPOT' : 'STABLE ZONE';
+                        hotspotTag.className = `status-tag ${intel.hotspot_status === 'HIGH' ? 'critical' : 'success'}`;
+                    }
 
                     // 3. Render Ocean Health
                     const health = intel.health_score;
-                    document.getElementById('health-score').textContent = health.score + "%";
-                    document.getElementById('health-category').textContent = health.category.toUpperCase();
-                    document.getElementById('health-category').className = `status-tag ${this.getHealthClass(health.category)}`;
+                    if (health) {
+                        const hScore = document.getElementById('health-score');
+                        const hCat = document.getElementById('health-category');
+                        const hExp = document.getElementById('health-explanation');
+                        const hAct = document.getElementById('health-action');
 
-                    const progressEl = document.getElementById('health-progress');
-                    progressEl.style.strokeDasharray = `${health.score}, 100`;
-                    progressEl.style.stroke = this.getHealthHex(health.category);
+                        if (hScore) hScore.textContent = health.score + "%";
+                        if (hCat) {
+                            hCat.textContent = health.category.toUpperCase();
+                            hCat.className = `status-tag ${this.getHealthClass(health.category)}`;
+                        }
 
-                    document.getElementById('health-explanation').textContent = health.explanation;
-                    document.getElementById('health-action').textContent = health.recommended_action;
+                        const progressEl = document.getElementById('health-progress');
+                        if (progressEl) {
+                            progressEl.style.strokeDasharray = `${health.score}, 100`;
+                            progressEl.style.stroke = this.getHealthHex(health.category);
+                        }
 
-                    // 4. Render Health Factors
-                    const factorsContainer = document.getElementById('health-factors');
-                    factorsContainer.innerHTML = health.contributing_factors.map(f => `
-                        <span class="status-tag" style="font-size: 0.6rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.05); color: ${f.impact < 0 ? 'var(--danger)' : 'var(--success)'};">
-                            ${f.name} (${f.impact > 0 ? '+' : ''}${f.impact})
-                        </span>
-                    `).join('');
+                        if (hExp) hExp.textContent = health.explanation;
+                        if (hAct) hAct.textContent = health.recommended_action;
 
-                    // 5. Render Drift Predictions
-                    const pred = Array.isArray(predictions) ? predictions[0] : predictions;
+                        const factorsContainer = document.getElementById('health-factors');
+                        if (factorsContainer) {
+                            factorsContainer.innerHTML = health.contributing_factors.map(f => `
+                                <span class="status-tag" style="font-size: 0.6rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.05); color: ${f.impact < 0 ? 'var(--danger)' : 'var(--success)'};">
+                                    ${f.name} (${f.impact > 0 ? '+' : ''}${f.impact})
+                                </span>
+                            `).join('');
+                        }
+                    }
 
-                    const driftEl = document.getElementById('drift-prediction');
-                    if (pred) {
+                    // 4. Handle Sector Alerts (Nearby)
+                    const alertsContainer = document.getElementById('nearby-alerts');
+                    if (alertsContainer) {
+                        if (intel.alerts && intel.alerts.length > 0) {
+                            alertsContainer.innerHTML = intel.alerts.map(a => `
+                                <div class="glass-card" style="padding: 1rem; border-left: 3px solid ${a.severity === 'CRITICAL' ? 'var(--danger)' : 'var(--warning)'}; background: rgba(255,255,255,0.02);">
+                                    <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 800; font-size: 0.75rem; color: ${a.severity === 'CRITICAL' ? 'var(--danger)' : 'var(--warning)'};">${a.severity}</span>
+                                        <span style="font-size: 0.65rem; opacity: 0.6;">${new Date(a.created_at).toLocaleTimeString()}</span>
+                                    </div>
+                                    <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.2rem;">${a.title}</div>
+                                    <p style="font-size: 0.75rem; color: var(--text-secondary);">${a.message}</p>
+                                </div>
+                            `).join('');
+                        } else {
+                            alertsContainer.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; padding: 1rem;">Sector clear. No active threats identified.</p>';
+                        }
+                    }
+                } else {
+                    document.getElementById('regional-summary').textContent = "Intelligence stream interrupted.";
+                }
+
+                // 5. Render Drift Predictions
+                const pred = predictions ? (Array.isArray(predictions) ? predictions[0] : predictions) : null;
+                const driftEl = document.getElementById('drift-prediction');
+                const pathEl = document.getElementById('prediction-path');
+
+                if (driftEl) {
+                    if (pred && pred.drift_path && pred.drift_path.length > 0) {
                         driftEl.innerHTML = `
-                            <div style="margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-color);">TRAJECTORY: ${pred.drift_path && pred.drift_path.length > 0 ? 'CALCULATED' : 'STABLE'}</div>
+                            <div style="margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-color);">TRAJECTORY: CALCULATED</div>
                             <div style="font-size: 0.8rem; line-height: 1.4;">${pred.action_recommendation}</div>
                         `;
-
-                        const pathEl = document.getElementById('prediction-path');
-                        if (pred.drift_path && pred.drift_path.length > 0) {
+                        if (pathEl) {
                             pathEl.innerHTML = pred.drift_path.slice(0, 5).map(p => `
                                 <div style="display:flex; justify-content:space-between; font-size: 0.7rem; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0.3rem 0;">
                                     <span style="font-weight: 700; color: var(--accent-color);">T+${p.hour}H</span>
                                     <span>${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}</span>
                                 </div>
                             `).join('');
-                        } else {
-                            pathEl.innerHTML = '<p style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">No drift anomalies detected.</p>';
                         }
                     } else {
-                        driftEl.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-secondary);">No tactical drift data for this sector.</p>';
-                        document.getElementById('prediction-path').innerHTML = '';
+                        driftEl.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-secondary);">No drift anomalies detected. Current patterns indicate oceanic stability.</p>';
+                        if (pathEl) pathEl.innerHTML = '';
                     }
-
-                    // 6. Handle Sector Alerts (Nearby)
-                    const alertsContainer = document.getElementById('nearby-alerts');
-                    if (intel.alerts && intel.alerts.length > 0) {
-                        alertsContainer.innerHTML = intel.alerts.map(a => `
-                            <div class="glass-card" style="padding: 1rem; border-left: 3px solid ${a.severity === 'CRITICAL' ? 'var(--danger)' : 'var(--warning)'}; background: rgba(255,255,255,0.02);">
-                                <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 0.5rem;">
-                                    <span style="font-weight: 800; font-size: 0.75rem; color: ${a.severity === 'CRITICAL' ? 'var(--danger)' : 'var(--warning)'};">${a.severity}</span>
-                                    <span style="font-size: 0.65rem; opacity: 0.6;">${new Date(a.created_at).toLocaleTimeString()}</span>
-                                </div>
-                                <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.2rem;">${a.title}</div>
-                                <p style="font-size: 0.75rem; color: var(--text-secondary);">${a.message}</p>
-                            </div>
-                        `).join('');
-                    } else {
-                        alertsContainer.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; padding: 1rem;">No active sector threats identified.</p>';
-                    }
-
-                    // 7. Mission Mode Refresh (Conditional)
-                    this.loadMissions(lat, lon);
-
-                } catch (err) {
-                    console.error("Intelligence Refresh Failure:", err);
-                    UI.showNotification("Telemetry Sync Failed.", "danger");
                 }
+
+                // 6. Mission Mode Refresh
+                this.loadMissions(lat, lon);
             },
 
             async loadMissions(lat, lon) {

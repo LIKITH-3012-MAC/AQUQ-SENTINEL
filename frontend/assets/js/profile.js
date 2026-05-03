@@ -20,35 +20,69 @@ const Profile = {
         const { user, profile, stats, recent_reports, recent_activity } = data;
 
         // Header / Identity
-        document.getElementById('display-name').textContent = user.full_name;
-        document.getElementById('display-role').textContent = user.role.toUpperCase();
-        document.getElementById('display-bio').textContent = profile.bio || "No mission bio established.";
+        const nameEl = document.getElementById('display-name');
+        const roleEl = document.getElementById('display-role');
+        const bioEl = document.getElementById('display-bio');
+        const avatarEl = document.getElementById('display-avatar');
+
+        if (nameEl) nameEl.textContent = user.full_name || "Anonymous Operator";
+        if (roleEl) {
+            roleEl.textContent = (user.role || "USER").toUpperCase();
+            roleEl.className = `status-tag ${user.role === 'admin' ? 'critical' : 'success'}`;
+        }
+        if (bioEl) bioEl.textContent = profile.bio || "No mission bio established in the Intelligence Matrix.";
         
-        if (profile.profile_image_url) {
-            document.getElementById('display-avatar').src = profile.profile_image_url + "?t=" + Date.now();
-        } else {
-            document.getElementById('display-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name)}&background=00f3ff&color=000`;
+        if (avatarEl) {
+            if (profile.profile_image_url) {
+                avatarEl.src = profile.profile_image_url.startsWith('http') ? profile.profile_image_url : (CONFIG.API_BASE_URL + profile.profile_image_url);
+            } else {
+                avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name)}&background=00f3ff&color=000&bold=true`;
+            }
         }
 
         // Stats
-        document.getElementById('stat-reports').textContent = stats.total_reports;
-        document.getElementById('stat-impact').textContent = profile.impact_score;
-        document.getElementById('stat-chats').textContent = stats.total_chat_queries;
-        document.getElementById('stat-missions').textContent = stats.missions_joined;
+        const reportsStat = document.getElementById('stat-reports');
+        const impactStat = document.getElementById('stat-impact');
+        const chatsStat = document.getElementById('stat-chats');
+        const missionsStat = document.getElementById('stat-missions');
+
+        if (reportsStat) reportsStat.textContent = stats.total_reports || "0";
+        if (impactStat) impactStat.textContent = profile.impact_score || "0";
+        if (chatsStat) chatsStat.textContent = stats.total_chat_queries || "0";
+        if (missionsStat) missionsStat.textContent = stats.missions_joined || "0";
 
         // Completion
         const completion = profile.profile_completion_percent || 0;
-        document.getElementById('completion-bar').style.width = `${completion}%`;
-        document.getElementById('completion-text').textContent = `${completion}%`;
+        const compBar = document.getElementById('completion-bar');
+        const compText = document.getElementById('completion-text');
+        if (compBar) compBar.style.width = `${completion}%`;
+        if (compText) compText.textContent = `${completion}%`;
 
-        // Detailed Info
-        document.getElementById('display-email').textContent = user.email;
-        document.getElementById('display-phone').textContent = profile.phone || "Secure line not set";
-        document.getElementById('display-location').textContent = (profile.district || profile.city) ? `${profile.district || profile.city}, ${profile.state || 'Unknown'}` : "Global Waters";
-        document.getElementById('display-region').textContent = profile.preferred_region || "Global Sector";
-        document.getElementById('display-org').textContent = (profile.organization || profile.occupation) ? `${profile.occupation || ''} @ ${profile.organization || ''}` : "Independent Operator";
-        document.getElementById('display-language').textContent = profile.preferred_language;
-        document.getElementById('display-joined').textContent = new Date(user.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        // Identity Matrix
+        const emailEl = document.getElementById('display-email');
+        const phoneEl = document.getElementById('display-phone');
+        const locEl = document.getElementById('display-location');
+        const regEl = document.getElementById('display-region');
+        const orgEl = document.getElementById('display-org');
+        const langEl = document.getElementById('display-language');
+        const joinedEl = document.getElementById('display-joined');
+
+        if (emailEl) emailEl.textContent = user.email || "Secure transmission only";
+        if (phoneEl) phoneEl.textContent = profile.phone || "Secure line not established";
+        if (locEl) {
+            const locStr = (profile.district || profile.city) ? `${profile.district || profile.city}, ${profile.state || 'Unknown'}` : "Global Waters";
+            locEl.textContent = locStr;
+        }
+        if (regEl) regEl.textContent = profile.preferred_region || "Global Tactical Sector";
+        if (orgEl) {
+            const orgStr = (profile.organization || profile.occupation) ? `${profile.occupation || ''} @ ${profile.organization || ''}` : "Independent Operator";
+            orgEl.textContent = orgStr;
+        }
+        if (langEl) langEl.textContent = profile.preferred_language || "English (Default)";
+        if (joinedEl) {
+            const date = new Date(user.created_at);
+            joinedEl.textContent = isNaN(date.getTime()) ? "Awaiting Timestamp" : date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        }
 
         // Activity Timeline
         this.renderTimeline(recent_activity);
@@ -56,8 +90,10 @@ const Profile = {
 
     renderTimeline(activities) {
         const list = document.getElementById('activity-list');
+        if (!list) return;
+
         if (!activities || activities.length === 0) {
-            list.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No historical logs found.</p>`;
+            list.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 2rem; border: 1px dashed var(--border-color); border-radius: 12px; margin-top: 1rem;">No historical logs found in the operational timeline.</p>`;
             return;
         }
 
