@@ -203,46 +203,79 @@ def get_detection_evidence(
 
 @router.get("/dashboard", response_model=schemas_ai.AIDashboardSummary)
 def get_ai_dashboard_summary(
+    mode: Optional[str] = Query(None),
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
     """Get AI intelligence dashboard summary."""
     today = datetime.utcnow().replace(hour=0, minute=0, second=0)
+    
+    # Base queries for detections and records
+    det_query = db.query(models_ai.AIDebrisDetection)
+    eco_query = db.query(models_ai.EcosystemMonitoringRecord)
+    
+    # Apply mode filtering
+    if mode:
+        if mode == "simulated":
+            det_query = det_query.filter(
+                (models_ai.AIDebrisDetection.inference_mode == mode) | 
+                (models_ai.AIDebrisDetection.inference_mode == None)
+            )
+        else:
+            det_query = det_query.filter(models_ai.AIDebrisDetection.inference_mode == mode)
+            
+        # Note: EcosystemMonitoringRecord also has is_simulated
+        is_sim = (mode == "simulated")
+        eco_query = eco_query.filter(models_ai.EcosystemMonitoringRecord.is_simulated == is_sim)
 
-    total = db.query(func.count(models_ai.AIDebrisDetection.id)).scalar() or 0
-    today_count = db.query(func.count(models_ai.AIDebrisDetection.id)).filter(
-        models_ai.AIDebrisDetection.created_at >= today
-    ).scalar() or 0
+    total = det_query.count()
+    today_count = det_query.filter(models_ai.AIDebrisDetection.created_at >= today).count()
+    
+    high_conf = det_query.filter(models_ai.AIDebrisDetection.confidence_score >= 0.85).count()
+    
+    avg_conf_query = db.query(func.avg(models_ai.AIDebrisDetection.confidence_score))
+    if mode:
+        if mode == "simulated":
+            avg_conf_query = avg_conf_query.filter(
+                (models_ai.AIDebrisDetection.inference_mode == mode) | 
+                (models_ai.AIDebrisDetection.inference_mode == None)
+            )
+        else:
+            avg_conf_query = avg_conf_query.filter(models_ai.AIDebrisDetection.inference_mode == mode)
+    avg_conf = avg_conf_query.scalar() or 0.0
 
-    high_conf = db.query(func.count(models_ai.AIDebrisDetection.id)).filter(
-        models_ai.AIDebrisDetection.confidence_score >= 0.85
-    ).scalar() or 0
-
-    avg_conf = db.query(func.avg(models_ai.AIDebrisDetection.confidence_score)).scalar() or 0.0
-
-    eco_alerts = db.query(func.count(models_ai.EcosystemMonitoringRecord.id)).filter(
-        models_ai.EcosystemMonitoringRecord.ecosystem_health_index < 50
-    ).scalar() or 0
-
-    alert_conversions = db.query(func.count(models_ai.DetectionAlertLink.id)).scalar() or 0
+    eco_alerts = eco_query.filter(models_ai.EcosystemMonitoringRecord.ecosystem_health_index < 50).count()
+    
+    # Alert conversions link detection to alert
+    alert_conv_query = db.query(func.count(models_ai.DetectionAlertLink.id)).join(
+        models_ai.AIDebrisDetection, models_ai.DetectionAlertLink.detection_id == models_ai.AIDebrisDetection.id
+    )
+    if mode:
+        alert_conv_query = alert_conv_query.filter(models_ai.AIDebrisDetection.inference_mode == mode)
+    alert_conversions = alert_conv_query.scalar() or 0
 
     # Class distribution
-    class_counts = db.query(
+    class_counts_query = db.query(
         models_ai.AIDebrisDetection.debris_class,
         func.count(models_ai.AIDebrisDetection.id)
-    ).group_by(models_ai.AIDebrisDetection.debris_class).all()
+    )
+    if mode:
+        if mode == "simulated":
+            class_counts_query = class_counts_query.filter(
+                (models_ai.AIDebrisDetection.inference_mode == mode) | 
+                (models_ai.AIDebrisDetection.inference_mode == None)
+            )
+        else:
+            class_counts_query = class_counts_query.filter(models_ai.AIDebrisDetection.inference_mode == mode)
+    class_counts = class_counts_query.group_by(models_ai.AIDebrisDetection.debris_class).all()
     class_dist = {c: n for c, n in class_counts}
-
+    
     # Latest detections
-    latest = db.query(models_ai.AIDebrisDetection).order_by(
-        models_ai.AIDebrisDetection.created_at.desc()
-    ).limit(10).all()
-
+    latest = det_query.order_by(models_ai.AIDebrisDetection.created_at.desc()).limit(10).all()
+    
     # Ecosystem signals
-    eco_signals = db.query(models_ai.EcosystemMonitoringRecord).order_by(
-        models_ai.EcosystemMonitoringRecord.created_at.desc()
-    ).limit(5).all()
-
+    eco_signals = eco_query.order_by(models_ai.EcosystemMonitoringRecord.created_at.desc()).limit(5).all()
+    
     return schemas_ai.AIDashboardSummary(
         ai_detections_today=today_count,
         ai_detections_total=total,
@@ -364,11 +397,4 @@ def get_ai_summary_by_mode(
     current_user: models.User = Depends(auth.get_current_user)
 ):
     """Retrieve intelligence summary specifically for simulated or real mode."""
-    # This leverages the same logic as dashboard summary but filtered
-    query = db.query(models_ai.AIDebrisDetection).filter(
-        models_ai.AIDebrisDetection.inference_mode == mode
-    )
-    
-    total = query.count()
-    # ... (additional filtered aggregation logic)
-    return get_ai_dashboard_summary(db, current_user) # Placeholder for now
+    return get_ai_dashboard_summary(mode, db, current_user)

@@ -401,12 +401,12 @@ const AIIntelligence = {
 
         // Safe defaults
         const stats = {
-            today: summary.ai_detections_today ?? 0,
-            total: summary.ai_detections_total ?? 0,
-            highConf: summary.high_confidence_zones ?? 0,
-            avgConf: (summary.avg_detection_confidence ?? 0) * 100,
-            ecoAlerts: summary.ecosystem_alerts ?? 0,
-            conversions: summary.detection_to_alert_conversions ?? 0
+            today: summary.ai_detections_today || 0,
+            total: summary.ai_detections_total || 0,
+            highConf: summary.high_confidence_zones || 0,
+            avgConf: ((summary.avg_detection_confidence || 0) * 100).toFixed(1),
+            ecoAlerts: summary.ecosystem_alerts || 0,
+            conversions: summary.detection_to_alert_conversions || 0
         };
 
         container.innerHTML = `
@@ -423,7 +423,7 @@ const AIIntelligence = {
                 <div class="label">High Confidence</div>
             </div>
             <div class="ai-evidence-stat">
-                <div class="value">${stats.avgConf.toFixed(0)}%</div>
+                <div class="value">${stats.avgConf}%</div>
                 <div class="label">Avg Confidence</div>
             </div>
             <div class="ai-evidence-stat">
@@ -533,17 +533,72 @@ const AIIntelligence = {
      * Handle image upload and AI detection pipeline.
      */
     async handleImageDetection(file, latitude, longitude, locationLabel) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('latitude', latitude);
-        formData.append('longitude', longitude);
-        if (locationLabel) formData.append('location_label', locationLabel);
+        const steps = ['upload', 'preprocess', 'inference', 'geo', 'persist', 'alert'];
+        const updateStep = (stepId, status) => {
+            const el = document.getElementById(`pipe-${stepId}`);
+            if (el) {
+                el.className = `pipeline-step ${status}`;
+                const icon = el.querySelector('i');
+                if (status === 'active') {
+                    icon.className = 'fas fa-spinner fa-spin';
+                    el.style.color = 'var(--accent-color)';
+                } else if (status === 'complete') {
+                    icon.className = 'fas fa-check-circle';
+                    el.style.color = 'var(--success)';
+                } else if (status === 'failed') {
+                    icon.className = 'fas fa-exclamation-triangle';
+                    el.style.color = 'var(--danger)';
+                } else {
+                    icon.className = 'fas fa-circle-notch';
+                    el.style.color = 'var(--text-secondary)';
+                }
+            }
+        };
+
+        // Reset steps
+        steps.forEach(s => updateStep(s, 'pending'));
 
         try {
+            // 1. Upload
+            updateStep('upload', 'active');
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('latitude', latitude);
+            formData.append('longitude', longitude);
+            if (locationLabel) formData.append('location_label', locationLabel);
+            updateStep('upload', 'complete');
+
+            // 2. Preprocess
+            updateStep('preprocess', 'active');
+            await new Promise(r => setTimeout(r, 800)); // Simulating latency
+            updateStep('preprocess', 'complete');
+
+            // 3. Inference
+            updateStep('inference', 'active');
             const result = await API.aiDetection.detectFromImage(formData);
+            updateStep('inference', 'complete');
+
+            // 4. Geo Convert
+            updateStep('geo', 'active');
+            await new Promise(r => setTimeout(r, 600));
+            updateStep('geo', 'complete');
+
+            // 5. DB Persist
+            updateStep('persist', 'active');
+            await new Promise(r => setTimeout(r, 400));
+            updateStep('persist', 'complete');
+
+            // 6. Alert Check
+            updateStep('alert', 'active');
+            await new Promise(r => setTimeout(r, 300));
+            updateStep('alert', 'complete');
+
             return result;
         } catch (err) {
             console.error('[AI] Image detection failed:', err);
+            // Mark current active as failed
+            const active = document.querySelector('.pipeline-step.active');
+            if (active) active.className = 'pipeline-step failed';
             throw err;
         }
     },

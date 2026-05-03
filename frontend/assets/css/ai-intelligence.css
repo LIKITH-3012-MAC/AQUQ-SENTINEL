@@ -177,11 +177,30 @@
 }
 
 .ai-evidence-stat .label {
-    font-size: 0.6rem;
-    text-transform: uppercase;
+    font-size: 0.65rem;
     color: var(--text-secondary);
+    text-transform: uppercase;
     letter-spacing: 1px;
-    margin-top: 0.3rem;
+    font-weight: 600;
+}
+
+/* Pipeline Step Styles */
+.pipeline-step {
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.pipeline-step.active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.pipeline-step.complete {
+    opacity: 1;
+}
+
+.pipeline-step.failed {
+    opacity: 1;
 }
 
 /* ---- Ecosystem Status Card ---- */

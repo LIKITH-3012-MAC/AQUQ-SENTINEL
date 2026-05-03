@@ -384,15 +384,32 @@
                 <div id="ai-detection-result" style="display: none; margin-top: 1rem;"></div>
 
                 <!-- AI Processing Pipeline -->
-                <div id="ai-pipeline-container" style="display: none;">
-                    <div class="ai-pipeline-progress">
-                        <div class="ai-pipeline-step" id="pipe-upload">Upload</div>
-                        <div class="ai-pipeline-step" id="pipe-preprocess">Preprocess</div>
-                        <div class="ai-pipeline-step" id="pipe-inference">AI Inference</div>
-                        <div class="ai-pipeline-step" id="pipe-geo">Geo Convert</div>
-                        <div class="ai-pipeline-step" id="pipe-persist">DB Persist</div>
-                        <div class="ai-pipeline-step" id="pipe-alert">Alert Check</div>
-                        <div class="ai-pipeline-step" id="pipe-complete">Complete</div>
+                <div id="ai-pipeline-container" style="display: none; margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; gap: 0.5rem; padding: 1rem; background: rgba(0,243,255,0.02); border-radius: 12px; border: 1px solid rgba(0,243,255,0.05);">
+                        <div class="pipeline-step" id="pipe-upload" style="text-align: center; flex: 1; font-size: 0.65rem; color: var(--text-secondary);">
+                            <i class="fas fa-circle-notch" style="display: block; margin-bottom: 0.4rem; font-size: 1rem;"></i>
+                            Upload
+                        </div>
+                        <div class="pipeline-step" id="pipe-preprocess" style="text-align: center; flex: 1; font-size: 0.65rem; color: var(--text-secondary);">
+                            <i class="fas fa-circle-notch" style="display: block; margin-bottom: 0.4rem; font-size: 1rem;"></i>
+                            Preprocess
+                        </div>
+                        <div class="pipeline-step" id="pipe-inference" style="text-align: center; flex: 1; font-size: 0.65rem; color: var(--text-secondary);">
+                            <i class="fas fa-circle-notch" style="display: block; margin-bottom: 0.4rem; font-size: 1rem;"></i>
+                            AI Inference
+                        </div>
+                        <div class="pipeline-step" id="pipe-geo" style="text-align: center; flex: 1; font-size: 0.65rem; color: var(--text-secondary);">
+                            <i class="fas fa-circle-notch" style="display: block; margin-bottom: 0.4rem; font-size: 1rem;"></i>
+                            Geo Convert
+                        </div>
+                        <div class="pipeline-step" id="pipe-persist" style="text-align: center; flex: 1; font-size: 0.65rem; color: var(--text-secondary);">
+                            <i class="fas fa-circle-notch" style="display: block; margin-bottom: 0.4rem; font-size: 1rem;"></i>
+                            DB Persist
+                        </div>
+                        <div class="pipeline-step" id="pipe-alert" style="text-align: center; flex: 1; font-size: 0.65rem; color: var(--text-secondary);">
+                            <i class="fas fa-circle-notch" style="display: block; margin-bottom: 0.4rem; font-size: 1rem;"></i>
+                            Alert Check
+                        </div>
                     </div>
                 </div>
             </div>
