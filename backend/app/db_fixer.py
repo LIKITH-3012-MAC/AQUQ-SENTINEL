@@ -30,6 +30,16 @@ def fix_database_schema():
         # Risk Scores fixes
         "ALTER TABLE risk_scores ADD COLUMN IF NOT EXISTS is_simulated BOOLEAN DEFAULT FALSE",
         "ALTER TABLE risk_scores ADD COLUMN IF NOT EXISTS simulation_id UUID",
+
+        # Simulated Incidents fixes (Ensuring all mission-critical fields exist)
+        "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS message_title VARCHAR",
+        "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS message_body TEXT",
+        "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE",
+        "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS health_impact_enabled BOOLEAN DEFAULT TRUE",
+        "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS alert_broadcast_enabled BOOLEAN DEFAULT TRUE",
+        "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS mission_flow_enabled BOOLEAN DEFAULT TRUE",
+        "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS judge_note TEXT",
+        "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE",
     ]
     
     with engine.connect() as conn:
