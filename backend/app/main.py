@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from . import models, database, auth
+from . import models, database, auth, db_fixer
 from .routes import (
     auth_routes, dashboard, reports, satellite, 
     weather, ocean, debris, risk, admin_routes,
@@ -35,6 +35,10 @@ def startup_event():
         # Verify/Create Tables
         models.Base.metadata.create_all(bind=database.engine)
         print("[SUCCESS] Systems: PostgreSQL Schema Verified and Synced.")
+
+        # Run schema fixes for missing columns
+        db_fixer.fix_database_schema()
+        print("[SUCCESS] Systems: Applied schema hot-fixes for simulated intelligence fields.")
 
         # Ensure system admin exists
         admin = db.query(models.User).filter(models.User.email == "admin@aquasentinel.ai").first()
