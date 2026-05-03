@@ -51,13 +51,17 @@ def fix_database_schema():
         "ALTER TABLE ecosystem_monitoring_records ADD COLUMN IF NOT EXISTS is_simulated BOOLEAN DEFAULT FALSE",
     ]
     
-    with engine.connect() as conn:
-        for cmd in commands:
+    print(f"[DB-FIX] Starting schema verification for {len(commands)} potential updates...")
+    
+    for cmd in commands:
+        with engine.begin() as conn:
             try:
                 conn.execute(text(cmd))
-                conn.commit()
-                logger.info(f"[DB-FIX] Executed: {cmd}")
+                print(f"[DB-FIX] SUCCESS: {cmd}")
             except Exception as e:
-                logger.error(f"[DB-FIX] Failed to execute {cmd}: {e}")
+                # We expect some failures if columns already exist or types match
+                if "already exists" in str(e).lower():
+                    continue
+                print(f"[DB-FIX] NOTICE: Skipping {cmd.split(' ')[2]} fix - {str(e)[:100]}")
                 
-    logger.info("[DB-FIX] Schema verification complete.")
+    print("[DB-FIX] Schema verification complete.")

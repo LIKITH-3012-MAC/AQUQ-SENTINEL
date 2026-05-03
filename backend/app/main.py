@@ -10,21 +10,11 @@ from .routes import (
     nasa_routes, metrics_routes
 )
 
-# app startup handles table creation in startup_event
+from contextlib import asynccontextmanager
 
-app = FastAPI(title="AquaSentinel AI Command Center", version="2.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.on_event("startup")
-def startup_event():
-    print("--- AquaSentinel AI Boot Sequence Initiated ---")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("--- AquaSentinel AI Boot Sequence Initiated (Lifespan) ---")
     db = database.SessionLocal()
     try:
         # Verify DB Connection
@@ -32,23 +22,22 @@ def startup_event():
         db.execute(text("SELECT 1"))
         print("[SUCCESS] Quantum Core: Database Connection Established.")
         
-        # Verify/Create Tables (Consolidated)
+        # Verify/Create Tables
         models.Base.metadata.create_all(bind=database.engine)
-        print("[SUCCESS] Systems: PostgreSQL Schema Verified and Synced (Unified Base).")
+        models_ai.Base.metadata.create_all(bind=database.engine)
+        print("[SUCCESS] Systems: Schema Verified and Synced.")
 
-        # Run schema fixes for missing columns
+        # Run schema fixes
         db_fixer.fix_database_schema()
-        print("[SUCCESS] Systems: Applied schema hot-fixes for simulated intelligence fields.")
+        print("[SUCCESS] Systems: Applied schema hot-fixes.")
 
-        # Ensure system admin exists
+        # Ensure system admin
         admin = db.query(models.User).filter(models.User.email == "admin@aquasentinel.ai").first()
         if not admin:
             new_admin = models.User(
                 full_name="Intelligence Commander",
                 email="admin@aquasentinel.ai",
                 password_hash=auth.get_password_hash("Admin@2026!"),
-                security_question="What is the mission code?",
-                security_answer_hash=auth.get_password_hash("ocean-sentinel"),
                 role="admin",
                 is_active=True,
                 is_verified=True
@@ -57,11 +46,23 @@ def startup_event():
             db.commit()
             print("[INFO] Security: Initial Administrator Credentialed.")
         
-        print("[READY] AquaSentinel AI Command Center Online.")
+        yield
     except Exception as e:
         print(f"[CRITICAL ERROR] Core Initialization Failure: {str(e)}")
+        yield
     finally:
         db.close()
+        print("--- AquaSentinel AI Shutdown Sequence Complete ---")
+
+app = FastAPI(title="AquaSentinel AI Command Center", version="2.0.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include futuristic API routers
 app.include_router(auth_routes.router)

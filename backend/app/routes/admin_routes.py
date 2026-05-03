@@ -1,11 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
-from .. import schemas, models, auth, database
+from .. import schemas, models, auth, database, db_fixer
 from ..services import metrics_service
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+@router.post("/repair-db")
+async def repair_database(current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
+    """Force run database schema fixes."""
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    try:
+        db_fixer.fix_database_schema()
+        return {"status": "success", "message": "Schema repairs completed. Check logs for details."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/overview")
 def get_overview(db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):
