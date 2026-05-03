@@ -47,7 +47,7 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
     # 3. Create Demo Alerts if enabled
     if sim.alert_broadcast_enabled:
         alert = models.Alert(
-            title=sim.message_title or f"⚠️ [SIMULATED] {sim.scenario_title}",
+            title=sim.message_title or f"⚠️ [SIMULATED] Judge Evaluation: {sim.scenario_title}",
             message=sim.message_body or f"DEMO MODE: High density {sim.debris_type} activity simulated near your monitored zone. (Evaluation Purposes Only)",
             severity=sim.severity,
             latitude=sim.latitude,

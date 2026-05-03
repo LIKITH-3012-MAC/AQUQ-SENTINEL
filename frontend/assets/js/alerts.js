@@ -77,6 +77,10 @@ const GlobalAlerts = {
             icon = 'fa-radiation';
         }
 
+        // Logic for localized chips
+        const isSim = alert.is_simulated || alert.title.includes('[SIMULATED]');
+        const location = "Kavali"; // Default for demo or parse from title
+        
         const card = document.createElement('div');
         card.className = `premium-alert-card ${severityClass}`;
         card.innerHTML = `
@@ -93,18 +97,24 @@ const GlobalAlerts = {
             </div>
             <div class="alert-chips">
                 <span class="alert-chip"><i class="fas fa-shield-virus"></i> ${alert.severity}</span>
-                <span class="alert-chip"><i class="fas fa-location-dot"></i> ${alert.latitude.toFixed(3)}, ${alert.longitude.toFixed(3)}</span>
-                ${alert.is_simulated ? '<span class="alert-chip" style="color: #ff3366; border-color: rgba(255,51,102,0.3); background: rgba(255,51,102,0.05);">[SIMULATED]</span>' : ''}
+                ${isSim ? '<span class="alert-chip" style="color: #ff3366; border-color: rgba(255,51,102,0.3); background: rgba(255,51,102,0.05);">SIMULATED</span>' : ''}
+                <span class="alert-chip"><i class="fas fa-location-dot"></i> ${location.toUpperCase()}</span>
+                <span class="alert-chip"><i class="fas fa-biohazard"></i> MARINE RISK</span>
+            </div>
+            <div class="alert-footer">
+                <div class="alert-footer-text">SECURE DATA STREAM ACTIVE</div>
+                <div class="alert-footer-cta">Command Dashboard <i class="fas fa-chevron-right"></i></div>
             </div>
             <div class="alert-timer-edge"></div>
         `;
 
         container.appendChild(card);
 
-        // 1. Play Sound
+        // SYNCED SENSORY ACTIVATION
+        // 1. Play Sound (starts exactly with card entry)
         this.playSound();
 
-        // 2. Trigger Vibration
+        // 2. Trigger Vibration (starts exactly with card entry)
         this.triggerVibration();
 
         // 3. Lifecycle Management (5 seconds)
