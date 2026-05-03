@@ -32,6 +32,7 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
         }
     )
     db.add(report)
+    db.flush() # Flush to get ID if needed, though commit handles it
     db.commit()
     db.refresh(report)
 

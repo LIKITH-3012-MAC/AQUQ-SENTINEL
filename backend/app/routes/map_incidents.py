@@ -20,8 +20,9 @@ def get_all_map_incidents(
     all_reports = db.query(models.MarineReport).all()
     
     for report in all_reports:
-        # Determine source type based on simulation flag
-        source_type = "admin_simulation" if report.is_simulated else "user_report"
+        # Determine source type based on simulation flag or title hint
+        is_sim = report.is_simulated or "SIMULATED" in report.title.upper()
+        source_type = "admin_simulation" if is_sim else "user_report"
         
         # Determine radius (if simulated, try to find the original incident for radius)
         radius = 0.0

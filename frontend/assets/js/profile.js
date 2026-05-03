@@ -13,6 +13,8 @@ const Profile = {
         } catch (err) {
             console.error("Profile load failure:", err);
             UI.showNotification("Critical Error: Intelligence sync failed.", "danger");
+            const list = document.getElementById('activity-list');
+            if (list) list.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">Failed to synchronize with Quantum Core. Verify credentials.</p>`;
         }
     },
 
@@ -34,7 +36,8 @@ const Profile = {
         
         if (avatarEl) {
             if (profile.profile_image_url) {
-                avatarEl.src = profile.profile_image_url.startsWith('http') ? profile.profile_image_url : (CONFIG.API_BASE_URL + profile.profile_image_url);
+                const baseUrl = CONFIG.API_BASE_URL || "";
+                avatarEl.src = profile.profile_image_url.startsWith('http') ? profile.profile_image_url : (baseUrl + profile.profile_image_url);
             } else {
                 avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name)}&background=00f3ff&color=000&bold=true`;
             }
@@ -169,11 +172,13 @@ const Profile = {
 
         try {
             const res = await API.request('/profile/me', 'PATCH', updateData);
-            if (res.success) {
+            if (res && (res.success || res.user)) {
                 UI.showNotification("Intelligence profile updated successfully.", "success");
                 this.render(res);
                 this.currentUserData = res;
                 this.closeEdit();
+            } else {
+                UI.showNotification("Update failed: Invalid response from server.", "danger");
             }
         } catch (err) {
             UI.showNotification("Update failed: Security sync error.", "danger");
@@ -194,12 +199,13 @@ const Profile = {
 
         try {
             const result = await API.profile.uploadPhoto(formData);
-            if (result.success) {
+            if (result && result.success) {
                 UI.showNotification("Identification image synced.", "success");
-                document.getElementById('display-avatar').src = result.url + "?t=" + Date.now();
+                const baseUrl = CONFIG.API_BASE_URL || "";
+                document.getElementById('display-avatar').src = (result.url.startsWith('http') ? result.url : (baseUrl + result.url)) + "?t=" + Date.now();
                 await this.load(); // Reload to update completion %
             } else {
-                UI.showNotification(result.detail || "Upload failed.", "danger");
+                UI.showNotification(result?.detail || "Upload failed: Intelligence mismatch.", "danger");
             }
         } catch (err) {
             UI.showNotification("Network error during upload.", "danger");

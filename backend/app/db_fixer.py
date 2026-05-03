@@ -31,6 +31,10 @@ def fix_database_schema():
         "ALTER TABLE risk_scores ADD COLUMN IF NOT EXISTS is_simulated BOOLEAN DEFAULT FALSE",
         "ALTER TABLE risk_scores ADD COLUMN IF NOT EXISTS simulation_id UUID",
 
+        # User Profile Images fixes
+        "ALTER TABLE user_profile_images ADD COLUMN IF NOT EXISTS binary_data BYTEA",
+        "ALTER TABLE user_profile_images ALTER COLUMN binary_data TYPE BYTEA USING binary_data::bytea", # Ensure type is bytea
+        
         # Simulated Incidents fixes (Ensuring all mission-critical fields exist)
         "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS message_title VARCHAR",
         "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS message_body TEXT",

@@ -532,7 +532,7 @@
 
                 // Parallel fetch with individual error boundaries
                 const results = await Promise.allSettled([
-                    API.hyperlocal.intelligence(lat, lon),
+                    API.hyperlocal.getIntelligence(lat, lon),
                     API.weather.getMarine(lat, lon),
                     API.predictions.getHotspots(lat, lon)
                 ]);

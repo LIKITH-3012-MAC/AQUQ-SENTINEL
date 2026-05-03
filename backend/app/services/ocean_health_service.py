@@ -69,9 +69,9 @@ class OceanHealthService:
         if alerts:
             max_severity = 0
             for a in alerts:
-                if a.severity == "Critical": max_severity = max(max_severity, 25)
-                elif a.severity == "High": max_severity = max(max_severity, 15)
-                elif a.severity == "Medium": max_severity = max(max_severity, 8)
+                if a.severity == "Critical": max_severity = max(max_severity, 60)
+                elif a.severity == "High": max_severity = max(max_severity, 40)
+                elif a.severity == "Medium": max_severity = max(max_severity, 20)
             
             base_score -= max_severity
             factors.append({
