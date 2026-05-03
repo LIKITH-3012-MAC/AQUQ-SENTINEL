@@ -72,19 +72,40 @@ const RiskEngine = {
         const explanation = document.getElementById('risk-explanation');
         const action = document.getElementById('risk-action');
 
-        scoreVal.textContent = Math.round(data.risk_score);
-        levelTag.textContent = data.risk_level;
-        levelTag.className = 'status-tag ' + (data.risk_level === 'CRITICAL' || data.risk_level === 'HIGH' ? 'critical' : 'success');
-        explanation.textContent = data.assessment;
-        action.textContent = data.recommended_action;
-
-        // Components Mapping
-        if (data.components) {
-            document.getElementById('factor-debris').textContent = (data.components.debris_density || 0).toFixed(1) + '%';
-            document.getElementById('factor-thermal').textContent = (data.components.thermal_stress || 0).toFixed(1) + '%';
-            document.getElementById('factor-bio').textContent = (data.components.bio_stress || 0).toFixed(1) + '%';
-            document.getElementById('factor-dynamic').textContent = (data.components.dynamic_load || 0).toFixed(1) + '%';
+        // Safely parse risk score (supports both old 'score' and new 'risk_score' formats during deployment)
+        const rawScore = data.risk_score !== undefined ? data.risk_score : data.score;
+        if (rawScore !== undefined && rawScore !== null && Number.isFinite(Number(rawScore))) {
+            scoreVal.textContent = Math.round(Number(rawScore));
+        } else {
+            scoreVal.textContent = "N/A";
         }
+
+        // Safely parse risk level
+        const level = data.risk_level || data.level || 'UNKNOWN';
+        levelTag.textContent = level;
+        levelTag.className = 'status-tag ' + (level === 'CRITICAL' || level === 'HIGH' ? 'critical' : 'success');
+
+        // Safely parse explanations
+        explanation.textContent = data.assessment || data.explanation || (data.signals_missing && data.signals_missing.length > 0 ? "Limited local intelligence available; only baseline risk could be computed." : "Assessment data unavailable.");
+        action.textContent = data.recommended_action || "Continue routine monitoring. Refer to local authorities for immediate guidance.";
+
+        // Safely parse components
+        const components = data.components || {};
+        const oldFactors = data.factors || {}; // Fallback for transition phase
+        
+        const renderFactor = (elementId, value) => {
+            const el = document.getElementById(elementId);
+            if (value !== undefined && value !== null && Number.isFinite(Number(value))) {
+                el.textContent = Number(value).toFixed(1) + '%';
+            } else {
+                el.textContent = "Unavailable";
+            }
+        };
+
+        renderFactor('factor-debris', components.debris_density !== undefined ? components.debris_density : oldFactors.debris);
+        renderFactor('factor-thermal', components.thermal_stress !== undefined ? components.thermal_stress : oldFactors.bio_thermal);
+        renderFactor('factor-bio', components.bio_stress !== undefined ? components.bio_stress : oldFactors.community_reports);
+        renderFactor('factor-dynamic', components.dynamic_load !== undefined ? components.dynamic_load : oldFactors.dynamic_conditions);
 
         resultDiv.style.display = 'block';
         resultDiv.scrollIntoView({ behavior: 'smooth' });

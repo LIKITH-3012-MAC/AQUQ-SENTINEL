@@ -28,9 +28,15 @@ def calculate_risk(
     
     if weather_data.get("status") == "success":
         signals_used.append("weather_api")
-        temp = weather_data.get("temperature", 25.0)
-        wind = weather_data.get("wind_speed", 5.0)
-        weather_desc = weather_data.get("description", "clear")
+        
+        # Safely extract values, ensuring they are not None
+        extracted_temp = weather_data.get("temperature")
+        temp = float(extracted_temp) if extracted_temp is not None else 25.0
+        
+        extracted_wind = weather_data.get("wind_speed")
+        wind = float(extracted_wind) if extracted_wind is not None else 5.0
+        
+        weather_desc = weather_data.get("description") or "clear"
     else:
         signals_missing.append("weather_api")
 
