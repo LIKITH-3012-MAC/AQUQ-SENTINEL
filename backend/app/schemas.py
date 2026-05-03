@@ -341,3 +341,14 @@ class OceanCurrentObservationResponse(BaseModel):
     created_at: datetime
     class Config:
         from_attributes = True
+
+class AuditLogResponse(BaseModel):
+    id: UUID
+    user_id: Optional[UUID]
+    action: str
+    entity_type: Optional[str]
+    entity_id: Optional[str]
+    action_metadata: Optional[Any]
+    created_at: datetime
+    class Config:
+        from_attributes = True

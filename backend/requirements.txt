@@ -10,6 +10,8 @@ python-jose[cryptography]
 passlib[bcrypt]
 requests
 python-dotenv
+groq
+bcrypt
 numpy
 pandas
 opencv-python-headless
