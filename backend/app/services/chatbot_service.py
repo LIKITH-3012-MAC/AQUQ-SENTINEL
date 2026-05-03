@@ -11,6 +11,27 @@ class OceanCopilot:
         self.model = "llama-3.3-70b-versatile"
 
     def get_system_prompt(self, user_role="user", language="en"):
+        import os
+        import json
+        knowledge_path = os.path.join(os.path.dirname(__file__), "..", "knowledge", "project_knowledge.json")
+        project_context = ""
+        if os.path.exists(knowledge_path):
+            try:
+                with open(knowledge_path, "r", encoding="utf-8") as fk:
+                    project_context = f"\n\n[SYSTEM PROJECT KNOWLEDGE BASE]\n{json.dumps(json.load(fk))}\n\nIMPORTANT RULE: Use the above structured metadata to answer questions about what AquaSentinel is, pages, risk, and AI modules. Be highly accurate to this data."
+            except Exception:
+                pass
+        import os
+        
+        knowledge_path = os.path.join(os.path.dirname(__file__), "..", "knowledge", "project_knowledge.json")
+        project_context = ""
+        if os.path.exists(knowledge_path):
+            try:
+                with open(knowledge_path, "r", encoding="utf-8") as f:
+                    project_context = f"\n\n[SYSTEM PROJECT KNOWLEDGE BASE]\n{json.dumps(json.load(f))}\n\nIMPORTANT RULE: Use the above structured metadata to answer questions about what AquaSentinel is, pages, risk, and AI modules. Be highly accurate to this data."
+            except Exception:
+                pass
+
         # Role-based tone adjustment
         base_instructions = {
             "user": "Explain simply for citizens, focus on community impact and clear actions.",
@@ -21,12 +42,12 @@ class OceanCopilot:
         tone = base_instructions.get(user_role, base_instructions["user"])
         
         prompts = {
-            "en": f"You are the AquaSentinel AI Ocean Intelligence Copilot. Expert in marine biology and satellite oceanography. Tone: {tone}. Provide actionable advice.",
-            "te": f"మీరు ఆక్వాసెంటినెల్ AI ఓషన్ ఇంటెలిజెన్స్ కోపైలట్. టోన్: {tone}.",
-            "hi": f"आप एक्वासेंटिनल एआई ओशन इंटेलिजेंस कोपायलट हैं। टोन: {tone}.",
-            "ta": "நீங்கள் அக்வாசென்டினல் ஏஐ கடல் நுண்ணறிவு கோபிலட்.",
-            "kn": "ನೀವು ಅಕ್ವಾಸಂಟಿನೆಲ್ ಎಐ ಸಾಗರ ಇಂಟೆಲಿಜೆನ್ಸ್ ಸಹ-ಪೈಲಟ್.",
-            "ml": "നിങ്ങൾ അക്വാസെന്റിനൽ AI ഓഷ്യൻ ഇന്റലിജൻസ് കോപൈലറ്റ് ആണ്."
+            "en": f"You are the AquaSentinel AI Ocean Intelligence Copilot. Expert in marine biology and satellite oceanography. Tone: {tone}. Provide actionable advice..{project_context}",
+            "te": f"మీరు ఆక్వాసెంటినెల్ AI ఓషన్ ఇంటెలిజెన్స్ కోపైలట్. టోన్: {tone}..{project_context}",
+            "hi": f"आप एक्वासेंटिनल एआई ओशन इंटेलिजेंस कोपायलट हैं। टोन: {tone}..{project_context}",
+            "ta": "நீங்கள் அக்வாசென்டினல் ஏஐ கடல் நுண்ணறிவு கோபிலட்..{project_context}",
+            "kn": "ನೀವು ಅಕ್ವಾಸಂಟಿನೆಲ್ ಎಐ ಸಾಗರ ಇಂಟೆಲಿಜೆನ್ಸ್ ಸಹ-ಪೈಲಟ್..{project_context}",
+            "ml": .{project_context}"നിങ്ങൾ അക്വാസെന്റിനൽ AI ഓഷ്യൻ ഇന്റലിജൻസ് കോപൈലറ്റ് ആണ്."
         }
         return prompts.get(language, prompts["en"])
 

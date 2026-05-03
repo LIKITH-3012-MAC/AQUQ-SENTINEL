@@ -32,6 +32,10 @@
   --shadow-premium: 0 10px 30px rgba(0, 119, 255, 0.05);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -281,6 +285,7 @@ h1, h2, h3, h4 {
   gap: 1.5rem;
   display: flex;
   flex-direction: column;
+  scroll-behavior: smooth;
 }
 
 .chat-message {
@@ -371,6 +376,7 @@ h1, h2, h3, h4 {
   padding: 0 1.5rem 1rem;
   overflow-x: auto;
   scrollbar-width: none;
+  scroll-behavior: smooth;
 }
 .suggestion-container::-webkit-scrollbar { display: none; }
 

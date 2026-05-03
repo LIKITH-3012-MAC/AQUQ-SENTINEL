@@ -1,0 +1,142 @@
+{
+  "project_metadata": {
+    "name": "AquaSentinel",
+    "title": "AquaSentinel Intelligence OS",
+    "tagline": "Advanced Marine Debris & Regional Risk Intelligence Platform",
+    "mission": "To preserve marine ecosystems by detecting, tracking, and predicting marine debris and ecological risks using AI, community reporting, and satellite intelligence.",
+    "domain": "Marine Conservation & AI Intelligence",
+    "purpose": "A unified command center for citizens, NGOs, and administrators to monitor ocean health, intercept marine debris, and calculate dynamic ecosystem risk scores using real-time weather and satellite data."
+  },
+  "project_features": [
+    {
+      "name": "Dashboard (Command Base)",
+      "description": "The central overview showing total reports, active alerts, critical risks, and recent intelligence activity.",
+      "users": ["All Users", "Admins"],
+      "module": "dashboard.html"
+    },
+    {
+      "name": "Global Intelligence Map",
+      "description": "Geospatial visualization of reports, AI detections, hotspots, and simulated events using Leaflet.",
+      "users": ["All Users"],
+      "module": "map.html"
+    },
+    {
+      "name": "Regional Risk Intelligence",
+      "description": "A dynamic calculator that fuses weather data (OpenWeather API) with biological and debris parameters to compute Thermal Stress and Dynamic Load, yielding a real-time risk score for any coordinate.",
+      "users": ["All Users"],
+      "module": "location-risk.html"
+    },
+    {
+      "name": "AI Marine Debris Intelligence",
+      "description": "An AI pipeline that processes uploaded imagery (or runs in simulation mode) to identify marine debris classes, confidence levels, and ecosystem signals.",
+      "users": ["All Users", "Admins"],
+      "module": "ai-intelligence.html"
+    },
+    {
+      "name": "Simulation Engine (Admin Tower)",
+      "description": "An administrative tool to simulate debris spills or ecological disasters. It instantly broadcasts alerts to active users and drops simulated markers on the map for tactical drill exercises.",
+      "users": ["Admins"],
+      "module": "admin.html"
+    },
+    {
+      "name": "Resolvit AI Copilot",
+      "description": "An integrated AI chatbot capable of answering questions about the platform, analyzing risk scenarios, and providing guided support.",
+      "users": ["All Users"],
+      "module": "Shared App Shell (copilot widget)"
+    }
+  ],
+  "page_context": {
+    "login.html": {
+      "purpose": "Secure entry point for users and admins.",
+      "capabilities": "Grants access to the dashboard, map, reporting, and AI tools. Authenticates using JWT.",
+      "help_text": "Sign in to access the AquaSentinel OS. Once authenticated, you can view the global map, analyze risks, and track your civilian impact score."
+    },
+    "register.html": {
+      "purpose": "Account creation for new civilian sentinels or NGO workers.",
+      "help_text": "Join the network to report marine debris, receive real-time alerts, and track ocean health."
+    },
+    "dashboard.html": {
+      "purpose": "Provides a high-level summary of marine intelligence.",
+      "help_text": "Your command base. Here you can monitor active alerts, review recent reports from other users, and access the core AI modules."
+    },
+    "map.html": {
+      "purpose": "Visualizes spatial data including user reports and AI detections.",
+      "help_text": "The Global Intelligence Map displays the exact coordinates of reported debris, active ecosystem threats, and administrative simulations."
+    },
+    "report.html": {
+      "purpose": "Allows users to submit localized marine issues.",
+      "help_text": "Submit evidence of marine debris. Your report feeds into the PostgreSQL database, appears on the map, and trains our AI models."
+    },
+    "profile.html": {
+      "purpose": "Manages user identity, preferences, and impact tracking.",
+      "help_text": "View your impact score, update your region, and configure light/dark mode preferences."
+    },
+    "location-risk.html": {
+      "purpose": "Analyzes the ecological and dynamic threat level of a specific coordinate.",
+      "help_text": "Enter coordinates or use 'My Location' to fetch live OpenWeather data. The engine calculates Thermal Stress and Dynamic Load to generate a 0-100 Risk Score."
+    },
+    "ai-intelligence.html": {
+      "purpose": "Deep learning module for image analysis.",
+      "help_text": "Upload imagery to let the AI classify debris types (e.g., Ghost Nets, Plastics). Operates in Real Model or Simulated modes."
+    },
+    "admin.html": {
+      "purpose": "Administrative oversight and simulation controls.",
+      "help_text": "Restricted to Admins. Use the Simulation Engine to broadcast tactical drills to the map and trigger system-wide alerts."
+    }
+  },
+  "role_capabilities": {
+    "user": [
+      "View Dashboard and Map",
+      "Submit Marine Reports",
+      "Use Regional Risk Intelligence",
+      "Use AI Debris Intelligence (View/Upload)",
+      "Chat with Copilot",
+      "Manage Profile"
+    ],
+    "admin": [
+      "All User capabilities",
+      "Access Admin Tower",
+      "Trigger AI Simulations",
+      "Manage System Alerts",
+      "Repair Database Schemas"
+    ]
+  },
+  "workflow_knowledge": {
+    "reporting_workflow": "User submits report → Saved to PostgreSQL → Displayed on Global Map → AI Copilot can analyze it.",
+    "simulation_workflow": "Admin configures simulated incident → Backend persists to DB → Broadcasts 5-second Alert to all logged-in users → Places tactical marker on Map.",
+    "risk_intelligence_workflow": "User inputs coordinate → Backend calls OpenWeather API → Engine maps temperature to Thermal Stress and wind to Dynamic Load → Fuses with debris proxies → Returns 0-100 score and dynamic threat text.",
+    "ai_detection_workflow": "User uploads image → Preprocessed → Inference run (Simulated/Real) → Geoconverted → Saved to 'ai_debris_detections' table → Populates AI Dashboard."
+  },
+  "ai_module_knowledge": {
+    "simulated_mode": "A fallback/testing mode that generates realistic debris detection matrices when the live TensorFlow/PyTorch models are offline or retraining.",
+    "real_mode": "Active inference against real datasets using actual model weights.",
+    "debris_detection": "Classifies objects like Plastic, Ghost Nets, and Oil Spills with a confidence percentage.",
+    "ecosystem_monitoring": "Tracks secondary biological signals like Algae Blooms or abnormal Chlorophyll levels."
+  },
+  "faq_knowledge": [
+    {
+      "question": "What is this project?",
+      "answer": "AquaSentinel is an advanced AI intelligence OS designed to detect marine debris and assess regional ecological risks using community reporting, AI computer vision, and live weather integrations."
+    },
+    {
+      "question": "What happens after I log in?",
+      "answer": "After login, you gain access to the Command Base (Dashboard). From there, you can view the Global Intelligence Map, submit issue reports, use the Risk Engine, and access the AI Debris Scanner."
+    },
+    {
+      "question": "What is Regional Risk Intelligence?",
+      "answer": "It is a dynamic calculator that uses live OpenWeather API data (temperature, wind) combined with local proxies to compute Thermal Stress and Dynamic Load, assigning a risk score from 0-100 for any coordinate."
+    },
+    {
+      "question": "What is the difference between simulated and real AI mode?",
+      "answer": "Simulated mode allows admins and developers to run tactical drills and verify the pipeline without live imagery. Real mode uses active machine learning models to classify actual uploaded photos of marine debris."
+    },
+    {
+      "question": "How do alerts get generated?",
+      "answer": "Alerts are generated either automatically when the Risk Engine detects a 'CRITICAL' score, or manually when an Admin triggers a Simulation Incident via the Admin Tower."
+    },
+    {
+      "question": "What data is stored in my profile?",
+      "answer": "Your profile stores basic identity info, regional preferences, theme settings, and an 'Impact Score' that tracks your active participation in reporting marine issues."
+    }
+  ]
+}
