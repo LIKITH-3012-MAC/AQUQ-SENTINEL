@@ -1,6 +1,6 @@
 import requests
 from typing import Dict, Any
-from app.config import settings
+from ..config import settings
 
 def get_marine_weather(lat: float, lon: float) -> Dict[str, Any]:
     """

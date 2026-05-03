@@ -44,6 +44,11 @@ def fix_database_schema():
         "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS mission_flow_enabled BOOLEAN DEFAULT TRUE",
         "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS judge_note TEXT",
         "ALTER TABLE simulated_incidents ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE",
+
+        # AI Intelligence Layer fixes
+        "ALTER TABLE ai_debris_detections ADD COLUMN IF NOT EXISTS model_version VARCHAR",
+        "ALTER TABLE ai_debris_detections ADD COLUMN IF NOT EXISTS inference_mode VARCHAR DEFAULT 'simulated'",
+        "ALTER TABLE ecosystem_monitoring_records ADD COLUMN IF NOT EXISTS is_simulated BOOLEAN DEFAULT FALSE",
     ]
     
     with engine.connect() as conn:

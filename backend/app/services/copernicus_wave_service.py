@@ -1,6 +1,6 @@
 import random
 from typing import Dict, Any
-from app.config import settings
+from ..config import settings
 
 def get_wave_conditions(lat: float, lon: float, date: str) -> Dict[str, Any]:
     """

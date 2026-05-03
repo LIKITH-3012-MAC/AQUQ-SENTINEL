@@ -1,6 +1,6 @@
 import random
 from typing import Dict, Any
-from app.config import settings
+from ..config import settings
 
 def search_ocean_datasets(keyword: str, start_date: str, end_date: str, lat: float, lon: float) -> Dict[str, Any]:
     """
