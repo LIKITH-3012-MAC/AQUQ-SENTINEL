@@ -6,7 +6,7 @@
 if (typeof CONFIG === 'undefined') {
     window.CONFIG = {
         API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://127.0.0.1:8000'
+            ? 'http://127.0.0.1:8001'
             : 'https://aquq-sentinel-1.onrender.com',
         VERSION: "4.0.0-PROD-FALLBACK",
         SYSTEM_NAME: "AquaSentinel Intelligence OS"
@@ -140,20 +140,12 @@ const API = {
     },
 
     simulation: {
-        create: (data) => API.request('/admin/simulations', 'POST', data),
-        list: () => API.request('/admin/simulations'),
+        create: (data) => API.request('/admin/simulations/', 'POST', data),
+        list: () => API.request('/admin/simulations/'),
         reset: () => API.request('/admin/simulations/reset', 'POST'),
         delete: (id) => API.request(`/admin/simulations/${id}`, 'DELETE')
     },
 
-    health: {
-        score: (lat, lon, radius = 20) => API.request(`/health/score?lat=${lat}&lon=${lon}&radius=${radius}`),
-        global: () => API.request('/health/global')
-    },
-
-    hyperlocal: {
-        intelligence: (lat, lon, radius = 20) => API.request(`/hyperlocal/intelligence?lat=${lat}&lon=${lon}&radius=${radius}`)
-    },
 
     chatbot: {
         query: (data) => API.request('/chatbot/message', 'POST', {

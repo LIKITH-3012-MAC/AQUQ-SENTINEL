@@ -379,8 +379,8 @@
                     severity: document.getElementById('sim-severity').value,
                     density_score: parseFloat(document.getElementById('sim-density').value),
                     affected_radius: parseFloat(document.getElementById('sim-radius').value),
-                    message_title: document.getElementById('sim-msg-title').value,
-                    message_body: document.getElementById('sim-msg-body').value,
+                    message_title: document.getElementById('sim-msg-title').value || "⚠️ Marine Risk Alert",
+                    message_body: document.getElementById('sim-msg-body').value || "High density debris activity detected in your sector.",
                     health_impact_enabled: document.getElementById('sim-health').checked,
                     alert_broadcast_enabled: document.getElementById('sim-alert').checked,
                     mission_flow_enabled: document.getElementById('sim-mission').checked,
@@ -388,11 +388,14 @@
                 };
 
                 try {
-                    await API.simulation.create(data);
+                    console.log("[SYSTEM] Dispatching Simulation Request:", data);
+                    const result = await API.simulation.create(data);
                     UI.showToast("Simulation Scenario Active.", "success");
                     this.loadSimulations();
+                    loadAdminData(); // Refresh overview
                 } catch (err) {
-                    UI.showToast("Simulation failed: " + err.message, "error");
+                    console.error("[CRITICAL] Simulation Trigger Failure:", err);
+                    UI.showToast(`Simulation failed: ${err.message}. Check backend connection at ${CONFIG.API_BASE_URL}`, "error");
                 }
             },
 
@@ -400,7 +403,7 @@
                 try {
                     const sims = await API.simulation.list();
                     const list = document.getElementById('active-sims-list');
-                    if (sims.length === 0) {
+                    if (!sims || sims.length === 0) {
                         list.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem; text-align: center; padding: 2rem;">No active simulations.</p>`;
                         return;
                     }
@@ -414,23 +417,29 @@
                             <button onclick="Admin.deleteSim('${s.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i></button>
                         </div>
                     `).join('');
-                } catch (err) { console.error(err); }
+                } catch (err) { console.error("[INTEL] Simulation List Load Failure:", err); }
             },
 
             async deleteSim(id) {
                 try {
                     await API.simulation.delete(id);
+                    UI.showToast("Simulation Terminated.", "info");
                     this.loadSimulations();
+                    loadAdminData();
                 } catch (err) { UI.showToast(err.message, 'error'); }
             },
 
             async resetSimulations() {
-                if (!confirm("Are you sure? This will purge all simulated events, alerts, and demo missions.")) return;
+                if (!confirm("Are you sure? This will purge ALL simulated events, alerts, and demo missions across the platform.")) return;
                 try {
                     await API.simulation.reset();
                     UI.showToast("Environment Reset Complete.", "success");
                     this.loadSimulations();
-                } catch (err) { UI.showToast(err.message, 'error'); }
+                    loadAdminData();
+                } catch (err) { 
+                    console.error("[CRITICAL] Reset Failure:", err);
+                    UI.showToast(`Reset failed: ${err.message}`, 'error'); 
+                }
             }
         };
 

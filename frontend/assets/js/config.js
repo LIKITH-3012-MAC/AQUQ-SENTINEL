@@ -3,7 +3,7 @@
  */
 
 window.CONFIG = {
-    // Development default
+    // Development default synchronized to active backend port
     API_BASE_URL: "http://127.0.0.1:8001",
     VERSION: "4.0.0-PROD",
     SYSTEM_NAME: "AquaSentinel Intelligence OS"
