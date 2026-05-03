@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from .. import models, schemas
+from .. import models, models_ai, schemas
+from ..services import ai_debris_detection_service, ai_alert_engine
 import uuid
 import random
 
@@ -116,26 +117,92 @@ def trigger_simulation_effects(db: Session, sim: models.SimulatedIncident, admin
         )
         db.add(mission)
 
+    # 6. Generate AI Debris Detection Records (NEW — AI Intelligence Layer)
+    try:
+        ai_detections, eco_records = ai_debris_detection_service.run_inference(
+            db=db,
+            image_id=None,
+            user_id=admin_id,
+            latitude=sim.latitude,
+            longitude=sim.longitude,
+            source_type="admin_simulation",
+            is_simulated=True,
+            scenario_id=sim.id,
+            location_label=f"SIMULATED: {sim.scenario_title}",
+            forced_class=_map_debris_type_to_class(sim.debris_type),
+            forced_severity=sim.severity,
+            count=random.randint(2, 5)
+        )
+
+        # 7. Create AI Alerts from detections
+        ai_alert_engine.evaluate_and_create_alerts(
+            db=db,
+            detections=ai_detections,
+            user_id=admin_id,
+            is_simulated=True
+        )
+    except Exception as e:
+        print(f"[WARN] AI Detection generation during simulation failed: {e}")
+
     db.commit()
     return report.id
+
+
+def _map_debris_type_to_class(debris_type: str) -> str:
+    """Map simulation debris_type to AI detection class."""
+    mapping = {
+        "plastic": "plastic_waste",
+        "oil": "oil_patch",
+        "net": "ghost_net",
+        "ghost_net": "ghost_net",
+        "algae": "algae_cluster",
+        "debris": "floating_debris",
+        "floating_debris": "floating_debris",
+        "plastic_waste": "plastic_waste",
+        "oil_patch": "oil_patch",
+        "algae_cluster": "algae_cluster"
+    }
+    return mapping.get(debris_type.lower(), "unknown_marine_hazard")
 
 def clear_all_simulations(db: Session):
     """
     Clear all demo data using strict simulation flags.
     """
-    # 1. Purge simulation scenarios
+    # 1. Purge AI intelligence layer simulation data
+    db.query(models_ai.DetectionAlertLink).filter(
+        models_ai.DetectionAlertLink.detection_id.in_(
+            db.query(models_ai.AIDebrisDetection.id).filter(models_ai.AIDebrisDetection.is_simulated == True)
+        )
+    ).delete(synchronize_session=False)
+    db.query(models_ai.DetectionMissionLink).filter(
+        models_ai.DetectionMissionLink.detection_id.in_(
+            db.query(models_ai.AIDebrisDetection.id).filter(models_ai.AIDebrisDetection.is_simulated == True)
+        )
+    ).delete(synchronize_session=False)
+    db.query(models_ai.DetectionEvidence).filter(
+        models_ai.DetectionEvidence.detection_id.in_(
+            db.query(models_ai.AIDebrisDetection.id).filter(models_ai.AIDebrisDetection.is_simulated == True)
+        )
+    ).delete(synchronize_session=False)
+    db.query(models_ai.EcosystemMonitoringRecord).filter(
+        models_ai.EcosystemMonitoringRecord.is_simulated == True
+    ).delete(synchronize_session=False)
+    db.query(models_ai.AIDebrisDetection).filter(
+        models_ai.AIDebrisDetection.is_simulated == True
+    ).delete(synchronize_session=False)
+
+    # 2. Purge simulation scenarios
     db.query(models.SimulatedIncident).delete(synchronize_session=False)
     db.query(models.SimulatedMapEvent).delete(synchronize_session=False)
     db.query(models.AlertBroadcastLog).delete(synchronize_session=False)
     
-    # 2. Purge simulated entities
+    # 3. Purge simulated entities
     db.query(models.Alert).filter(models.Alert.is_simulated == True).delete(synchronize_session=False)
     db.query(models.Mission).filter(models.Mission.is_simulated == True).delete(synchronize_session=False)
     db.query(models.MarineReport).filter(models.MarineReport.is_simulated == True).delete(synchronize_session=False)
     db.query(models.RiskScore).filter(models.RiskScore.is_simulated == True).delete(synchronize_session=False)
     
-    # 3. Handle OceanHealthScore which uses JSON for simulation flag
-    # (Simplified for now, but in prod we'd use a proper column)
+    # 4. Handle OceanHealthScore which uses JSON for simulation flag
     db.query(models.OceanHealthScore).filter(models.OceanHealthScore.region_name.like("SIMULATED%")).delete(synchronize_session=False)
     
     db.commit()

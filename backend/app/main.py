@@ -1,16 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from . import models, database, auth, db_fixer
+from . import models, models_ai, database, auth, db_fixer
 from .routes import (
     auth_routes, dashboard, reports, satellite, 
     weather, ocean, debris, risk, admin_routes,
     chatbot, simulation, alert_routes, image_routes,
     health, hyperlocal, prediction_routes, mission_routes, profile,
-    admin_simulation, map_incidents
+    admin_simulation, map_incidents, ai_detection_routes,
+    nasa_routes, metrics_routes
 )
 
 # Auto-create tables (use migrations in real production)
 models.Base.metadata.create_all(bind=database.engine)
+models_ai.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="AquaSentinel AI Command Center", version="2.0.0")
 
@@ -34,7 +36,8 @@ def startup_event():
         
         # Verify/Create Tables
         models.Base.metadata.create_all(bind=database.engine)
-        print("[SUCCESS] Systems: PostgreSQL Schema Verified and Synced.")
+        models_ai.Base.metadata.create_all(bind=database.engine)
+        print("[SUCCESS] Systems: PostgreSQL Schema Verified and Synced (Core + AI Intelligence Layer).")
 
         # Run schema fixes for missing columns
         db_fixer.fix_database_schema()
@@ -84,7 +87,10 @@ app.include_router(mission_routes.router)
 app.include_router(profile.router)
 app.include_router(admin_simulation.router)
 app.include_router(map_incidents.router)
+app.include_router(ai_detection_routes.router)
+app.include_router(nasa_routes.router)
+app.include_router(metrics_routes.router)
 
 @app.get("/")
 def read_root():
-    return {"status": "AquaSentinel AI Command Center v2.0 Online"}
+    return {"status": "AquaSentinel AI Command Center v2.0 Online — AI Intelligence Layer Active"}

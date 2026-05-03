@@ -157,5 +157,22 @@ const API = {
         }),
         history: (sessionId) => API.request(`/chatbot/history?session_id=${sessionId}`),
         sessions: () => API.request('/chatbot/sessions')
+    },
+
+    // AI Marine Debris Intelligence Layer
+    aiDetection: {
+        detectFromImage: (formData) => fetch(`${CONFIG.API_BASE_URL}/api/ai/detect/image`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: formData
+        }).then(r => r.json()),
+        simulate: (data) => API.request('/ai/detect/simulate', 'POST', data),
+        getResults: (params = '') => API.request(`/ai/detect/results${params ? '?' + params : ''}`),
+        getDetail: (id) => API.request(`/ai/detect/results/${id}`),
+        getEvidence: (id) => API.request(`/ai/detect/evidence/${id}`),
+        getDashboard: () => API.request('/ai/detect/dashboard'),
+        getMapOverlays: () => API.request('/ai/detect/map/overlays'),
+        getEcosystem: (params = '') => API.request(`/ai/detect/ecosystem${params ? '?' + params : ''}`),
+        ingestTile: (data) => API.request('/ai/detect/tiles/ingest', 'POST', data)
     }
 };

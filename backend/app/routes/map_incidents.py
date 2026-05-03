@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from .. import models, schemas, database, auth
+from .. import models, models_ai, schemas, database, auth
 
 router = APIRouter(prefix="/api/map", tags=["map"])
 

@@ -8,6 +8,7 @@
     <title>Global Command Map | AquaSentinel AI</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/alerts.css">
+    <link rel="stylesheet" href="assets/css/ai-intelligence.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -164,6 +165,21 @@
                     <span>Sea Surface Temp</span>
                     <input type="checkbox" id="layer-sst" onchange="MAP.toggleSST(this.checked)">
                 </div>
+                <div style="border-top: 1px solid var(--border-color); margin-top: 0.6rem; padding-top: 0.6rem;">
+                    <div style="font-size: 0.65rem; text-transform: uppercase; color: #00f3ff; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">🤖 AI Intelligence</div>
+                    <div class="layer-item">
+                        <span>AI Debris Detections</span>
+                        <input type="checkbox" id="layer-ai-detections" onchange="AIIntelligence.toggleAIDetections(this.checked)">
+                    </div>
+                    <div class="layer-item">
+                        <span>AI Detection Heatmap</span>
+                        <input type="checkbox" id="layer-ai-heatmap" onchange="AIIntelligence.toggleAIHeatmap(this.checked)">
+                    </div>
+                    <div class="layer-item">
+                        <span>Ecosystem Monitoring</span>
+                        <input type="checkbox" id="layer-ecosystem" onchange="AIIntelligence.toggleEcosystemLayer(this.checked)">
+                    </div>
+                </div>
             </div>
 
             <div class="glass-card" id="location-panel" style="display: none;">
@@ -226,6 +242,7 @@
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/theme.js"></script>
     <script src="assets/js/alerts.js"></script>
+    <script src="assets/js/ai-intelligence.js"></script>
 
     <script>
         AUTH.requireAuth();
@@ -448,6 +465,9 @@
 
         // Real-time Alert Polling is now handled by GlobalAlerts (alerts.js)
 
+        // Initialize AI Intelligence Map Layers
+        AIIntelligence.initMapLayers(map);
+
         // Initialize default active layers
         setTimeout(() => {
             if (document.getElementById('layer-risk').checked) MAP.toggleRiskZones(true);
@@ -457,6 +477,10 @@
             setInterval(() => {
                 loadMapIncidents();
             }, 15000);
+
+            // Auto-load AI detections if checkbox is checked
+            const aiDetChk = document.getElementById('layer-ai-detections');
+            if (aiDetChk && aiDetChk.checked) AIIntelligence.toggleAIDetections(true);
         }, 500);
 
     </script>

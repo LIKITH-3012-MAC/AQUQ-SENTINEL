@@ -38,6 +38,23 @@ async def chat_with_copilot(
     3. **Debris Hotspot Prediction**: Predicts future debris accumulation zones and drift paths using ocean currents and wave data.
     4. **Incident Lifecycle Tracking**: Every report (e.g., AQUA-XXXXXXXX) is tracked from 'Submitted' to 'Resolved' with a full history.
     5. **Simulation Mode**: Admins can trigger [SIMULATED] events for evaluation. Always disclose when discussing simulated data.
+    
+    ### AI MARINE DEBRIS INTELLIGENCE LAYER:
+    AquaSentinel includes an advanced AI Marine Debris & Ecosystem Intelligence Layer. Key capabilities:
+    - **AI Debris Detection**: Users can upload marine images for AI-powered debris classification (plastic_waste, ghost_net, floating_debris, oil_patch, algae_cluster, unknown_marine_hazard).
+    - **Confidence Scoring**: Each detection has a confidence score (0-1). High confidence (>0.85) triggers automatic alerts.
+    - **Severity Levels**: Low, Medium, High, Critical — determined by debris class and confidence.
+    - **YOLO-Style Map Overlays**: Detections appear on the map as polygons, debris lines, detection zones, and floating AI labels showing class + confidence.
+    - **Ecosystem Monitoring**: AI classifies ecosystem regions (coral_region, algae_region, water_region, polluted_zone, stressed_marine_zone).
+    - **GeoJSON Output**: Every detection generates map-ready GeoJSON data with bounding boxes, contour polygons, and detection lines.
+    - **Alert Generation**: High-confidence detections automatically create marine risk alerts.
+    - **Evidence Storage**: All detection outputs are permanently stored in PostgreSQL with full evidence chains.
+    - **Detection-to-Action Pipeline**: Detection → Geospatial Conversion → DB Persistence → Map Overlay → Dashboard Evidence → Alert → Mission Readiness.
+    - **Satellite Tile Readiness**: Architecture supports future satellite imagery inference.
+    
+    When users ask about AI detections, explain the class, confidence, severity, and what actions are recommended.
+    A confidence of 0.89 means the AI model is 89% certain of its classification.
+    Detection zones on the map use YOLO-inspired visual language: colored polygons, detection rectangles, debris trail lines, and confidence-tagged outlines.
 
     ### SIMULATED DATA POLICY:
     If a user asks about an alert or hotspot that contains the word "[SIMULATED]" or "DEMO", you must:

@@ -9,6 +9,7 @@
     <title>Command Dashboard | AquaSentinel AI</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/alerts.css">
+    <link rel="stylesheet" href="assets/css/ai-intelligence.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
@@ -293,6 +294,96 @@
                 </div>
             </div>
         </div>
+
+        <!-- AI MARINE DEBRIS INTELLIGENCE LAYER -->
+        <div style="margin-top: 2.5rem;">
+            <div class="glass-card hologram" style="border-color: #0ea5e9; background: rgba(14, 165, 233, 0.02);">
+                <div class="ai-section-header">
+                    <i class="fas fa-brain"></i>
+                    <h3>AI Marine Debris <span class="text-gradient">Intelligence</span></h3>
+                    <div style="margin-left: auto; display: flex; gap: 0.5rem; align-items: center;">
+                        <span style="font-size: 0.6rem; padding: 0.2rem 0.6rem; border-radius: 50px; background: rgba(0, 243, 255, 0.1); color: #00f3ff; font-weight: 700; letter-spacing: 0.5px;">AI ENGINE ACTIVE</span>
+                    </div>
+                </div>
+
+                <!-- AI Detection Stats -->
+                <div id="ai-intelligence-stats" class="ai-evidence-grid" style="grid-template-columns: repeat(6, 1fr);">
+                    <div class="ai-evidence-stat"><div class="value">--</div><div class="label">Detections Today</div></div>
+                    <div class="ai-evidence-stat"><div class="value">--</div><div class="label">Total Detections</div></div>
+                    <div class="ai-evidence-stat"><div class="value">--</div><div class="label">High Confidence</div></div>
+                    <div class="ai-evidence-stat"><div class="value">--%</div><div class="label">Avg Confidence</div></div>
+                    <div class="ai-evidence-stat"><div class="value">--</div><div class="label">Eco Alerts</div></div>
+                    <div class="ai-evidence-stat"><div class="value">--</div><div class="label">Alert Conv.</div></div>
+                </div>
+
+                <!-- Class Distribution -->
+                <div style="margin-top: 1rem;">
+                    <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 0.4rem;">Debris Class Distribution</div>
+                    <div id="ai-class-distribution" class="class-dist-bar"></div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.4rem;">
+                        <span style="font-size: 0.55rem; color: #3b82f6;">● Plastic</span>
+                        <span style="font-size: 0.55rem; color: #8b5cf6;">● Ghost Net</span>
+                        <span style="font-size: 0.55rem; color: #06b6d4;">● Floating</span>
+                        <span style="font-size: 0.55rem; color: #ef4444;">● Oil</span>
+                        <span style="font-size: 0.55rem; color: #22c55e;">● Algae</span>
+                        <span style="font-size: 0.55rem; color: #6b7280;">● Unknown</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                <!-- AI Detection Feed -->
+                <div class="glass-card" style="border-color: rgba(14, 165, 233, 0.15);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1rem; letter-spacing: 1px;"><i class="fas fa-radar text-gradient"></i> Detection <span class="text-gradient">Feed</span></h3>
+                        <a href="map.html" style="font-size: 0.7rem; color: var(--accent-color); text-decoration: none; font-weight: 600;">View Map →</a>
+                    </div>
+                    <div id="ai-detection-feed" class="ai-feed-container">
+                        <div style="text-align: center; padding: 1.5rem; color: var(--text-secondary); font-size: 0.8rem;">
+                            <i class="fas fa-satellite" style="font-size: 1.5rem; opacity: 0.3; margin-bottom: 0.5rem; display: block;"></i>
+                            Initializing AI intelligence feed...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ecosystem Monitoring -->
+                <div class="glass-card" style="border-color: rgba(34, 197, 94, 0.15);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1rem; letter-spacing: 1px;"><i class="fas fa-leaf text-gradient"></i> Ecosystem <span class="text-gradient">Signals</span></h3>
+                    </div>
+                    <div id="ai-ecosystem-signals" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                        <p style="text-align: center; color: var(--text-secondary); font-size: 0.8rem;">Scanning ecosystem indicators...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Image Upload Zone -->
+            <div class="glass-card" style="margin-top: 1.5rem; border-color: rgba(0, 243, 255, 0.15);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                    <h3 style="font-size: 1rem; letter-spacing: 1px;"><i class="fas fa-cloud-arrow-up text-gradient"></i> AI Debris <span class="text-gradient">Scanner</span></h3>
+                </div>
+                <div class="ai-upload-zone" id="ai-upload-zone" onclick="document.getElementById('ai-image-input').click()">
+                    <i class="fas fa-satellite-dish"></i>
+                    <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem;">Upload Marine Imagery</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Drop or click to upload. AI will classify debris, generate confidence scores, and create map intelligence.</div>
+                    <input type="file" id="ai-image-input" accept="image/*" style="display: none;">
+                </div>
+                <div id="ai-detection-result" style="display: none; margin-top: 1rem;"></div>
+
+                <!-- AI Processing Pipeline -->
+                <div id="ai-pipeline-container" style="display: none;">
+                    <div class="ai-pipeline-progress">
+                        <div class="ai-pipeline-step" id="pipe-upload">Upload</div>
+                        <div class="ai-pipeline-step" id="pipe-preprocess">Preprocess</div>
+                        <div class="ai-pipeline-step" id="pipe-inference">AI Inference</div>
+                        <div class="ai-pipeline-step" id="pipe-geo">Geo Convert</div>
+                        <div class="ai-pipeline-step" id="pipe-persist">DB Persist</div>
+                        <div class="ai-pipeline-step" id="pipe-alert">Alert Check</div>
+                        <div class="ai-pipeline-step" id="pipe-complete">Complete</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Incident Lifecycle Tracking Modal -->
@@ -423,6 +514,7 @@
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/theme.js"></script>
     <script src="assets/js/alerts.js"></script>
+    <script src="assets/js/ai-intelligence.js"></script>
     <script>
         AUTH.requireAuth();
 
@@ -444,6 +536,12 @@
 
                     // 3. Trigger Geolocation & Local Intelligence
                     this.initGeolocation();
+
+                    // 4. Load AI Intelligence Dashboard
+                    AIIntelligence.loadDashboardIntelligence();
+
+                    // 5. Initialize AI Image Upload Handler
+                    this.initAIUpload();
 
                 } catch (err) {
                     console.error("Dashboard Boot Failure:", err);
@@ -725,6 +823,112 @@
                 if (s === 'verified' || s === 'resolved' || s === 'closed') return 'var(--success)';
                 if (s === 'pending' || s === 'submitted') return 'var(--warning)';
                 return 'var(--accent-color)';
+            },
+
+            initAIUpload() {
+                const fileInput = document.getElementById('ai-image-input');
+                if (!fileInput) return;
+
+                fileInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const uploadZone = document.getElementById('ai-upload-zone');
+                    const pipelineContainer = document.getElementById('ai-pipeline-container');
+                    const resultContainer = document.getElementById('ai-detection-result');
+
+                    // Get user location or use default
+                    let lat = 17.6868, lon = 83.2185;
+                    try {
+                        const pos = await new Promise((resolve, reject) =>
+                            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 })
+                        );
+                        lat = pos.coords.latitude;
+                        lon = pos.coords.longitude;
+                    } catch (e) { /* Use default */ }
+
+                    // Show pipeline progress
+                    if (uploadZone) uploadZone.style.display = 'none';
+                    if (pipelineContainer) pipelineContainer.style.display = 'block';
+                    if (resultContainer) resultContainer.style.display = 'none';
+
+                    const steps = ['pipe-upload', 'pipe-preprocess', 'pipe-inference', 'pipe-geo', 'pipe-persist', 'pipe-alert', 'pipe-complete'];
+                    
+                    const activateStep = (stepIdx) => {
+                        steps.forEach((s, i) => {
+                            const el = document.getElementById(s);
+                            if (el) {
+                                el.className = 'ai-pipeline-step' + (i < stepIdx ? ' complete' : i === stepIdx ? ' active' : '');
+                            }
+                        });
+                    };
+
+                    try {
+                        activateStep(0); // Upload
+                        await new Promise(r => setTimeout(r, 300));
+
+                        activateStep(1); // Preprocess
+                        await new Promise(r => setTimeout(r, 400));
+
+                        activateStep(2); // AI Inference
+
+                        const result = await AIIntelligence.handleImageDetection(file, lat, lon, 'User Upload');
+
+                        activateStep(3); // Geo Convert
+                        await new Promise(r => setTimeout(r, 300));
+
+                        activateStep(4); // DB Persist
+                        await new Promise(r => setTimeout(r, 300));
+
+                        activateStep(5); // Alert Check
+                        await new Promise(r => setTimeout(r, 300));
+
+                        activateStep(6); // Complete
+
+                        // Render result
+                        if (resultContainer && result.success) {
+                            resultContainer.style.display = 'block';
+                            resultContainer.innerHTML = `
+                                <div class="ai-evidence-panel">
+                                    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
+                                        <i class="fas fa-check-circle" style="color: #22c55e; font-size: 1.2rem;"></i>
+                                        <span style="font-weight: 800; font-size: 0.9rem;">AI INFERENCE COMPLETE</span>
+                                    </div>
+                                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">${result.message}</p>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        ${result.detections.map(d => `
+                                            <span class="confidence-chip ${d.severity.toLowerCase()}">
+                                                ${d.debris_class.replace(/_/g, ' ')} · ${(d.confidence_score * 100).toFixed(0)}%
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                    ${result.alerts_created > 0 ? `
+                                        <div style="margin-top: 1rem; padding: 0.6rem 1rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; font-size: 0.75rem; color: #ef4444; font-weight: 600;">
+                                            <i class="fas fa-bell"></i> ${result.alerts_created} alert(s) generated from high-confidence detections.
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }
+
+                        // Refresh dashboard data
+                        AIIntelligence.loadDashboardIntelligence();
+                        UI.showNotification('AI detection complete. Results persisted to intelligence pipeline.', 'success');
+
+                    } catch (err) {
+                        console.error('AI Upload Pipeline Error:', err);
+                        UI.showNotification('AI detection pipeline failed. Please try again.', 'danger');
+                        if (uploadZone) uploadZone.style.display = 'block';
+                        if (pipelineContainer) pipelineContainer.style.display = 'none';
+                    }
+
+                    // Reset upload zone after delay
+                    setTimeout(() => {
+                        if (uploadZone) uploadZone.style.display = 'block';
+                        if (pipelineContainer) pipelineContainer.style.display = 'none';
+                        fileInput.value = '';
+                    }, 5000);
+                });
             }
         };
 
