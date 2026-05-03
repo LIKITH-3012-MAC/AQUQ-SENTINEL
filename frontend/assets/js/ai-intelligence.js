@@ -11,6 +11,7 @@ const AIIntelligence = {
     aiHeatmapLayer: null,
     overlayData: null,
     isLayerActive: false,
+    refreshTimer: null,
 
     // ========= MAP INTEGRATION =========
 
@@ -24,6 +25,26 @@ const AIIntelligence = {
         this.map = mapInstance;
         this.detectionLayers = L.layerGroup();
         this.ecosystemLayers = L.layerGroup();
+        
+        // Start live sync
+        this.startIntelligencePolling();
+    },
+
+    /**
+     * Start automated intelligence synchronization.
+     */
+    startIntelligencePolling(intervalMs = 30000) {
+        if (this.refreshTimer) clearInterval(this.refreshTimer);
+        
+        // Initial load
+        this.loadDashboardIntelligence();
+        
+        // Background poll
+        this.refreshTimer = setInterval(() => {
+            console.log("[AI SYNC] Refreshing intelligence feed...");
+            this.loadDashboardIntelligence();
+            if (this.isLayerActive) this.toggleAIDetections(true);
+        }, intervalMs);
     },
 
     /**
@@ -307,29 +328,39 @@ const AIIntelligence = {
         const container = document.getElementById('ai-intelligence-stats');
         if (!container) return;
 
+        // Safe defaults
+        const stats = {
+            today: summary.ai_detections_today ?? 0,
+            total: summary.ai_detections_total ?? 0,
+            highConf: summary.high_confidence_zones ?? 0,
+            avgConf: (summary.avg_detection_confidence ?? 0) * 100,
+            ecoAlerts: summary.ecosystem_alerts ?? 0,
+            conversions: summary.detection_to_alert_conversions ?? 0
+        };
+
         container.innerHTML = `
             <div class="ai-evidence-stat">
-                <div class="value">${summary.ai_detections_today}</div>
+                <div class="value">${stats.today}</div>
                 <div class="label">Detections Today</div>
             </div>
             <div class="ai-evidence-stat">
-                <div class="value">${summary.ai_detections_total}</div>
+                <div class="value">${stats.total}</div>
                 <div class="label">Total Detections</div>
             </div>
             <div class="ai-evidence-stat">
-                <div class="value">${summary.high_confidence_zones}</div>
+                <div class="value">${stats.highConf}</div>
                 <div class="label">High Confidence</div>
             </div>
             <div class="ai-evidence-stat">
-                <div class="value">${(summary.avg_detection_confidence * 100).toFixed(0)}%</div>
+                <div class="value">${stats.avgConf.toFixed(0)}%</div>
                 <div class="label">Avg Confidence</div>
             </div>
             <div class="ai-evidence-stat">
-                <div class="value">${summary.ecosystem_alerts}</div>
+                <div class="value">${stats.ecoAlerts}</div>
                 <div class="label">Eco Alerts</div>
             </div>
             <div class="ai-evidence-stat">
-                <div class="value">${summary.detection_to_alert_conversions}</div>
+                <div class="value">${stats.conversions}</div>
                 <div class="label">Alert Conv.</div>
             </div>
         `;
@@ -359,7 +390,12 @@ const AIIntelligence = {
         if (!feed) return;
 
         if (!detections || detections.length === 0) {
-            feed.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: var(--text-secondary); font-size: 0.8rem;"><i class="fas fa-satellite" style="font-size: 1.5rem; opacity: 0.3; margin-bottom: 0.5rem; display: block;"></i>No AI detections recorded yet. Upload a marine image to start.</div>';
+            feed.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--text-secondary); background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px dashed var(--border-color);">
+                    <i class="fas fa-satellite-dish" style="font-size: 1.5rem; opacity: 0.3; margin-bottom: 0.8rem; display: block;"></i>
+                    <p style="font-size: 0.75rem; font-weight: 500;">No AI detections recorded yet.</p>
+                    <p style="font-size: 0.65rem; opacity: 0.6; margin-top: 0.3rem;">Upload a marine image or activate a simulation to begin scanning.</p>
+                </div>`;
             return;
         }
 
@@ -391,7 +427,11 @@ const AIIntelligence = {
         if (!container) return;
 
         if (!signals || signals.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.8rem;">No ecosystem signals recorded.</p>';
+            container.innerHTML = `
+                <div style="text-align: center; padding: 1rem; color: var(--text-secondary); opacity: 0.7;">
+                    <i class="fas fa-wave-square" style="font-size: 1rem; margin-bottom: 0.5rem; display: block; opacity: 0.3;"></i>
+                    <p style="font-size: 0.65rem;">No ecosystem signals detected.</p>
+                </div>`;
             return;
         }
 

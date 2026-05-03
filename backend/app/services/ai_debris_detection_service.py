@@ -1,8 +1,12 @@
 """
 AquaSentinel AI Marine Debris Detection Service
 Core inference engine with classification, confidence, severity, bbox, polygon, and geo output.
-Phase 1: Sophisticated simulated inference with realistic distributions.
-Phase 2 ready: Interface supports real model integration (YOLO/DeepLab/U-Net).
+
+ARCHITECTURE PHASES:
+- PHASE 1 (ACTIVE): Simulated Intelligence. Generates high-fidelity, realistic detection data
+  based on oceanographic distributions. Works without external GPU weights or NASA keys.
+- PHASE 2 (READY): Real-Inference Integration. Supports YOLOv8 weights for image processing,
+  TensorFlow/PyTorch for segmentation, and real NASA OB.DAAC satellite tile ingestion.
 """
 import random
 import math
@@ -208,6 +212,22 @@ def run_inference(
                 )
                 db.add(eco_record)
                 eco_records.append(eco_record)
+
+        # 13. Create Detection Evidence (Phase 1: Detailed Metadata Logs)
+        evidence = models_ai.DetectionEvidence(
+            detection_id=detection.id,
+            file_reference=f"simulated_telemetry_{detection.id.hex[:8]}.log",
+            raw_output_metadata={
+                "model_architecture": "AquaSentinel-Sim-v2",
+                "inference_latency_ms": random.uniform(150, 450),
+                "pixel_confidence": [random.uniform(0.6, 0.95) for _ in range(5)],
+                "thermal_anomaly_score": random.uniform(0, 1),
+                "spectral_signature": "Marine-Polymer-v4",
+                "phase": "PHASE_1_SIMULATED"
+            },
+            notes=f"AI evidence logs generated for {detection.debris_class} at {latitude}, {longitude}."
+        )
+        db.add(evidence)
 
     db.commit()
     return detections, eco_records
