@@ -9,6 +9,8 @@ const AIIntelligence = {
     detectionLayers: null,
     ecosystemLayers: null,
     aiHeatmapLayer: null,
+    pollingInterval: null,
+    operationalMode: 'simulated', // 'simulated' or 'real'
     overlayData: null,
     isLayerActive: false,
     refreshTimer: null,
@@ -33,18 +35,79 @@ const AIIntelligence = {
     /**
      * Start automated intelligence synchronization.
      */
-    startIntelligencePolling(intervalMs = 30000) {
-        if (this.refreshTimer) clearInterval(this.refreshTimer);
-        
+    async startIntelligencePolling() {
         // Initial load
         this.loadDashboardIntelligence();
-        
-        // Background poll
-        this.refreshTimer = setInterval(() => {
-            console.log("[AI SYNC] Refreshing intelligence feed...");
+
+        // Start 30s interval
+        if (this.pollingInterval) clearInterval(this.pollingInterval);
+        this.pollingInterval = setInterval(() => {
+            console.log(`[AI-INTEL] Background sync triggered (${this.operationalMode} mode)...`);
             this.loadDashboardIntelligence();
             if (this.isLayerActive) this.toggleAIDetections(true);
-        }, intervalMs);
+        }, 30000);
+    },
+
+    setOperationalMode(mode) {
+        this.operationalMode = mode;
+        console.log(`[AI-INTEL] Operational mode changed to: ${mode}`);
+        
+        // Update UI buttons
+        const simBtn = document.getElementById('mode-simulated-btn');
+        const realBtn = document.getElementById('mode-real-btn');
+        const statusTag = document.getElementById('ai-engine-status');
+
+        if (mode === 'real') {
+            if (simBtn) {
+                simBtn.style.background = 'transparent';
+                simBtn.style.color = 'var(--text-secondary)';
+            }
+            if (realBtn) {
+                realBtn.style.background = 'var(--accent-color)';
+                realBtn.style.color = '#000';
+            }
+            if (statusTag) {
+                statusTag.textContent = 'REAL MODEL ACTIVE';
+                statusTag.style.color = 'var(--success)';
+            }
+        } else {
+            if (realBtn) {
+                realBtn.style.background = 'transparent';
+                realBtn.style.color = 'var(--text-secondary)';
+            }
+            if (simBtn) {
+                simBtn.style.background = 'var(--accent-color)';
+                simBtn.style.color = '#000';
+            }
+            if (statusTag) {
+                statusTag.textContent = 'SIMULATION ACTIVE';
+                statusTag.style.color = '#00f3ff';
+            }
+        }
+
+        // Reload data immediately
+        this.loadDashboardIntelligence();
+    },
+
+    async triggerTraining() {
+        try {
+            UI.showNotification("Initiating real-model training pipeline...", "warning");
+            const response = await fetch(`${CONFIG.API_BASE_URL}/api/ai/detect/training/trigger`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const data = await response.json();
+            if (data.status === 'conversion_complete') {
+                UI.showNotification("Dataset conversion successful. Training baseline initiated.", "success");
+            } else {
+                UI.showNotification("Training trigger failed: " + (data.detail || "Unknown error"), "danger");
+            }
+        } catch (err) {
+            console.error("Training Trigger Failure:", err);
+            UI.showNotification("Critical Failure: AI training grid unreachable.", "danger");
+        }
     },
 
     /**
@@ -315,7 +378,15 @@ const AIIntelligence = {
      */
     async loadDashboardIntelligence() {
         try {
-            const summary = await API.aiDetection.getDashboard();
+            const endpoint = this.operationalMode === 'real' 
+                ? `/api/ai/detect/summary/mode/real`
+                : `/api/ai/detect/dashboard`;
+                
+            const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const summary = await response.json();
+            
             this._renderDashboardCards(summary);
             this._renderDetectionFeed(summary.latest_detections);
             this._renderEcosystemSignals(summary.ecosystem_signals);

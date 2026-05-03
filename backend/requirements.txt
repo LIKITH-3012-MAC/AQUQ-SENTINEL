@@ -15,3 +15,9 @@ bcrypt
 numpy
 pandas
 opencv-python-headless
+ultralytics
+torch
+torchvision
+geopandas
+rasterio
+scikit-learn

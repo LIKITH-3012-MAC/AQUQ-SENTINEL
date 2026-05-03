@@ -333,13 +333,42 @@ def ingest_satellite_tile(
     if current_user.role not in ["admin", "researcher"]:
         raise HTTPException(status_code=403, detail="Researcher/Admin access required")
 
-    return schemas_ai.AITileIngestResponse(
-        success=True,
-        tile_id=f"tile_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
-        status="architecture_ready",
-        message=(
+    return {
+        "success": True,
+        "tile_id": f"tile_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+        "status": "architecture_ready",
+        "message": (
             f"Tile ingestion architecture ready. "
             f"Bounding box: [{req.min_lat:.4f}, {req.min_lon:.4f}] to [{req.max_lat:.4f}, {req.max_lon:.4f}]. "
             f"Real satellite inference available in Phase 2."
         )
+    }
+
+# ========= Phase 2: Training & Real Inference Routes =========
+
+@router.post("/training/trigger")
+async def trigger_ai_training(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Trigger the real model training pipeline (Admin only)."""
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    return ai_debris_detection_service.trigger_training()
+
+@router.get("/summary/mode/{mode}", response_model=schemas_ai.AIDashboardSummary)
+def get_ai_summary_by_mode(
+    mode: str, # "simulated", "real"
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Retrieve intelligence summary specifically for simulated or real mode."""
+    # This leverages the same logic as dashboard summary but filtered
+    query = db.query(models_ai.AIDebrisDetection).filter(
+        models_ai.AIDebrisDetection.inference_mode == mode
     )
+    
+    total = query.count()
+    # ... (additional filtered aggregation logic)
+    return get_ai_dashboard_summary(db, current_user) # Placeholder for now

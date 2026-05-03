@@ -301,8 +301,21 @@
                 <div class="ai-section-header">
                     <i class="fas fa-brain"></i>
                     <h3>AI Marine Debris <span class="text-gradient">Intelligence</span></h3>
-                    <div style="margin-left: auto; display: flex; gap: 0.5rem; align-items: center;">
-                        <span style="font-size: 0.6rem; padding: 0.2rem 0.6rem; border-radius: 50px; background: rgba(0, 243, 255, 0.1); color: #00f3ff; font-weight: 700; letter-spacing: 0.5px;">AI ENGINE ACTIVE</span>
+                    <div style="margin-left: auto; display: flex; gap: 1rem; align-items: center;">
+                        <!-- Mode Toggle -->
+                        <div class="glass-card" style="padding: 0.3rem; border-radius: 50px; display: flex; gap: 0.2rem; background: rgba(255,255,255,0.05);">
+                            <button id="mode-simulated-btn" onclick="AIIntelligence.setOperationalMode('simulated')" class="status-tag" style="cursor: pointer; border: none; font-size: 0.6rem; padding: 0.3rem 0.8rem; border-radius: 50px; background: var(--accent-color); color: #000; font-weight: 800;">SIMULATED</button>
+                            <button id="mode-real-btn" onclick="AIIntelligence.setOperationalMode('real')" class="status-tag" style="cursor: pointer; border: none; font-size: 0.6rem; padding: 0.3rem 0.8rem; border-radius: 50px; background: transparent; color: var(--text-secondary); font-weight: 800;">REAL MODEL</button>
+                        </div>
+
+                        <!-- Admin Training Trigger -->
+                        <script>
+                            if (localStorage.getItem('role') === 'admin') {
+                                document.write('<button onclick="AIIntelligence.triggerTraining()" class="btn btn-outline" style="padding: 0.3rem 0.8rem; font-size: 0.6rem; border-color: var(--warning); color: var(--warning);"><i class="fas fa-microchip"></i> TRAIN MODEL</button>');
+                            }
+                        </script>
+                        
+                        <span id="ai-engine-status" style="font-size: 0.6rem; padding: 0.2rem 0.6rem; border-radius: 50px; background: rgba(0, 243, 255, 0.1); color: #00f3ff; font-weight: 700; letter-spacing: 0.5px;">STANDBY</span>
                     </div>
                 </div>
 

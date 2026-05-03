@@ -34,6 +34,8 @@ class AIDebrisDetection(Base):
     ecosystem_tags = Column(JSONB, nullable=True)  # {"coral_region": 0.3, "algae_region": 0.5, ...}
     environmental_impact = Column(Text, nullable=True)
     is_simulated = Column(Boolean, default=False)
+    model_version = Column(String, nullable=True) # e.g. "yolov8n-v1"
+    inference_mode = Column(String, default="simulated") # "simulated" or "real"
     related_alert_id = Column(Integer, ForeignKey("alerts.id", ondelete="SET NULL"), nullable=True)
     related_mission_id = Column(UUID(as_uuid=True), ForeignKey("missions.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
