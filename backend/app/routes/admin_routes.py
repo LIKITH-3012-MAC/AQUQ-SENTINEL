@@ -35,7 +35,7 @@ def update_user_role(user_id: UUID, role: str, db: Session = Depends(database.ge
     user.role = role
     db.commit()
     return {"status": "success"}
-
+    
 @router.put("/users/{user_id}/status")
 def update_user_status(user_id: UUID, active: bool, db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -47,3 +47,48 @@ def update_user_status(user_id: UUID, active: bool, db: Session = Depends(databa
 @router.get("/audit-logs", response_model=List[schemas.AuditLogResponse])
 def get_audit_logs(db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):
     return db.query(models.AuditLog).order_by(models.AuditLog.created_at.desc()).limit(100).all()
+
+@router.get("/authorities", response_model=List[schemas.AuthorityResponse])
+def get_authorities(db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):
+    users = db.query(models.User).filter(models.User.role == "authority").all()
+    result = []
+    for u in users:
+        active_missions = db.query(models.Mission).filter(models.Mission.assigned_to == u.id, models.Mission.status.in_(["Pending", "In Progress"])).count()
+        result.append({
+            "id": u.id,
+            "full_name": u.full_name,
+            "email": u.email,
+            "role": u.role,
+            "status": "Active" if u.is_active else "Inactive",
+            "active_missions": active_missions,
+            "created_at": u.created_at
+        })
+    return result
+
+@router.get("/settings", response_model=List[schemas.SystemSettingResponse])
+def get_settings(db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):
+    return db.query(models.SystemSetting).all()
+
+@router.put("/settings")
+def update_setting(setting: schemas.SystemSettingUpdate, db: Session = Depends(database.get_db), admin_user: models.User = Depends(auth.get_current_active_admin)):
+    db_setting = db.query(models.SystemSetting).filter(models.SystemSetting.key == setting.key).first()
+    if db_setting:
+        db_setting.value = setting.value
+        if setting.description:
+            db_setting.description = setting.description
+    else:
+        db_setting = models.SystemSetting(key=setting.key, value=setting.value, description=setting.description)
+        db.add(db_setting)
+    
+    # Audit log
+    audit = models.AuditLog(
+        user_id=admin_user.id,
+        action="update_setting",
+        entity_type="system_setting",
+        entity_id=setting.key,
+        action_metadata={"new_value": setting.value}
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(db_setting)
+    return db_setting

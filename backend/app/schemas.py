@@ -365,3 +365,28 @@ class MapIncidentResponse(BaseModel):
     created_at: datetime
     popup_summary: str
     radius_km: Optional[float] = 0.0
+
+class SystemSettingUpdate(BaseModel):
+    key: str
+    value: Any
+    description: Optional[str] = None
+
+class SystemSettingResponse(BaseModel):
+    id: int
+    key: str
+    value: Any
+    description: Optional[str]
+    updated_at: Optional[datetime]
+    class Config:
+        from_attributes = True
+
+class AuthorityResponse(BaseModel):
+    id: UUID
+    full_name: str
+    email: EmailStr
+    role: str
+    status: str
+    active_missions: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
