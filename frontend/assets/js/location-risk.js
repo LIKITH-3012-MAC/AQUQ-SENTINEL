@@ -72,18 +72,18 @@ const RiskEngine = {
         const explanation = document.getElementById('risk-explanation');
         const action = document.getElementById('risk-action');
 
-        scoreVal.textContent = Math.round(data.score);
-        levelTag.textContent = data.level;
-        levelTag.className = 'status-tag ' + (data.level === 'CRITICAL' || data.level === 'HIGH' ? 'critical' : 'success');
-        explanation.textContent = data.explanation;
+        scoreVal.textContent = Math.round(data.risk_score);
+        levelTag.textContent = data.risk_level;
+        levelTag.className = 'status-tag ' + (data.risk_level === 'CRITICAL' || data.risk_level === 'HIGH' ? 'critical' : 'success');
+        explanation.textContent = data.assessment;
         action.textContent = data.recommended_action;
 
-        // Factors
-        if (data.factors) {
-            document.getElementById('factor-debris').textContent = (data.factors.debris || 0).toFixed(1) + '%';
-            document.getElementById('factor-thermal').textContent = (data.factors.bio_thermal || 0).toFixed(1) + '%';
-            document.getElementById('factor-bio').textContent = (data.factors.community_reports || 0).toFixed(1) + '%';
-            document.getElementById('factor-dynamic').textContent = (data.factors.dynamic_conditions || 0).toFixed(1) + '%';
+        // Components Mapping
+        if (data.components) {
+            document.getElementById('factor-debris').textContent = (data.components.debris_density || 0).toFixed(1) + '%';
+            document.getElementById('factor-thermal').textContent = (data.components.thermal_stress || 0).toFixed(1) + '%';
+            document.getElementById('factor-bio').textContent = (data.components.bio_stress || 0).toFixed(1) + '%';
+            document.getElementById('factor-dynamic').textContent = (data.components.dynamic_load || 0).toFixed(1) + '%';
         }
 
         resultDiv.style.display = 'block';
